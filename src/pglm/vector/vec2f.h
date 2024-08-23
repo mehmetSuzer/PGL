@@ -75,7 +75,7 @@ inline bool epsilon_equal_vec2f(const vec2f v1, const vec2f v2, const float epsi
 }
 
 inline bool epsilon_not_equal_vec2f(const vec2f v1, const vec2f v2, const float epsilon) {
-    return epsilon_not_equal(v1.x, v2.x, epsilon) && 
+    return epsilon_not_equal(v1.x, v2.x, epsilon) ||
            epsilon_not_equal(v1.y, v2.y, epsilon);
 }
 

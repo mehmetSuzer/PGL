@@ -2,7 +2,7 @@
 #ifndef __QUAT_H__
 #define __QUAT_H__
 
-#include "../vector/vec3/vec3f.h"
+#include "../vector/vec3f.h"
 
 typedef struct {
     vec3f v;

@@ -6,14 +6,13 @@
 #include "core/fast.h"
 #include "core/epsilon.h"
 
-#include "vector/vec2/vec2i.h"
-#include "vector/vec2/vec2u.h"
-#include "vector/vec2/vec2f.h"
+#include "vector/vec2f.h"
+#include "vector/vec3f.h"
+#include "vector/vec4f.h"
 
-#include "vector/vec3/vec3f.h"
-
-#include "matrix/mat2/mat2f.h"
-#include "matrix/mat3/mat3f.h"
+#include "matrix/mat2f.h"
+#include "matrix/mat3f.h"
+#include "matrix/mat4f.h"
 
 #include "quat/quat.h"
 

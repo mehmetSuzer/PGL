@@ -2,6 +2,7 @@
 #ifndef __CAMERA_H__
 #define __CAMERA_H__
 
+#include <stdint.h>
 #include "pglm.h"
 
 typedef struct {

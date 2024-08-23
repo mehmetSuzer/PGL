@@ -2,7 +2,7 @@
 #ifndef __MAT2F_H__
 #define __MAT2F_H__
 
-#include "../../vector/vec2/vec2f.h"
+#include "../vector/vec2f.h"
 
 // Row-based 2x2 matrix typedef.
 // Element layout is as follows:
@@ -109,10 +109,10 @@ inline bool epsilon_equal_mat2f(const mat2f m1, const mat2f m2, const float epsi
 }
 
 inline bool epsilon_not_equal_mat2f(const mat2f m1, const mat2f m2, const float epsilon) {
-    return epsilon_not_equal(m1.xx, m2.xx, epsilon) && 
-           epsilon_not_equal(m1.xy, m2.xy, epsilon) && 
+    return epsilon_not_equal(m1.xx, m2.xx, epsilon) ||
+           epsilon_not_equal(m1.xy, m2.xy, epsilon) || 
            
-           epsilon_not_equal(m1.yx, m2.yx, epsilon) &&
+           epsilon_not_equal(m1.yx, m2.yx, epsilon) ||
            epsilon_not_equal(m1.yy, m2.yy, epsilon);
 }
 

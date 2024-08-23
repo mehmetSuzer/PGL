@@ -2,6 +2,7 @@
 #ifndef __COLOR_H__
 #define __COLOR_H__
 
+#include <stdint.h>
 #include "pglm.h"
 
 #define RGB565_RED_MAX      ((uint8_t)0x1F)

@@ -2,7 +2,7 @@
 #ifndef __MAT3F_H__
 #define __MAT3F_H__
 
-#include "../../vector/vec3/vec3f.h"
+#include "../vector/vec3f.h"
 
 // Row-based 3x3 matrix typedef.
 // Element layout is as follows:
@@ -19,7 +19,7 @@ inline mat3f neg_mat3f(const mat3f m) {
     return (mat3f) {
         -m.xx, -m.xy, -m.xz,
         -m.yx, -m.yy, -m.yz,
-        -m.zx, -m.yz, -m.zz,
+        -m.zx, -m.zy, -m.zz,
     };
 }
 
@@ -157,16 +157,16 @@ inline bool epsilon_equal_mat3f(const mat3f m1, const mat3f m2, const float epsi
 }
 
 inline bool epsilon_not_equal_mat3f(const mat3f m1, const mat3f m2, const float epsilon) {
-    return epsilon_not_equal(m1.xx, m2.xx, epsilon) && 
-           epsilon_not_equal(m1.xy, m2.xy, epsilon) && 
-           epsilon_not_equal(m1.xz, m2.xz, epsilon) && 
+    return epsilon_not_equal(m1.xx, m2.xx, epsilon) || 
+           epsilon_not_equal(m1.xy, m2.xy, epsilon) || 
+           epsilon_not_equal(m1.xz, m2.xz, epsilon) || 
 
-           epsilon_not_equal(m1.yx, m2.yx, epsilon) &&
-           epsilon_not_equal(m1.yy, m2.yy, epsilon) &&
-           epsilon_not_equal(m1.yz, m2.yz, epsilon) && 
+           epsilon_not_equal(m1.yx, m2.yx, epsilon) ||
+           epsilon_not_equal(m1.yy, m2.yy, epsilon) ||
+           epsilon_not_equal(m1.yz, m2.yz, epsilon) || 
 
-           epsilon_not_equal(m1.zx, m2.zx, epsilon) &&
-           epsilon_not_equal(m1.zy, m2.zy, epsilon) &&
+           epsilon_not_equal(m1.zx, m2.zx, epsilon) ||
+           epsilon_not_equal(m1.zy, m2.zy, epsilon) ||
            epsilon_not_equal(m1.zz, m2.zz, epsilon);
 }
 

@@ -100,8 +100,8 @@ inline bool epsilon_equal_vec3f(const vec3f v1, const vec3f v2, const float epsi
 }
 
 inline bool epsilon_not_equal_vec3f(const vec3f v1, const vec3f v2, const float epsilon) {
-    return epsilon_not_equal(v1.x, v2.x, epsilon) && 
-           epsilon_not_equal(v1.y, v2.y, epsilon) && 
+    return epsilon_not_equal(v1.x, v2.x, epsilon) ||
+           epsilon_not_equal(v1.y, v2.y, epsilon) || 
            epsilon_not_equal(v1.z, v2.z, epsilon);
 }
 

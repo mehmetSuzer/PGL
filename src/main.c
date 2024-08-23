@@ -50,8 +50,14 @@ const uint directional_light_number = sizeof(directional_lights) / sizeof(Direct
 // Scans column by column
 void render(const uint core_number) {
     if (core_number == 0) {
-        plot_wire_triangle(60, 180, 180, 180, 120, 76, 0xFFFF);
-        plot_filled_triangle(60, 180, 180, 180, 120, 76, 0xF100);
+        int x0 = 60;
+        int y0 = 60;
+        int x1 = 180;
+        int y1 = 60;
+        int x2 = 10;
+        int y2 = 150;
+        plot_wire_triangle(x0, y0, x1, y1, x2, y2, 0xFFFF);
+        plot_filled_triangle(x0, y0, x1, y1, x2, y2, 0xF100);
     }
 }
 

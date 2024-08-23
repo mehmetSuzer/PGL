@@ -2,7 +2,6 @@
 #ifndef __RASTERIZER_H__
 #define __RASTERIZER_H__
 
-#include <stdio.h>
 #include "lcd.h"
 
 extern color_t screen[LCD_HEIGHT][LCD_WIDTH];

@@ -91,7 +91,6 @@ void plot_wire_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t 
 }
 
 void plot_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
-    // Sort points so that P0 is the lowest, and P2 is the highest point
     if (y1 < y0) {
         const int tempx = x1;
         const int tempy = y1;
@@ -116,30 +115,25 @@ void plot_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_
         x0 = tempx;
         y0 = tempy;
     }
-    
-    printf("P0: (%d, %d), P1: (%d, %d), P2: (%d, %d)\n", x0, y0, x1, y1, x2, y2);
 
-    // since coordinates are integers, / gives 0 : e.g. 5/7 = 0
-    int d10 = (y1 != y0) ? (x1 - x0) / (y1 - y0) : 0;
-    int d20 = (y2 != y0) ? (x2 - x0) / (y2 - y0) : 0;
-    int d21 = (y2 != y1) ? (x2 - x1) / (y2 - y1) : 0;
-
-    int b10 = d10 * y0 - x0;
-    int b20 = d20 * y0 - x0;
-    int b21 = d21 * y1 - x1;
+    // Check whether the neighbor triangles have gap between them. If there is a gap, uncomment.
+    // plot_wire_triangle(x0, y0, x1, y1, x2, y2, color);
 
     for (int y = y0; y <= y2; y++) {
         int x_left;
         int x_right;
 
-        // Find the left and right x coordinates for the current scanline
-        if (y <= y1) {
-            x_left = d10 * y + b10;
-            x_right = d20 * y + b20;
-        }
+        if (y >= y1) {
+            const int dxl = (y2 != y1) ? (y - y1) * (x2 - x1) / (y2 - y1) : 0;
+            const int dxr = (y2 != y0) ? (y - y0) * (x2 - x0) / (y2 - y0) : 0;
+            x_left  = x1 + dxl;
+            x_right = x0 + dxr;
+        } 
         else {
-            x_left = d21 * y + b21;
-            x_right = d20 * y + b20;
+            const int dxl = (y1 != y0) ? (y - y0) * (x1 - x0) / (y1 - y0) : 0;
+            const int dxr = (y2 != y0) ? (y - y0) * (x2 - x0) / (y2 - y0) : 0;
+            x_left  = x0 + dxl;
+            x_right = x0 + dxr;
         }
 
         if (x_left > x_right) {
@@ -148,7 +142,6 @@ void plot_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_
             x_right = temp;
         }
 
-        printf("L: %d, R: %d, D10: %d, D20: %d, D21: %d, B10: %d, B20: %d, B21: %d\n", x_left, x_right, d10, d20, d21, b10, b20, b21);
         for (int x = x_left; x <= x_right; x++) {
             screen[y][x] = color;
         }

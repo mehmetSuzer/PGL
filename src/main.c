@@ -72,15 +72,14 @@ int main() {
     init_device();
     init_lcd();
 
-    camera = init_camera(
-        (vec3f) {0.0f,  0.0f,  0.0f},
-        (vec3f) {0.0f,  0.0f, -1.0f},
-        (vec3f) {0.0f,  1.0f,  0.0f},
-        1.0f,
-        INFINITY,
-        M_PI / 3.0f,
-        LCD_WIDTH,
-        LCD_HEIGHT
+    init_camera(
+        &camera,
+        (vec3f) {0.0f,  0.0f,  0.0f},   // position
+        (vec3f) {0.0f,  0.0f, -1.0f},   // forward
+        (vec3f) {0.0f,  1.0f,  0.0f},   // up
+        0.1f,                           // near
+        100.0f,                         // far
+        M_PI/4.0f                       // fov
     );
 
     while (gpio_get(KEY_A)); // wait until key A is pressed

@@ -2,18 +2,21 @@
 #ifndef __CAMERA_H__
 #define __CAMERA_H__
 
-#include <stdint.h>
 #include "pglm.h"
+#include "lcd.h"
 
 typedef struct {
     vec3f position;
-    vec3f low_left;
-    vec3f right_per_x;
-    vec3f up_per_y;
+    vec3f forward;
+    vec3f up;
+    vec3f right;
+    mat4f projection;
+    mat4f view;
+    float fov;
     float near;
     float far;
 } Camera;
 
-Camera init_camera(vec3f position, vec3f forward, vec3f up, float near, float far, float fov_radian, uint32_t width, uint32_t height);
+void init_camera(Camera* camera, const vec3f position, const vec3f forward, const vec3f up, const float near, const float far, const float fov);
 
 #endif // __CAMERA_H__

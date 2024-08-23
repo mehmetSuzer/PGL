@@ -5,8 +5,9 @@
 #include "color.h"
 #include "config.h"
 
-#define LCD_HEIGHT  240u
-#define LCD_WIDTH   240u
+#define LCD_HEIGHT      240u
+#define LCD_WIDTH       240u
+#define ASPECT_RATIO    ((float)LCD_WIDTH / (float)LCD_HEIGHT)
 
 void init_lcd();
 void lcd_set_window(uint x_start, uint x_end, uint y_start, uint y_end);

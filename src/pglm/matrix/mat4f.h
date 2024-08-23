@@ -17,6 +17,19 @@ typedef struct {
     float wx, wy, wz, ww; // row3
 } mat4f;
 
+inline mat4f fix_value_mat4f(const float s) {
+    return (mat4f) {
+           s, 0.0f, 0.0f, 0.0f,
+        0.0f,    s, 0.0f, 0.0f,
+        0.0f, 0.0f,    s, 0.0f,
+        0.0f, 0.0f, 0.0f,    s,
+    };
+}
+
+inline mat4f identity_mat4f() {
+    return fix_value_mat4f(1.0f);
+}
+
 inline mat4f neg_mat4f(const mat4f m) {
     return (mat4f) {
         -m.xx, -m.xy, -m.xz, -m.xw,

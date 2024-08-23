@@ -13,6 +13,17 @@ typedef struct {
     float yx, yy; // row1
 } mat2f;
 
+inline mat2f fix_value_mat2f(const float s) {
+    return (mat2f) {
+           s, 0.0f,
+        0.0f,    s,
+    };
+}
+
+inline mat2f identity_mat2f() {
+    return fix_value_mat2f(1.0f);
+}
+
 inline mat2f neg_mat2f(const mat2f m) {
     return (mat2f) {
         -m.xx, -m.xy,

@@ -2,15 +2,14 @@
 #include <stdio.h>
 #include <pico/multicore.h>
 
-#include "lcd.h"
 #include "light_source.h"
 #include "camera.h"
 #include "triangle.h"
+#include "rasterizer.h"
 
 #define CORE1_RENDER_COMPLETE 1u
 
 Camera camera;
-color_t screen[LCD_HEIGHT][LCD_WIDTH] = {{0x00}};
 
 // ------------------------------------------------------------------------------------------------- //
 
@@ -50,7 +49,10 @@ const uint directional_light_number = sizeof(directional_lights) / sizeof(Direct
 
 // Scans column by column
 void render(const uint core_number) {
-
+    if (core_number == 0) {
+        plot_wire_triangle(60, 180, 180, 180, 120, 76, 0xFFFF);
+        plot_filled_triangle(60, 180, 180, 180, 120, 76, 0xF100);
+    }
 }
 
 void core1_main() {
@@ -76,7 +78,7 @@ int main() {
     );
 
     while (gpio_get(KEY_A)); // wait until key A is pressed
-    
+
     const uint32_t start_us =  time_us_32();
 
     multicore_launch_core1(core1_main);

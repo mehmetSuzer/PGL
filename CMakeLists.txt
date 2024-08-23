@@ -22,6 +22,7 @@ add_subdirectory(src/color)
 add_subdirectory(src/light_source)
 add_subdirectory(src/triangle)
 add_subdirectory(src/camera)
+add_subdirectory(src/rasterizer)
 
 add_subdirectory(src/config)
 add_subdirectory(src/lcd)
@@ -41,6 +42,7 @@ target_link_libraries(${PROJECT_NAME}
     light_source
     triangle
     camera
+    rasterizer
     
     config
     lcd

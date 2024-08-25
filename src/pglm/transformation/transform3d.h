@@ -23,7 +23,7 @@ inline mat4f scale3D(const vec3f v) {
     };
 }
 
-inline mat4f rotate3D_x(const float radian) {
+static inline mat4f rotate3D_x(const float radian) {
     const float s = fast_sin_extended(radian);
     const float c = fast_cos_extended(radian);
     return (mat4f) {
@@ -34,7 +34,7 @@ inline mat4f rotate3D_x(const float radian) {
     };
 }
 
-inline mat4f rotate3D_y(const float radian) {
+static inline mat4f rotate3D_y(const float radian) {
     const float s = fast_sin_extended(radian);
     const float c = fast_cos_extended(radian);
     return (mat4f) {
@@ -45,7 +45,7 @@ inline mat4f rotate3D_y(const float radian) {
     };
 }
 
-inline mat4f rotate3D_z(const float radian) {
+static inline mat4f rotate3D_z(const float radian) {
     const float s = fast_sin_extended(radian);
     const float c = fast_cos_extended(radian);
     return (mat4f) {

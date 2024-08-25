@@ -6,17 +6,18 @@
 #include "lcd.h"
 
 typedef struct {
+    mat4f projection;
+    mat4f view;
     vec3f position;
     vec3f forward;
     vec3f up;
     vec3f right;
-    mat4f projection;
-    mat4f view;
     float fov;
     float near;
     float far;
 } Camera;
+extern Camera camera;
 
-void init_camera(Camera* camera, const vec3f position, const vec3f forward, const vec3f up, const float near, const float far, const float fov);
+void init_camera(const vec3f position, const vec3f forward, const vec3f up, const float near, const float far, const float fov);
 
 #endif // __CAMERA_H__

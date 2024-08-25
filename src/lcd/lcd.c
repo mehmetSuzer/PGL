@@ -118,7 +118,7 @@ void init_lcd() {
 }
 
 // Sets a window for the LCD
-void lcd_set_window(uint x_start, uint x_end, uint y_start, uint y_end) {
+void lcd_set_window(uint32_t x_start, uint32_t x_end, uint32_t y_start, uint32_t y_end) {
     //set the X coordinates
     lcd_command(0x2A);
     lcd_write_8bit_data(0x00);
@@ -140,14 +140,14 @@ void lcd_set_window(uint x_start, uint x_end, uint y_start, uint y_end) {
 void lcd_clear(color_t color) {
     const uint16_t swapped = (color << 8) | ((color & 0xFF00) >> 8);
     color_t image[LCD_WIDTH];
-    for (uint i = 0; i < LCD_WIDTH; i++) {
+    for (uint32_t i = 0; i < LCD_WIDTH; i++) {
         image[i] = swapped;
     }
     
     lcd_set_window(0, LCD_WIDTH, 0, LCD_HEIGHT);
     gpio_put(LCD_DC_PIN, HIGH);
     gpio_put(LCD_CS_PIN, LOW);
-    for (uint i = 0; i < LCD_HEIGHT; i++) {
+    for (uint32_t i = 0; i < LCD_HEIGHT; i++) {
         spi_write_blocking(SPI_PORT, (uint8_t*)image, LCD_WIDTH << 1);
     }
     gpio_put(LCD_CS_PIN, HIGH);
@@ -155,7 +155,7 @@ void lcd_clear(color_t color) {
 
 // Displays the image on the LCD
 void lcd_display(color_t* screen) {
-    for (uint i = 0; i < (LCD_HEIGHT*LCD_WIDTH); i++) {
+    for (uint32_t i = 0; i < (LCD_HEIGHT*LCD_WIDTH); i++) {
         color_t color = screen[i];
         screen[i] = (color << 8) | ((color & 0xFF00) >> 8);
     }

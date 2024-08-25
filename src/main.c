@@ -1,63 +1,62 @@
+// 0.014990 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
 
 #include "light_source.h"
 #include "camera.h"
-#include "triangle.h"
-#include "rasterizer.h"
+#include "mesh.h"
 
 #define CORE1_RENDER_COMPLETE 1u
 
-Camera camera;
-
-// ------------------------------------------------------------------------------------------------- //
-
-const PointLight point_lights[] = {
-    {
-        .color = {1.0f, 1.0f, 1.0f},
-        .position = {80.0f, 120.0f, -130.0f},
-        .quadratic = 0.00006f,
-        .linear = 0.000006f,
-    },
-    {
-        .color = {1.0f, 1.0f, 1.0f},
-        .position = {-80.0f, 120.0f, -130.0f},
-        .quadratic = 0.00006f,
-        .linear = 0.000006f,
-    },
+Vertex cube_vertices[] = {
+ 	//     positions      /                  normals                     /      colors      //
+	{{-0.5f, -0.5f, -0.5f}, {-1.0f/M_SQRT3, -1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{-0.5f,  0.5f, -0.5f}, {-1.0f/M_SQRT3,  1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f,  0.5f, -0.5f}, { 1.0f/M_SQRT3,  1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f, -0.5f, -0.5f}, { 1.0f/M_SQRT3, -1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	 
+	{{-0.5f, -0.5f,  0.5f}, {-1.0f/M_SQRT3, -1.0f/M_SQRT3,  1.0f/M_SQRT3}, {1.0f, 0.0f, 1.0f}},
+	{{ 0.5f, -0.5f,  0.5f}, { 1.0f/M_SQRT3, -1.0f/M_SQRT3,  1.0f/M_SQRT3}, {1.0f, 0.0f, 1.0f}},
+	{{ 0.5f,  0.5f,  0.5f}, { 1.0f/M_SQRT3,  1.0f/M_SQRT3,  1.0f/M_SQRT3}, {1.0f, 0.0f, 1.0f}},
+	{{-0.5f,  0.5f,  0.5f}, {-1.0f/M_SQRT3,  1.0f/M_SQRT3,  1.0f/M_SQRT3}, {1.0f, 0.0f, 1.0f}},
 };
-const uint point_light_number = 0; // sizeof(point_lights) / sizeof(PointLight);
 
-// ------------------------------------------------------------------------------------------------- //
-
-const DirectionalLight directional_lights[] = {
-    {
-        .color = {1.0f, 1.0f, 1.0f},
-        .direction = {-0.6f, -0.8f, 0.0f},
-        .intensity = 0.7f
-    },
-    {
-        .color = {1.0f, 1.0f, 1.0f},
-        .direction = {0.6f, -0.8f, 0.0f},
-        .intensity = 0.7f
-    }
+uint32_t cube_indices[] = {
+	0, 1, 2,
+	0, 2, 3,
+	4, 5, 6,
+	4, 6, 7,
+	0, 3, 6, 
+	0, 6, 5,
+	1, 4, 7,
+	1, 7, 2,
+	0, 5, 4,
+	0, 4, 1,
+	2, 7, 6,
+	2, 6, 3,
 };
-const uint directional_light_number = sizeof(directional_lights) / sizeof(DirectionalLight);
 
-// ------------------------------------------------------------------------------------------------- //
+Mesh cube = {
+    .vertices = cube_vertices,
+    .indices = cube_indices,
+    .vertex_number = sizeof(cube_vertices) / sizeof(Vertex),
+    .index_number = sizeof(cube_indices) / sizeof(uint32_t),
+};
 
 // Scans column by column
-void render(const uint core_number) {
+void render(const uint32_t core_number) {
     if (core_number == 0) {
-        int x0 = 60;
-        int y0 = 60;
-        int x1 = 180;
-        int y1 = 60;
-        int x2 = 10;
-        int y2 = 150;
-        plot_wire_triangle(x0, y0, x1, y1, x2, y2, 0xFFFF);
-        plot_filled_triangle(x0, y0, x1, y1, x2, y2, 0xF100);
+        // int x0 = 60;
+        // int y0 = 60;
+        // int x1 = 180;
+        // int y1 = 60;
+        // int x2 = 10;
+        // int y2 = 150;
+        // plot_wire_triangle(x0, y0, x1, y1, x2, y2, 0xFFFF);
+        // plot_filled_triangle(x0, y0, x1, y1, x2, y2, 0xF100);
+
+        process_mesh(&cube);
     }
 }
 
@@ -73,7 +72,6 @@ int main() {
     init_lcd();
 
     init_camera(
-        &camera,
         (vec3f) {0.0f,  0.0f,  0.0f},   // position
         (vec3f) {0.0f,  0.0f, -1.0f},   // forward
         (vec3f) {0.0f,  1.0f,  0.0f},   // up
@@ -81,6 +79,8 @@ int main() {
         100.0f,                         // far
         M_PI/4.0f                       // fov
     );
+
+    cube.model = mul_mat4f_mat4f(translate3D((vec3f) {0.0f, 0.0f, -5.0f}), rotate3D_y(M_PI_4));
 
     while (gpio_get(KEY_A)); // wait until key A is pressed
 

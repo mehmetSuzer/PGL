@@ -6,15 +6,15 @@
 #include "../matrix/mat4f.h"
 
 inline mat4f view(const vec3f position, const vec3f right, const vec3f up, const vec3f forward) {
-    const float dot0 = -dot_vec3f(right, position);
-    const float dot1 = -dot_vec3f(up, position);
-    const float dot2 = -dot_vec3f(forward, position);
+    const float dotr = dot_vec3f(right, position);
+    const float dotu = dot_vec3f(up, position);
+    const float dotf = dot_vec3f(forward, position);
     
     return (mat4f) {
-        right.x,    up.x, forward.x, 0.0f,
-        right.y,    up.y, forward.y, 0.0f,
-        right.z,    up.z, forward.z, 0.0f,
-           dot0,    dot1,      dot2, 1.0f,
+           right.x,    right.y,    right.z, -dotr,
+              up.x,       up.y,       up.z, -dotu,
+        -forward.x, -forward.y, -forward.z,  dotf,
+              0.0f,       0.0f,       0.0f,  1.0f,
     };
 }
 

@@ -54,7 +54,7 @@ inline float fast_sin(const float radian) {
 
 // Accurate in [-inf, +inf].
 // If you are sure that radian is in [-pi, +pi], use fast_sin, which is faster.
-inline float fast_sin_extended(const float radian) {
+static inline float fast_sin_extended(const float radian) {
     const float reduced_radian = reduce_angle(radian);
     return fast_sin(reduced_radian);
 }
@@ -67,7 +67,7 @@ inline float fast_cos(const float radian) {
 
 // Accurate in [-inf, +inf].
 // If you are sure that radian is in [-pi, +pi], use fast_cos, which is faster.
-inline float fast_cos_extended(const float radian) {
+static inline float fast_cos_extended(const float radian) {
     const float reduced_radian = reduce_angle(radian);
     return fast_cos(reduced_radian);
 }

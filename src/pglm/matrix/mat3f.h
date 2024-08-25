@@ -15,7 +15,7 @@ typedef struct {
     float zx, zy, zz; // row2
 } mat3f;
 
-inline mat3f fix_value_mat3f(const float s) {
+inline mat3f diagonal_mat3f(const float s) {
     return (mat3f) {
            s, 0.0f, 0.0f,
         0.0f,    s, 0.0f,
@@ -24,7 +24,7 @@ inline mat3f fix_value_mat3f(const float s) {
 }
 
 inline mat3f identity_mat3f() {
-    return fix_value_mat3f(1.0f);
+    return diagonal_mat3f(1.0f);
 }
 
 inline mat3f neg_mat3f(const mat3f m) {

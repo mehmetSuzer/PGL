@@ -84,7 +84,7 @@ void plot_line(int x0, int y0, int x1, int y1, color_t color) {
     }
 }
 
-void plot_wire_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
+void plot_wired_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
     plot_line(x0, y0, x1, y1, color);
     plot_line(x0, y0, x2, y2, color);
     plot_line(x1, y1, x2, y2, color);

@@ -20,9 +20,10 @@ pico_sdk_init()
 add_subdirectory(src/pglm)
 add_subdirectory(src/color)
 add_subdirectory(src/light_source)
-add_subdirectory(src/triangle)
 add_subdirectory(src/camera)
 add_subdirectory(src/rasterizer)
+add_subdirectory(src/vertex)
+add_subdirectory(src/mesh)
 
 add_subdirectory(src/config)
 add_subdirectory(src/lcd)
@@ -40,9 +41,10 @@ target_link_libraries(${PROJECT_NAME}
     pglm
     color
     light_source
-    triangle
     camera
     rasterizer
+    vertex
+    mesh
     
     config
     lcd

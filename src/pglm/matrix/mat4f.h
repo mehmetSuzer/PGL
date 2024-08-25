@@ -2,6 +2,7 @@
 #ifndef __MAT4F_H__
 #define __MAT4F_H__
 
+#include <stdio.h>
 #include "../vector/vec4f.h"
 
 // Row-based 4x4 matrix typedef.
@@ -17,7 +18,7 @@ typedef struct {
     float wx, wy, wz, ww; // row3
 } mat4f;
 
-inline mat4f fix_value_mat4f(const float s) {
+inline mat4f diagonal_mat4f(const float s) {
     return (mat4f) {
            s, 0.0f, 0.0f, 0.0f,
         0.0f,    s, 0.0f, 0.0f,
@@ -27,7 +28,7 @@ inline mat4f fix_value_mat4f(const float s) {
 }
 
 inline mat4f identity_mat4f() {
-    return fix_value_mat4f(1.0f);
+    return diagonal_mat4f(1.0f);
 }
 
 inline mat4f neg_mat4f(const mat4f m) {

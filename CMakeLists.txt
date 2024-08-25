@@ -18,7 +18,6 @@ project(pico-rast C CXX ASM)
 pico_sdk_init()
 
 add_subdirectory(src/pglm)
-add_subdirectory(src/color)
 add_subdirectory(src/light_source)
 add_subdirectory(src/camera)
 add_subdirectory(src/rasterizer)
@@ -39,7 +38,6 @@ pico_add_extra_outputs(${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME}
     pglm
-    color
     light_source
     camera
     rasterizer

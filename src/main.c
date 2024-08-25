@@ -108,7 +108,7 @@ int main() {
 
         clear_screen(0x0000);
         render(0);
-        lcd_display((color_t*)screen);
+        lcd_display((uint16_t*)screen);
     }
 
     return 0;

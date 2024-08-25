@@ -43,7 +43,7 @@ void process_mesh(const Mesh* mesh) {
         // printf("SC1 = (%f, %f, %f)\n", sc1.x / sc1.w, sc1.y / sc1.w, sc1.z / sc1.w);
         // printf("SC2 = (%f, %f, %f)\n", sc2.x / sc2.w, sc2.y / sc2.w, sc2.z / sc2.w);
         
-        const color_t color = vec3f_to_rgb565(v0->color);
+        const uint16_t color = vec3f_to_rgb565(v0->color);
         plot_wired_triangle((int)(sc0.x/sc0.w), (int)(sc0.y/sc0.w), (int)(sc1.x/sc1.w), (int)(sc1.y/sc1.w), (int)(sc2.x/sc2.w), (int)(sc2.y/sc2.w), color);
     }
 }

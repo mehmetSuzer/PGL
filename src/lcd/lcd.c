@@ -134,9 +134,9 @@ void lcd_set_window(uint32_t x_start, uint32_t x_end, uint32_t y_start, uint32_t
     lcd_command(0X2C);
 }
 
-void lcd_clear(color_t color) {
+void lcd_clear(uint16_t color) {
     const uint16_t swapped = (color << 8) | ((color & 0xFF00) >> 8);
-    color_t image[LCD_WIDTH];
+    uint16_t image[LCD_WIDTH];
     for (uint32_t i = 0; i < LCD_WIDTH; i++) {
         image[i] = swapped;
     }
@@ -150,9 +150,9 @@ void lcd_clear(color_t color) {
     gpio_put(LCD_CS_PIN, HIGH);
 }
 
-void lcd_display(color_t* screen) {
+void lcd_display(uint16_t* screen) {
     for (uint32_t i = 0; i < (LCD_HEIGHT*LCD_WIDTH); i++) {
-        color_t color = screen[i];
+        uint16_t color = screen[i];
         screen[i] = (color << 8) | ((color & 0xFF00) >> 8);
     }
 

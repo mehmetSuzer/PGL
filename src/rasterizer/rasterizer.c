@@ -1,29 +1,29 @@
 
 #include "rasterizer.h"
 
-color_t screen[LCD_HEIGHT][LCD_WIDTH] = {{0x00}};
+uint16_t screen[LCD_HEIGHT][LCD_WIDTH] = {{0x00}};
 
-void clear_screen(color_t color) {
-    color_t* color_ptr = (color_t*)screen;
+void clear_screen(uint16_t color) {
+    uint16_t* color_ptr = (uint16_t*)screen;
     for (uint32_t i = 0; i < LCD_HEIGHT*LCD_WIDTH; i++) {
         color_ptr[i] = color;
     }
 }
 
-static void plot_horizontal_line(int x0, int x1, int y, color_t color) {
+static void plot_horizontal_line(int x0, int x1, int y, uint16_t color) {
     for (int x = x0; x <= x1; x++) {
         screen[y][x] = color;
     }
 }
 
-static void plot_vertical_line(int y0, int y1, int x, color_t color) {
+static void plot_vertical_line(int y0, int y1, int x, uint16_t color) {
     for (int y = y0; y <= y1; y++) {
         screen[y][x] = color;
     }
 }
 
 // Draws a line where x0 < x1 and the slope is in [-1, 1]
-static void plot_line_low(int x0, int y0, int x1, int y1, color_t color) {    
+static void plot_line_low(int x0, int y0, int x1, int y1, uint16_t color) {    
     int dx = x1 - x0; // 120
     int dy = y1 - y0; // 0
     int yi = 1;
@@ -49,7 +49,7 @@ static void plot_line_low(int x0, int y0, int x1, int y1, color_t color) {
 }
 
 // Draws a line where x0 < x1 and the slope is in [-inf, -1] U [1, inf]
-static void plot_line_high(int x0, int y0, int x1, int y1, color_t color) {
+static void plot_line_high(int x0, int y0, int x1, int y1, uint16_t color) {
     int dx = x1 - x0;
     int dy = y1 - y0;
     int xi = 1;
@@ -75,7 +75,7 @@ static void plot_line_high(int x0, int y0, int x1, int y1, color_t color) {
 }
 
 // Draws a line and handles all cases
-static void plot_line(int x0, int y0, int x1, int y1, color_t color) {
+static void plot_line(int x0, int y0, int x1, int y1, uint16_t color) {
     if (abs(y1 - y0) < abs(x1 - x0)) {
         if (x0 > x1) {
             plot_line_low(x1, y1, x0, y0, color);
@@ -94,13 +94,13 @@ static void plot_line(int x0, int y0, int x1, int y1, color_t color) {
     }
 }
 
-void plot_wired_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
+void plot_wired_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint16_t color) {
     plot_line(x0, y0, x1, y1, color);
     plot_line(x0, y0, x2, y2, color);
     plot_line(x1, y1, x2, y2, color);
 }
 
-void plot_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color) {
+void plot_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint16_t color) {
     if (y1 < y0) {
         const int tempx = x1;
         const int tempy = y1;

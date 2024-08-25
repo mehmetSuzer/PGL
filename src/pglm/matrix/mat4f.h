@@ -127,7 +127,7 @@ inline mat4f tr_mat4f(const mat4f m) {
     };
 }
 
-inline float det_mat4f(const mat4f m) {
+static inline float det_mat4f(const mat4f m) {
     const float factor0 = m.zz * m.ww - m.wz * m.zw;
 	const float factor1 = m.zy * m.ww - m.wy * m.zw;
 	const float factor2 = m.zy * m.wz - m.wy * m.zz;
@@ -144,7 +144,7 @@ inline float det_mat4f(const mat4f m) {
 	       + m.xz * coef2 - m.xw * coef3;
 }
 
-inline mat4f inv_mat4f(const mat4f m) {
+static inline mat4f inv_mat4f(const mat4f m) {
     const float factor0 = m.zz * m.ww - m.wz * m.zw;
     const float factor1 = m.zy * m.ww - m.wy * m.zw;
     const float factor2 = m.zy * m.wz - m.wy * m.zz;
@@ -183,8 +183,29 @@ inline mat4f inv_mat4f(const mat4f m) {
     return scale_mat4f(adjugate, one_over_determinant);
 }
 
-inline vec4f solve_cramers_mat4f(const mat4f m, const vec4f v) {
-    // IMPLEMENT
+static inline vec4f solve_cramers_mat4f(const mat4f m, const vec4f v) {
+    const vec4f col0 = (vec4f) {m.xx, m.yx, m.zx, m.wx};
+    const vec4f col1 = (vec4f) {m.xy, m.yy, m.zy, m.wy};
+    const vec4f col2 = (vec4f) {m.xz, m.yz, m.zz, m.wz};
+    const vec4f col3 = (vec4f) {m.xw, m.yw, m.zw, m.ww};
+
+    const mat4f m0 = mat4f_from_cols(   v, col1, col2, col3);
+    const mat4f m1 = mat4f_from_cols(col0,    v, col2, col3);
+    const mat4f m2 = mat4f_from_cols(col0, col1,    v, col3);
+    const mat4f m3 = mat4f_from_cols(col0, col1, col2,    v);
+
+    const float one_over_determinant = 1.0f / det_mat4f(m);
+    const float det0 = det_mat4f(m0);
+    const float det1 = det_mat4f(m1);
+    const float det2 = det_mat4f(m2);
+    const float det3 = det_mat4f(m3);
+
+    const float x = det0 * one_over_determinant;
+    const float y = det1 * one_over_determinant;
+    const float z = det2 * one_over_determinant;
+    const float w = det3 * one_over_determinant;
+
+    return (vec4f) {x, y, z, w};
 }
 
 inline mat4f cast_mat3f_to_mat4f(const mat3f m) {

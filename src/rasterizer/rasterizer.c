@@ -3,6 +3,13 @@
 
 color_t screen[LCD_HEIGHT][LCD_WIDTH] = {{0x00}};
 
+void clear_screen(color_t color) {
+    color_t* color_ptr = (color_t*)screen;
+    for (uint32_t i = 0; i < LCD_HEIGHT*LCD_WIDTH; i++) {
+        color_ptr[i] = color;
+    }
+}
+
 static void plot_horizontal_line(int x0, int x1, int y, color_t color) {
     for (int x = x0; x <= x1; x++) {
         screen[y][x] = color;

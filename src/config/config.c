@@ -29,10 +29,10 @@ static void init_buttons() {
     gpio_set(KEY_Y, GPIO_IN);
     gpio_pull_up(KEY_Y);
 
-    gpio_set(KEY_UP, GPIO_IN);
-    gpio_pull_up(KEY_UP);
-    gpio_set(KEY_DOWN, GPIO_IN);
-    gpio_pull_up(KEY_DOWN);
+    gpio_set(KEY_FORWARD, GPIO_IN);
+    gpio_pull_up(KEY_FORWARD);
+    gpio_set(KEY_BACKWARD, GPIO_IN);
+    gpio_pull_up(KEY_BACKWARD);
     gpio_set(KEY_LEFT, GPIO_IN);
     gpio_pull_up(KEY_LEFT);
     gpio_set(KEY_RIGHT, GPIO_IN);
@@ -82,4 +82,16 @@ void init_device() {
     pwm_set_chan_level(slice_num, PWM_CHAN_B, 60);
     pwm_set_clkdiv(slice_num, 50.0f);
     pwm_set_enabled(slice_num, true);
+}
+
+void set_button_irq_callback(gpio_irq_callback_t callback, uint32_t event_mask, bool enabled) {
+    gpio_set_irq_enabled_with_callback(KEY_FORWARD,  event_mask, enabled, callback);
+    gpio_set_irq_enabled(KEY_BACKWARD, event_mask, enabled);
+    gpio_set_irq_enabled(KEY_LEFT,     event_mask, enabled);
+    gpio_set_irq_enabled(KEY_RIGHT,    event_mask, enabled);
+    gpio_set_irq_enabled(KEY_CTRL,     event_mask, enabled);
+    gpio_set_irq_enabled(KEY_A,        event_mask, enabled);
+    gpio_set_irq_enabled(KEY_B,        event_mask, enabled);
+    gpio_set_irq_enabled(KEY_X,        event_mask, enabled);
+    gpio_set_irq_enabled(KEY_Y,        event_mask, enabled);
 }

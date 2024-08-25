@@ -44,6 +44,30 @@ Mesh cube = {
     .index_number = sizeof(cube_indices) / sizeof(uint32_t),
 };
 
+void button_irq_callback(uint gpio, uint32_t event_mask) {
+    switch (gpio) {
+    case KEY_FORWARD:
+        camera.forward_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        break;
+    case KEY_BACKWARD:
+        camera.forward_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        break;
+    case KEY_RIGHT:
+        camera.right_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        break;
+    case KEY_LEFT:
+        camera.right_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        break;
+    case KEY_CTRL:
+    case KEY_A:
+    case KEY_B:
+    case KEY_X:
+    case KEY_Y:
+    default:
+        break;
+    }
+}
+
 void render(uint32_t core_number) {
     if (core_number == 0) {
         process_mesh(&cube);
@@ -52,7 +76,6 @@ void render(uint32_t core_number) {
 
 void core1_main() {
     render(1);
-
     while (!multicore_fifo_wready());
     multicore_fifo_push_blocking(CORE1_RENDER_COMPLETE);
 }
@@ -60,6 +83,7 @@ void core1_main() {
 int main() {
     init_device();
     init_lcd();
+    set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL|GPIO_IRQ_EDGE_RISE, true);
 
     init_camera(
         (vec3f) {0.0f,  0.0f,  0.0f},   // position
@@ -72,20 +96,20 @@ int main() {
 
     cube.model = mul_mat4f_mat4f(translate3D((vec3f) {0.0f, 0.0f, -5.0f}), rotate3D_y(M_PI_4));
 
-    while (gpio_get(KEY_A)); // wait until key A is pressed
+    uint32_t last_time = time_us_32();
+    uint32_t current_time;
 
-    const uint32_t start_us =  time_us_32();
+    while (true) {
+        current_time = time_us_32();
+        float dt = (current_time - last_time) / 1E6f;
+        last_time = current_time;
 
-    multicore_launch_core1(core1_main);
-    render(0);
+        update_camera(dt);
 
-    while (!multicore_fifo_rvalid());
-    if (multicore_fifo_pop_blocking() == CORE1_RENDER_COMPLETE) {
+        clear_screen(0x0000);
+        render(0);
         lcd_display((color_t*)screen);
     }
-    
-    const uint32_t end_us = time_us_32();
-    printf("Render time: %f s\n", (end_us - start_us) / 1E6f);
 
     return 0;
 }

@@ -47,15 +47,6 @@ Mesh cube = {
 // Scans column by column
 void render(const uint32_t core_number) {
     if (core_number == 0) {
-        // int x0 = 60;
-        // int y0 = 60;
-        // int x1 = 180;
-        // int y1 = 60;
-        // int x2 = 10;
-        // int y2 = 150;
-        // plot_wire_triangle(x0, y0, x1, y1, x2, y2, 0xFFFF);
-        // plot_filled_triangle(x0, y0, x1, y1, x2, y2, 0xF100);
-
         process_mesh(&cube);
     }
 }

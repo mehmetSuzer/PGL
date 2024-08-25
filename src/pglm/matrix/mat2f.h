@@ -13,7 +13,7 @@ typedef struct {
     float yx, yy; // row1
 } mat2f;
 
-inline mat2f diagonal_mat2f(const float s) {
+inline mat2f diagonal_mat2f(float s) {
     return (mat2f) {
            s, 0.0f,
         0.0f,    s,
@@ -59,7 +59,7 @@ inline mat2f sub_mat2f(const mat2f m1, const mat2f m2) {
     };
 }
 
-inline mat2f scale_mat2f(const mat2f m, const float scale) {
+inline mat2f scale_mat2f(const mat2f m, float scale) {
     return (mat2f) {
         m.xx * scale, m.xy * scale, 
         m.yx * scale, m.yy * scale,
@@ -111,7 +111,7 @@ static inline vec2f solve_cramers_mat2f(const mat2f m, const vec2f v) {
     };
 }
 
-inline bool epsilon_equal_mat2f(const mat2f m1, const mat2f m2, const float epsilon) {
+inline bool epsilon_equal_mat2f(const mat2f m1, const mat2f m2, float epsilon) {
     return epsilon_equal(m1.xx, m2.xx, epsilon) && 
            epsilon_equal(m1.xy, m2.xy, epsilon) && 
 
@@ -119,7 +119,7 @@ inline bool epsilon_equal_mat2f(const mat2f m1, const mat2f m2, const float epsi
            epsilon_equal(m1.yy, m2.yy, epsilon);
 }
 
-inline bool epsilon_not_equal_mat2f(const mat2f m1, const mat2f m2, const float epsilon) {
+inline bool epsilon_not_equal_mat2f(const mat2f m1, const mat2f m2, float epsilon) {
     return epsilon_not_equal(m1.xx, m2.xx, epsilon) ||
            epsilon_not_equal(m1.xy, m2.xy, epsilon) || 
            

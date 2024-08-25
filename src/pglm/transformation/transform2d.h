@@ -21,9 +21,9 @@ inline mat3f scale2D(const vec2f v) {
     };
 }
 
-static inline mat3f rotate2D(const float radian) {
-    const float s = fast_sin_extended(radian);
-    const float c = fast_cos_extended(radian);
+static inline mat3f rotate2D(float radian) {
+    const float s = sinf(radian);
+    const float c = cosf(radian);
     return (mat3f) {
            c,   -s, 0.0f,
            s,    c, 0.0f,
@@ -31,7 +31,7 @@ static inline mat3f rotate2D(const float radian) {
     };
 }
 
-inline mat3f shear2D(const float xy, const float yx) {
+inline mat3f shear2D(float xy, float yx) {
     return (mat3f) {
         1.0f,   xy, 0.0f,
           yx, 1.0f, 0.0f,

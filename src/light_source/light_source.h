@@ -25,6 +25,4 @@ typedef struct {
     float intensity;
 } DirectionalLight;
 
-
-
 #endif // __LIGHT_SOURCE_H__

@@ -4,7 +4,6 @@ add_library(rasterizer ${FILES})
 
 target_link_libraries(rasterizer PUBLIC 
     lcd
-    pglm
 )
 
 target_include_directories(rasterizer PUBLIC .)

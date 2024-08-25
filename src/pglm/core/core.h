@@ -2,6 +2,10 @@
 #ifndef __DEFINES_H__
 #define __DEFINES_H__
 
+#include <math.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif 

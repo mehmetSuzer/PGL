@@ -2,8 +2,7 @@
 #ifndef __PGLM_H__
 #define __PGLM_H__
 
-#include "core/defines.h"
-#include "core/fast.h"
+#include "core/core.h"
 #include "core/epsilon.h"
 
 #include "vector/vec2f.h"

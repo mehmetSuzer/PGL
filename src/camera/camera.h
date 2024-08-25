@@ -18,6 +18,6 @@ typedef struct {
 } Camera;
 extern Camera camera;
 
-void init_camera(const vec3f position, const vec3f forward, const vec3f up, const float near, const float far, const float fov);
+void init_camera(const vec3f position, const vec3f forward, const vec3f up, float near, float far, float fov);
 
 #endif // __CAMERA_H__

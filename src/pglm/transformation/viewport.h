@@ -2,12 +2,11 @@
 #ifndef __VIEWPORT_H__
 #define __VIEWPORT_H__
 
-#include <stdint.h>
 #include "../matrix/mat4f.h"
 
 // Origin is the top left corner of the window
 inline mat4f viewport(int x, int y, uint32_t width, uint32_t height, float near, float far) {
-    const float hwidth = width * 0.5f;
+    const float hwidth  =  width * 0.5f;
     const float hheight = height * 0.5f;
 
     return (mat4f) {

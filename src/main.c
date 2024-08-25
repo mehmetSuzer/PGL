@@ -1,4 +1,4 @@
-// 0.014990 s
+// 0.014796 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
@@ -44,8 +44,7 @@ Mesh cube = {
     .index_number = sizeof(cube_indices) / sizeof(uint32_t),
 };
 
-// Scans column by column
-void render(const uint32_t core_number) {
+void render(uint32_t core_number) {
     if (core_number == 0) {
         process_mesh(&cube);
     }

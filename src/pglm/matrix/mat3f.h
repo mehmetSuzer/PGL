@@ -15,7 +15,7 @@ typedef struct {
     float zx, zy, zz; // row2
 } mat3f;
 
-inline mat3f diagonal_mat3f(const float s) {
+inline mat3f diagonal_mat3f(float s) {
     return (mat3f) {
            s, 0.0f, 0.0f,
         0.0f,    s, 0.0f,
@@ -154,7 +154,7 @@ static inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
     };
 }
 
-inline bool epsilon_equal_mat3f(const mat3f m1, const mat3f m2, const float epsilon) {
+inline bool epsilon_equal_mat3f(const mat3f m1, const mat3f m2, float epsilon) {
     return epsilon_equal(m1.xx, m2.xx, epsilon) && 
            epsilon_equal(m1.xy, m2.xy, epsilon) && 
            epsilon_equal(m1.xz, m2.xz, epsilon) && 
@@ -168,7 +168,7 @@ inline bool epsilon_equal_mat3f(const mat3f m1, const mat3f m2, const float epsi
            epsilon_equal(m1.zz, m2.zz, epsilon);
 }
 
-inline bool epsilon_not_equal_mat3f(const mat3f m1, const mat3f m2, const float epsilon) {
+inline bool epsilon_not_equal_mat3f(const mat3f m1, const mat3f m2, float epsilon) {
     return epsilon_not_equal(m1.xx, m2.xx, epsilon) || 
            epsilon_not_equal(m1.xy, m2.xy, epsilon) || 
            epsilon_not_equal(m1.xz, m2.xz, epsilon) || 

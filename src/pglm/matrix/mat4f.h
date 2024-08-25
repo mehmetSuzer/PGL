@@ -2,7 +2,6 @@
 #ifndef __MAT4F_H__
 #define __MAT4F_H__
 
-#include <stdio.h>
 #include "../vector/vec4f.h"
 
 // Row-based 4x4 matrix typedef.
@@ -18,7 +17,7 @@ typedef struct {
     float wx, wy, wz, ww; // row3
 } mat4f;
 
-inline mat4f diagonal_mat4f(const float s) {
+inline mat4f diagonal_mat4f(float s) {
     return (mat4f) {
            s, 0.0f, 0.0f, 0.0f,
         0.0f,    s, 0.0f, 0.0f,
@@ -189,7 +188,7 @@ static inline vec4f solve_cramers_mat4f(const mat4f m, const vec4f v) {
     // IMPLEMENT
 }
 
-inline bool epsilon_equal_mat4f(const mat4f m1, const mat4f m2, const float epsilon) {
+inline bool epsilon_equal_mat4f(const mat4f m1, const mat4f m2, float epsilon) {
     return epsilon_equal(m1.xx, m2.xx, epsilon) && 
            epsilon_equal(m1.xy, m2.xy, epsilon) && 
            epsilon_equal(m1.xz, m2.xz, epsilon) && 
@@ -211,7 +210,7 @@ inline bool epsilon_equal_mat4f(const mat4f m1, const mat4f m2, const float epsi
            epsilon_equal(m1.ww, m2.ww, epsilon);
 }
 
-inline bool epsilon_not_equal_mat4f(const mat4f m1, const mat4f m2, const float epsilon) {
+inline bool epsilon_not_equal_mat4f(const mat4f m1, const mat4f m2, float epsilon) {
     return epsilon_not_equal(m1.xx, m2.xx, epsilon) ||
            epsilon_not_equal(m1.xy, m2.xy, epsilon) ||
            epsilon_not_equal(m1.xz, m2.xz, epsilon) ||

@@ -2,7 +2,7 @@
 #ifndef __VEC4F_H__
 #define __VEC4F_H__
 
-#include "core/fast.h"
+#include "core/epsilon.h"
 
 typedef struct {
     float x;
@@ -75,22 +75,22 @@ static inline float mag2_vec4f(const vec4f v) {
 
 static inline float mag_vec4f(const vec4f v) {
     const float mag2 = mag2_vec4f(v);
-    return fast_square_root(mag2);
+    return sqrtf(mag2);
 }
 
 static inline vec4f normalize_vec4f(const vec4f v) {
-    const float inverse_mag = fast_inverse_square_root(mag2_vec4f(v));
+    const float inverse_mag = 1.0f / sqrtf(mag2_vec4f(v));
     return scale_vec4f(v, inverse_mag);
 }
 
-inline bool epsilon_equal_vec4f(const vec4f v1, const vec4f v2, const float epsilon) {
+inline bool epsilon_equal_vec4f(const vec4f v1, const vec4f v2, float epsilon) {
     return epsilon_equal(v1.x, v2.x, epsilon) && 
            epsilon_equal(v1.y, v2.y, epsilon) && 
            epsilon_equal(v1.z, v2.z, epsilon) &&
            epsilon_equal(v1.w, v2.w, epsilon);
 }
 
-inline bool epsilon_not_equal_vec4f(const vec4f v1, const vec4f v2, const float epsilon) {
+inline bool epsilon_not_equal_vec4f(const vec4f v1, const vec4f v2, float epsilon) {
     return epsilon_not_equal(v1.x, v2.x, epsilon) ||
            epsilon_not_equal(v1.y, v2.y, epsilon) || 
            epsilon_not_equal(v1.z, v2.z, epsilon) ||

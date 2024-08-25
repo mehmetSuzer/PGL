@@ -83,22 +83,20 @@ inline vec3f mul_mat3f_vec3f(const mat3f m, const vec3f v) {
     };
 }
 
-static inline mat3f mul_mat3f_mat3f(const mat3f m1, const mat3f m2) {
-    mat3f product;
-
-    product.xx = m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx;
-    product.xy = m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy;
-    product.xz = m1.xx * m2.xz + m1.xy * m2.yz + m1.xz * m2.zz;
-
-    product.yx = m1.yx * m2.xx + m1.yy * m2.yx + m1.yz * m2.zx;
-    product.yy = m1.yx * m2.xy + m1.yy * m2.yy + m1.yz * m2.zy;
-    product.yz = m1.yx * m2.xz + m1.yy * m2.yz + m1.yz * m2.zz;
-
-    product.zx = m1.zx * m2.xx + m1.zy * m2.yx + m1.zz * m2.zx;
-    product.zy = m1.zx * m2.xy + m1.zy * m2.yy + m1.zz * m2.zy;
-    product.zz = m1.zx * m2.xz + m1.zy * m2.yz + m1.zz * m2.zz;
-
-    return product;
+inline mat3f mul_mat3f_mat3f(const mat3f m1, const mat3f m2) {
+    return (mat3f) {
+        m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx,
+        m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy,
+        m1.xx * m2.xz + m1.xy * m2.yz + m1.xz * m2.zz,
+        
+        m1.yx * m2.xx + m1.yy * m2.yx + m1.yz * m2.zx,
+        m1.yx * m2.xy + m1.yy * m2.yy + m1.yz * m2.zy,
+        m1.yx * m2.xz + m1.yy * m2.yz + m1.yz * m2.zz,
+        
+        m1.zx * m2.xx + m1.zy * m2.yx + m1.zz * m2.zx,
+        m1.zx * m2.xy + m1.zy * m2.yy + m1.zz * m2.zy,
+        m1.zx * m2.xz + m1.zy * m2.yz + m1.zz * m2.zz,
+    };
 }
 
 inline mat3f tr_mat3f(const mat3f m) {
@@ -109,32 +107,31 @@ inline mat3f tr_mat3f(const mat3f m) {
     };
 }
 
-static inline float det_mat3f(const mat3f m) {
+inline float det_mat3f(const mat3f m) {
     return + m.xx * (m.yy * m.zz - m.yz * m.zy)
            - m.xy * (m.yx * m.zz - m.yz * m.zx)
            + m.xz * (m.yx * m.zy - m.yy * m.zx);
 }
 
-static inline mat3f inv_mat3f(const mat3f m) {
-    mat3f inverse;
+inline mat3f inv_mat3f(const mat3f m) {
     const float one_over_determinant = 1.0f / det_mat3f(m);
 
-    inverse.xx = (m.yy * m.zz - m.yz * m.zy) * one_over_determinant;
-    inverse.xy = (m.xz * m.zy - m.xy * m.zz) * one_over_determinant;
-    inverse.xz = (m.xy * m.yz - m.xz * m.yy) * one_over_determinant;
-    
-    inverse.yx = (m.yz * m.zx - m.yx * m.zz) * one_over_determinant;
-    inverse.yy = (m.xx * m.zz - m.xz * m.zx) * one_over_determinant;
-    inverse.yz = (m.xz * m.yx - m.xx * m.yz) * one_over_determinant;
-    
-    inverse.zx = (m.yx * m.zy - m.yy * m.zx) * one_over_determinant;
-    inverse.zy = (m.xy * m.zx - m.xx * m.zy) * one_over_determinant;
-    inverse.zz = (m.xx * m.yy - m.xy * m.yx) * one_over_determinant;
-
-    return inverse;
+    return (mat3f) {
+        (m.yy * m.zz - m.yz * m.zy) * one_over_determinant,
+        (m.xz * m.zy - m.xy * m.zz) * one_over_determinant,
+        (m.xy * m.yz - m.xz * m.yy) * one_over_determinant,
+        
+        (m.yz * m.zx - m.yx * m.zz) * one_over_determinant,
+        (m.xx * m.zz - m.xz * m.zx) * one_over_determinant,
+        (m.xz * m.yx - m.xx * m.yz) * one_over_determinant,
+        
+        (m.yx * m.zy - m.yy * m.zx) * one_over_determinant,
+        (m.xy * m.zx - m.xx * m.zy) * one_over_determinant,
+        (m.xx * m.yy - m.xy * m.yx) * one_over_determinant,
+    };
 }
 
-static inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
+inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
     const float factor0 = m.yy * m.zz - m.yz * m.zy;
     const float factor1 = m.yx * m.zz - m.yz * m.zx;
     const float factor2 = m.yx * m.zy - m.yy * m.zx;

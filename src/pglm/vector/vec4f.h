@@ -69,16 +69,16 @@ inline float dot_vec4f(const vec4f v1, const vec4f v2) {
     return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z + v1.w*v2.w;
 }
 
-static inline float mag2_vec4f(const vec4f v) {
+inline float mag2_vec4f(const vec4f v) {
     return dot_vec4f(v, v);
 }
 
-static inline float mag_vec4f(const vec4f v) {
+inline float mag_vec4f(const vec4f v) {
     const float mag2 = mag2_vec4f(v);
     return sqrtf(mag2);
 }
 
-static inline vec4f normalize_vec4f(const vec4f v) {
+inline vec4f normalize_vec4f(const vec4f v) {
     const float inverse_mag = 1.0f / sqrtf(mag2_vec4f(v));
     return scale_vec4f(v, inverse_mag);
 }

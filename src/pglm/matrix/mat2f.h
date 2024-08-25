@@ -91,7 +91,7 @@ inline float det_mat2f(const mat2f m) {
     return m.xx * m.yy - m.xy * m.yx;
 }
 
-static inline mat2f inv_mat2f(const mat2f m) {
+inline mat2f inv_mat2f(const mat2f m) {
     const float one_over_determinant = 1.0f / det_mat2f(m);
 
     return (mat2f) {
@@ -100,7 +100,7 @@ static inline mat2f inv_mat2f(const mat2f m) {
     };
 }
 
-static inline vec2f solve_cramers_mat2f(const mat2f m, const vec2f v) {
+inline vec2f solve_cramers_mat2f(const mat2f m, const vec2f v) {
     const float one_over_determinant = 1.0f / det_mat2f(m);
     const float detx = m.yy * v.x - m.xy * v.y;
     const float dety = m.xx * v.y - m.yx * v.x;

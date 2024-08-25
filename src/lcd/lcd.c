@@ -36,7 +36,6 @@ static void lcd_write_16bit_data(uint16_t data) {
     gpio_put(LCD_CS_PIN, HIGH);
 }
 
-// Initializes the LCD
 void init_lcd() {
     lcd_reset();
     
@@ -117,7 +116,6 @@ void init_lcd() {
     lcd_command(0x29);          //Display On
 }
 
-// Sets a window for the LCD
 void lcd_set_window(uint32_t x_start, uint32_t x_end, uint32_t y_start, uint32_t y_end) {
     //set the X coordinates
     lcd_command(0x2A);
@@ -136,7 +134,6 @@ void lcd_set_window(uint32_t x_start, uint32_t x_end, uint32_t y_start, uint32_t
     lcd_command(0X2C);
 }
 
-// Clears the LCD
 void lcd_clear(color_t color) {
     const uint16_t swapped = (color << 8) | ((color & 0xFF00) >> 8);
     color_t image[LCD_WIDTH];
@@ -153,7 +150,6 @@ void lcd_clear(color_t color) {
     gpio_put(LCD_CS_PIN, HIGH);
 }
 
-// Displays the image on the LCD
 void lcd_display(color_t* screen) {
     for (uint32_t i = 0; i < (LCD_HEIGHT*LCD_WIDTH); i++) {
         color_t color = screen[i];

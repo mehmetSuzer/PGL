@@ -55,16 +55,16 @@ inline float dot_vec2f(const vec2f v1, const vec2f v2) {
     return v1.x*v2.x + v1.y*v2.y;
 }
 
-static inline float mag2_vec2f(const vec2f v) {
+inline float mag2_vec2f(const vec2f v) {
     return dot_vec2f(v, v);
 }
 
-static inline float mag_vec2f(const vec2f v) {
+inline float mag_vec2f(const vec2f v) {
     const float mag2 = mag2_vec2f(v);
     return sqrtf(mag2);
 }
 
-static inline vec2f normalize_vec2f(const vec2f v) {
+inline vec2f normalize_vec2f(const vec2f v) {
     const float inverse_mag = 1.0f / sqrtf(mag2_vec2f(v));
     return scale_vec2f(v, inverse_mag);
 }

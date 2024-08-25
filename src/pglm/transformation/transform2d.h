@@ -21,7 +21,7 @@ inline mat3f scale2D(const vec2f v) {
     };
 }
 
-static inline mat3f rotate2D(float radian) {
+inline mat3f rotate2D(float radian) {
     const float s = sinf(radian);
     const float c = cosf(radian);
     return (mat3f) {

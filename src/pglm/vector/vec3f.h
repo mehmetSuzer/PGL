@@ -62,16 +62,16 @@ inline float dot_vec3f(const vec3f v1, const vec3f v2) {
     return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
 }
 
-static inline float mag2_vec3f(const vec3f v) {
+inline float mag2_vec3f(const vec3f v) {
     return dot_vec3f(v, v);
 }
 
-static inline float mag_vec3f(const vec3f v) {
+inline float mag_vec3f(const vec3f v) {
     const float mag2 = mag2_vec3f(v);
     return sqrtf(mag2);
 }
 
-static inline vec3f normalize_vec3f(const vec3f v) {
+inline vec3f normalize_vec3f(const vec3f v) {
     const float inverse_mag = 1.0f / sqrtf(mag2_vec3f(v));
     return scale_vec3f(v, inverse_mag);
 }
@@ -89,7 +89,7 @@ inline vec3f reflect_vec3f(const vec3f v, const vec3f n) {
 }
 
 // Returns the bisector of two unit vectors
-static inline vec3f bisector_vec3f(const vec3f u1, const vec3f u2) {
+inline vec3f bisector_vec3f(const vec3f u1, const vec3f u2) {
     return normalize_vec3f(add_vec3f(u1, u2));
 }
 

@@ -94,29 +94,27 @@ inline vec4f mul_mat4f_vec4f(const mat4f m, const vec4f v) {
 }
 
 static inline mat4f mul_mat4f_mat4f(const mat4f m1, const mat4f m2) {
-    mat4f product;
-
-    product.xx = m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx + m1.xw * m2.wx;
-    product.xy = m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy + m1.xw * m2.wy;
-    product.xz = m1.xx * m2.xz + m1.xy * m2.yz + m1.xz * m2.zz + m1.xw * m2.wz;
-    product.xw = m1.xx * m2.xw + m1.xy * m2.yw + m1.xz * m2.zw + m1.xw * m2.ww;
-
-    product.yx = m1.yx * m2.xx + m1.yy * m2.yx + m1.yz * m2.zx + m1.yw * m2.wx;
-    product.yy = m1.yx * m2.xy + m1.yy * m2.yy + m1.yz * m2.zy + m1.yw * m2.wy;
-    product.yz = m1.yx * m2.xz + m1.yy * m2.yz + m1.yz * m2.zz + m1.yw * m2.wz;
-    product.yw = m1.yx * m2.xw + m1.yy * m2.yw + m1.yz * m2.zw + m1.yw * m2.ww;
-
-    product.zx = m1.zx * m2.xx + m1.zy * m2.yx + m1.zz * m2.zx + m1.zw * m2.wx;
-    product.zy = m1.zx * m2.xy + m1.zy * m2.yy + m1.zz * m2.zy + m1.zw * m2.wy;
-    product.zz = m1.zx * m2.xz + m1.zy * m2.yz + m1.zz * m2.zz + m1.zw * m2.wz;
-    product.zw = m1.zx * m2.xw + m1.zy * m2.yw + m1.zz * m2.zw + m1.zw * m2.ww;
-
-    product.wx = m1.wx * m2.xx + m1.wy * m2.yx + m1.wz * m2.zx + m1.ww * m2.wx;
-    product.wy = m1.wx * m2.xy + m1.wy * m2.yy + m1.wz * m2.zy + m1.ww * m2.wy;
-    product.wz = m1.wx * m2.xz + m1.wy * m2.yz + m1.wz * m2.zz + m1.ww * m2.wz;
-    product.ww = m1.wx * m2.xw + m1.wy * m2.yw + m1.wz * m2.zw + m1.ww * m2.ww;
-
-    return product;
+    return (mat4f) {
+        m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx + m1.xw * m2.wx,
+        m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy + m1.xw * m2.wy,
+        m1.xx * m2.xz + m1.xy * m2.yz + m1.xz * m2.zz + m1.xw * m2.wz,
+        m1.xx * m2.xw + m1.xy * m2.yw + m1.xz * m2.zw + m1.xw * m2.ww,
+        
+        m1.yx * m2.xx + m1.yy * m2.yx + m1.yz * m2.zx + m1.yw * m2.wx,
+        m1.yx * m2.xy + m1.yy * m2.yy + m1.yz * m2.zy + m1.yw * m2.wy,
+        m1.yx * m2.xz + m1.yy * m2.yz + m1.yz * m2.zz + m1.yw * m2.wz,
+        m1.yx * m2.xw + m1.yy * m2.yw + m1.yz * m2.zw + m1.yw * m2.ww,
+        
+        m1.zx * m2.xx + m1.zy * m2.yx + m1.zz * m2.zx + m1.zw * m2.wx,
+        m1.zx * m2.xy + m1.zy * m2.yy + m1.zz * m2.zy + m1.zw * m2.wy,
+        m1.zx * m2.xz + m1.zy * m2.yz + m1.zz * m2.zz + m1.zw * m2.wz,
+        m1.zx * m2.xw + m1.zy * m2.yw + m1.zz * m2.zw + m1.zw * m2.ww,
+        
+        m1.wx * m2.xx + m1.wy * m2.yx + m1.wz * m2.zx + m1.ww * m2.wx,
+        m1.wx * m2.xy + m1.wy * m2.yy + m1.wz * m2.zy + m1.ww * m2.wy,
+        m1.wx * m2.xz + m1.wy * m2.yz + m1.wz * m2.zz + m1.ww * m2.wz,
+        m1.wx * m2.xw + m1.wy * m2.yw + m1.wz * m2.zw + m1.ww * m2.ww,
+    };
 }
 
 inline mat4f tr_mat4f(const mat4f m) {
@@ -128,7 +126,7 @@ inline mat4f tr_mat4f(const mat4f m) {
     };
 }
 
-static inline float det_mat4f(const mat4f m) {
+inline float det_mat4f(const mat4f m) {
     const float factor0 = m.zz * m.ww - m.wz * m.zw;
 	const float factor1 = m.zy * m.ww - m.wy * m.zw;
 	const float factor2 = m.zy * m.wz - m.wy * m.zz;
@@ -145,7 +143,7 @@ static inline float det_mat4f(const mat4f m) {
 	       + m.xz * coef2 - m.xw * coef3;
 }
 
-static inline mat4f inv_mat4f(const mat4f m) {
+inline mat4f inv_mat4f(const mat4f m) {
     const float factor0 = m.zz * m.ww - m.wz * m.zw;
     const float factor1 = m.zy * m.ww - m.wy * m.zw;
     const float factor2 = m.zy * m.wz - m.wy * m.zz;
@@ -184,7 +182,7 @@ static inline mat4f inv_mat4f(const mat4f m) {
     return scale_mat4f(adjugate, one_over_determinant);
 }
 
-static inline vec4f solve_cramers_mat4f(const mat4f m, const vec4f v) {
+inline vec4f solve_cramers_mat4f(const mat4f m, const vec4f v) {
     // IMPLEMENT
 }
 

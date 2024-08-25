@@ -18,6 +18,7 @@ typedef struct {
 } Camera;
 extern Camera camera;
 
+// forward and up must be unit perpendicular vectors
 void init_camera(const vec3f position, const vec3f forward, const vec3f up, float near, float far, float fov);
 
 #endif // __CAMERA_H__

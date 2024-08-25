@@ -11,7 +11,7 @@ typedef struct {
     float linear;
 } PointLight;
 
-static inline float point_light_attenuation(const PointLight light, const vec3f point) {
+inline float point_light_attenuation(const PointLight light, const vec3f point) {
     const float distance = mag_vec3f(sub_vec3f(light.position, point));
     const float attenuation = 1.0f / ((light.quadratic * distance + light.linear) * distance + 1.0f);
     return attenuation;

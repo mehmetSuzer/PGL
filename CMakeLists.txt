@@ -17,15 +17,13 @@ project(pico-rast C CXX ASM)
 
 pico_sdk_init()
 
+add_subdirectory(src/device)
 add_subdirectory(src/pglm)
 add_subdirectory(src/light_source)
 add_subdirectory(src/camera)
 add_subdirectory(src/rasterizer)
 add_subdirectory(src/vertex)
 add_subdirectory(src/mesh)
-
-add_subdirectory(src/config)
-add_subdirectory(src/lcd)
 
 add_executable(${PROJECT_NAME} src/main.c)
 
@@ -37,15 +35,13 @@ pico_enable_stdio_uart(${PROJECT_NAME} 1)
 pico_add_extra_outputs(${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME}
+    device
     pglm
     light_source
     camera
     rasterizer
     vertex
     mesh
-    
-    config
-    lcd
 
     pico_stdlib
     pico_multicore

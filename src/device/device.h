@@ -1,6 +1,6 @@
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#ifndef __DEVICE_H__
+#define __DEVICE_H__
 
 #include "pico/stdlib.h"
 #include "hardware/clocks.h"
@@ -44,7 +44,13 @@
 #define KEY_RIGHT      20u
 #define KEY_CTRL        3u
 
-void init_device();
+#define LCD_HEIGHT    240u
+#define LCD_WIDTH     240u
+
+#define ASPECT_RATIO  ((float)LCD_WIDTH / (float)LCD_HEIGHT)
+
+void device_init();
+void lcd_display(uint16_t* image);
 void set_button_irq_callback(gpio_irq_callback_t callback, uint32_t event_mask, bool enabled);
 
-#endif // __CONFIG_H__
+#endif // __DEVICE_H__

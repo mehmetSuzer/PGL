@@ -2,8 +2,8 @@
 #ifndef __RASTERIZER_H__
 #define __RASTERIZER_H__
 
+#include "device.h"
 #include "pglm.h"
-#include "lcd.h"
 
 extern uint16_t screen[LCD_HEIGHT][LCD_WIDTH];
 

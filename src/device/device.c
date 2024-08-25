@@ -1,7 +1,6 @@
 
-#include "lcd.h"
+#include "device.h"
 
-// Resets the LCD
 static void lcd_reset() {
     gpio_put(LCD_RST_PIN, HIGH);
     sleep_ms(100);
@@ -11,7 +10,6 @@ static void lcd_reset() {
     sleep_ms(100);
 }
 
-// Executes a command in the LCD
 static void lcd_command(uint8_t reg) {
     gpio_put(LCD_DC_PIN, LOW);
     gpio_put(LCD_CS_PIN, LOW);
@@ -19,7 +17,6 @@ static void lcd_command(uint8_t reg) {
     gpio_put(LCD_CS_PIN, HIGH);
 }
 
-// Writes 8-bit data to the LCD
 static void lcd_write_8bit_data(uint8_t data) {
     gpio_put(LCD_DC_PIN, HIGH);
     gpio_put(LCD_CS_PIN, LOW);
@@ -27,16 +24,7 @@ static void lcd_write_8bit_data(uint8_t data) {
     gpio_put(LCD_CS_PIN, HIGH);
 }
 
-// Writes 16-bit data to the LCD
-static void lcd_write_16bit_data(uint16_t data) {
-    gpio_put(LCD_DC_PIN, HIGH);
-    gpio_put(LCD_CS_PIN, LOW);
-    uint8_t data_arr[2] = {(data >> 8) & 0xFF, data & 0xFF};
-    spi_write_blocking(SPI_PORT, data_arr, 2);
-    gpio_put(LCD_CS_PIN, HIGH);
-}
-
-void init_lcd() {
+static void lcd_init() {
     lcd_reset();
     
     lcd_command(0x36);
@@ -116,7 +104,7 @@ void init_lcd() {
     lcd_command(0x29);          //Display On
 }
 
-void lcd_set_window(uint32_t x_start, uint32_t x_end, uint32_t y_start, uint32_t y_end) {
+static void lcd_set_window(uint32_t x_start, uint32_t x_end, uint32_t y_start, uint32_t y_end) {
     //set the X coordinates
     lcd_command(0x2A);
     lcd_write_8bit_data(0x00);
@@ -134,20 +122,44 @@ void lcd_set_window(uint32_t x_start, uint32_t x_end, uint32_t y_start, uint32_t
     lcd_command(0X2C);
 }
 
-void lcd_clear(uint16_t color) {
-    const uint16_t swapped = (color << 8) | ((color & 0xFF00) >> 8);
-    uint16_t image[LCD_WIDTH];
-    for (uint32_t i = 0; i < LCD_WIDTH; i++) {
-        image[i] = swapped;
-    }
-    
-    lcd_set_window(0, LCD_WIDTH, 0, LCD_HEIGHT);
-    gpio_put(LCD_DC_PIN, HIGH);
-    gpio_put(LCD_CS_PIN, LOW);
-    for (uint32_t i = 0; i < LCD_HEIGHT; i++) {
-        spi_write_blocking(SPI_PORT, (uint8_t*)image, LCD_WIDTH << 1);
-    }
+static void gpio_set(uint pin, bool mode) {
+    gpio_init(pin);
+    gpio_set_dir(pin, mode);
+}
+
+static void lcd_set_pins() {
+    gpio_set(LCD_RST_PIN, GPIO_OUT);
+    gpio_set(LCD_DC_PIN, GPIO_OUT);
+    gpio_set(LCD_CS_PIN, GPIO_OUT);
+    gpio_set(LCD_BL_PIN, GPIO_OUT);
+    gpio_set(LCD_CS_PIN, GPIO_OUT);
+    gpio_set(LCD_BL_PIN, GPIO_OUT);
+
     gpio_put(LCD_CS_PIN, HIGH);
+    gpio_put(LCD_DC_PIN, LOW);
+    gpio_put(LCD_BL_PIN, HIGH);
+}
+
+static void buttons_init() {
+    gpio_set(KEY_A, GPIO_IN);
+    gpio_pull_up(KEY_A);
+    gpio_set(KEY_B, GPIO_IN);
+    gpio_pull_up(KEY_B);
+    gpio_set(KEY_X, GPIO_IN);
+    gpio_pull_up(KEY_X);
+    gpio_set(KEY_Y, GPIO_IN);
+    gpio_pull_up(KEY_Y);
+
+    gpio_set(KEY_FORWARD, GPIO_IN);
+    gpio_pull_up(KEY_FORWARD);
+    gpio_set(KEY_BACKWARD, GPIO_IN);
+    gpio_pull_up(KEY_BACKWARD);
+    gpio_set(KEY_LEFT, GPIO_IN);
+    gpio_pull_up(KEY_LEFT);
+    gpio_set(KEY_RIGHT, GPIO_IN);
+    gpio_pull_up(KEY_RIGHT);
+    gpio_set(KEY_CTRL, GPIO_IN);
+    gpio_pull_up(KEY_CTRL);
 }
 
 void lcd_display(uint16_t* screen) {
@@ -160,7 +172,60 @@ void lcd_display(uint16_t* screen) {
     gpio_put(LCD_DC_PIN, HIGH);
     gpio_put(LCD_CS_PIN, LOW);
     spi_write_blocking(SPI_PORT, (uint8_t*)screen, (LCD_HEIGHT*LCD_WIDTH) << 1);
-    // spi_write16_blocking(SPI_PORT, screen, LCD_HEIGHT*LCD_WIDTH);
     gpio_put(LCD_CS_PIN, HIGH);
     lcd_command(0x29);
+}
+
+void device_init() {
+    #ifdef CLOCK_FREQUENCY_KHZ
+        vreg_set_voltage(VREG_VOLTAGE_MAX);
+    #endif
+
+    stdio_init_all();  
+
+    #ifdef CLOCK_FREQUENCY_KHZ
+        set_sys_clock_khz(CLOCK_FREQUENCY_KHZ, true);
+        setup_default_uart();
+
+        // Wait and do it again to clear up some UART issues
+        sleep_ms(100);
+        set_sys_clock_khz(CLOCK_FREQUENCY_KHZ, true);
+        setup_default_uart();
+
+        // Get the processor sys_clk frequency in Hz
+        uint32_t freq = clock_get_hz(clk_sys);
+
+        // clk_peri does not have a divider, so input and output frequencies will be the same
+        clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, freq, freq);
+    #endif 
+
+    lcd_set_pins();
+    buttons_init();
+
+    spi_init(SPI_PORT, SPI_BAUDRATE_HZ);
+    // (SPI_CPOL_1, SPI_CPHA_1) (0.5 clock cycles is wasted) is faster than (SPI_CPOL_0, SPI_CPHA_0) (1.5 clock cycles is wasted).
+    spi_set_format(SPI_PORT, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+    gpio_set_function(LCD_CLK_PIN, GPIO_FUNC_SPI);
+    gpio_set_function(LCD_MOSI_PIN, GPIO_FUNC_SPI);
+
+    gpio_set_function(LCD_BL_PIN, GPIO_FUNC_PWM);
+    uint slice_num = pwm_gpio_to_slice_num(LCD_BL_PIN);
+    pwm_set_wrap(slice_num, 100);
+    pwm_set_chan_level(slice_num, PWM_CHAN_B, 60);
+    pwm_set_clkdiv(slice_num, 50.0f);
+    pwm_set_enabled(slice_num, true);
+
+    lcd_init();
+}
+
+void set_button_irq_callback(gpio_irq_callback_t callback, uint32_t event_mask, bool enabled) {
+    gpio_set_irq_enabled_with_callback(KEY_FORWARD,  event_mask, enabled, callback);
+    gpio_set_irq_enabled(KEY_BACKWARD, event_mask, enabled);
+    gpio_set_irq_enabled(KEY_LEFT,     event_mask, enabled);
+    gpio_set_irq_enabled(KEY_RIGHT,    event_mask, enabled);
+    gpio_set_irq_enabled(KEY_CTRL,     event_mask, enabled);
+    gpio_set_irq_enabled(KEY_A,        event_mask, enabled);
+    gpio_set_irq_enabled(KEY_B,        event_mask, enabled);
+    gpio_set_irq_enabled(KEY_X,        event_mask, enabled);
+    gpio_set_irq_enabled(KEY_Y,        event_mask, enabled);
 }

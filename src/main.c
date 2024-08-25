@@ -3,11 +3,8 @@
 #include <stdio.h>
 #include <pico/multicore.h>
 
-#include "light_source.h"
 #include "camera.h"
 #include "mesh.h"
-
-#define CORE1_RENDER_COMPLETE 1u
 
 Vertex cube_vertices[] = {
  	//     positions      /                  normals                     /      colors      //
@@ -74,15 +71,8 @@ void render(uint32_t core_number) {
     }
 }
 
-void core1_main() {
-    render(1);
-    while (!multicore_fifo_wready());
-    multicore_fifo_push_blocking(CORE1_RENDER_COMPLETE);
-}
-
 int main() {
-    init_device();
-    init_lcd();
+    device_init();
     set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL|GPIO_IRQ_EDGE_RISE, true);
 
     init_camera(

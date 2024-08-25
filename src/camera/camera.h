@@ -2,8 +2,8 @@
 #ifndef __CAMERA_H__
 #define __CAMERA_H__
 
+#include "device.h"
 #include "pglm.h"
-#include "lcd.h"
 
 typedef enum {
     NEGATIVE = -1,

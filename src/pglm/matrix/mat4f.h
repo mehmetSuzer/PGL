@@ -3,6 +3,7 @@
 #define __MAT4F_H__
 
 #include "../vector/vec4f.h"
+#include "../matrix/mat3f.h"
 
 // Row-based 4x4 matrix typedef.
 // Element layout is as follows:
@@ -184,6 +185,15 @@ inline mat4f inv_mat4f(const mat4f m) {
 
 inline vec4f solve_cramers_mat4f(const mat4f m, const vec4f v) {
     // IMPLEMENT
+}
+
+inline mat4f cast_mat3f_to_mat4f(const mat3f m) {
+    return (mat4f) {
+        m.xx, m.xy, m.xz, 0.0f,
+        m.yx, m.yy, m.yz, 0.0f,
+        m.zx, m.zy, m.zz, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+    };
 }
 
 inline bool epsilon_equal_mat4f(const mat4f m1, const mat4f m2, float epsilon) {

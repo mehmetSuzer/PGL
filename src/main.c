@@ -75,7 +75,7 @@ int main() {
     device_init();
     set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL|GPIO_IRQ_EDGE_RISE, true);
 
-    init_camera(
+    camera_init(
         (vec3f) {0.0f,  0.0f,  0.0f},   // position
         (vec3f) {0.0f,  0.0f, -1.0f},   // forward
         (vec3f) {0.0f,  1.0f,  0.0f},   // up
@@ -94,7 +94,7 @@ int main() {
         float dt = (current_time - last_time) / 1E6f;
         last_time = current_time;
 
-        update_camera(dt);
+        camera_update(dt);
 
         clear_screen(0x0000);
         render(0);

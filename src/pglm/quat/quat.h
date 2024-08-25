@@ -2,7 +2,8 @@
 #ifndef __QUAT_H__
 #define __QUAT_H__
 
-#include "../vector/vec3f.h"
+#include "../matrix/mat3f.h"
+#include "../matrix/mat4f.h"
 
 typedef struct {
     vec3f v;
@@ -134,6 +135,28 @@ inline vec3f rotate_vec3f(const quat q, const vec3f v) {
     const vec3f wuv = scale_vec3f(uv, q.w);
 
     return add_vec3f(v, scale_vec3f(add_vec3f(wuv, uuv), 2.0f));
+}
+
+inline mat3f cast_quat_to_mat3f(const quat q) {
+    const float xx = q.v.x * q.v.x;
+    const float yy = q.v.y * q.v.y;
+    const float zz = q.v.z * q.v.z;
+    const float xy = q.v.x * q.v.y;
+    const float xz = q.v.x * q.v.z;
+    const float yz = q.v.y * q.v.z;
+    const float wx = q.w   * q.v.x;
+    const float wy = q.w   * q.v.y;
+    const float wz = q.w   * q.v.z;
+
+    return (mat3f) {
+        1.0f - 2.0f * (yy + zz),        2.0f * (xy - wz),        2.0f * (xz + wy),
+               2.0f * (xy + wz), 1.0f - 2.0f * (xx + zz),        2.0f * (yz - wx),
+               2.0f * (xz - wy),        2.0f * (yz + wx), 1.0f - 2.0f * (xx + yy),
+    };
+}
+
+inline mat4f cast_quat_to_mat4f(const quat q) {
+    return cast_mat3f_to_mat4f(cast_quat_to_mat3f(q));
 }
 
 inline bool epsilon_equal_quat(const quat q1, const quat q2, float epsilon) {

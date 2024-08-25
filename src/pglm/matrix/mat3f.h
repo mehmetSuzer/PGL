@@ -3,6 +3,7 @@
 #define __MAT3F_H__
 
 #include "../vector/vec3f.h"
+#include "../matrix/mat2f.h"
 
 // Row-based 3x3 matrix typedef.
 // Element layout is as follows:
@@ -148,6 +149,14 @@ inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
         detx * one_over_determinant, // x
         dety * one_over_determinant, // y
         detz * one_over_determinant, // z
+    };
+}
+
+inline mat3f cast_mat2f_to_mat3f(const mat2f m) {
+    return (mat3f) {
+        m.xx, m.xy, 0.0f,
+        m.yx, m.yy, 0.0f,
+        0.0f, 0.0f, 1.0f,
     };
 }
 

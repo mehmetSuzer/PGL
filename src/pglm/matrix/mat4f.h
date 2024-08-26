@@ -18,6 +18,12 @@ typedef struct {
     float wx, wy, wz, ww; // row3
 } mat4f;
 
+inline void swap_mat4f(mat4f* m1, mat4f* m2) {
+    mat4f temp = *m1;
+    *m1 = *m2;
+    *m2 = temp;
+}
+
 inline mat4f diagonal_mat4f(float s) {
     return (mat4f) {
            s, 0.0f, 0.0f, 0.0f,

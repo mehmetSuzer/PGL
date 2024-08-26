@@ -11,6 +11,12 @@ typedef struct {
     float w;
 } vec4f;
 
+inline void swap_vec4f(vec4f* v1, vec4f* v2) {
+    vec4f temp = *v1;
+    *v1 = *v2;
+    *v2 = temp;
+}
+
 inline vec4f neg_vec4f(const vec4f v) {
     return (vec4f) {
         -v.x,

@@ -13,6 +13,12 @@ typedef struct {
     float yx, yy; // row1
 } mat2f;
 
+inline void swap_mat2f(mat2f* m1, mat2f* m2) {
+    mat2f temp = *m1;
+    *m1 = *m2;
+    *m2 = temp;
+}
+
 inline mat2f diagonal_mat2f(float s) {
     return (mat2f) {
            s, 0.0f,

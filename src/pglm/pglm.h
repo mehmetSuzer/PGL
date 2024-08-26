@@ -17,6 +17,7 @@
 
 #include "quat/quat.h"
 
+#include "transformation/homogeneous.h"
 #include "transformation/transform2d.h"
 #include "transformation/transform3d.h"
 #include "transformation/view.h"

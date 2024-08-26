@@ -10,6 +10,12 @@ typedef struct {
     float w;
 } quat;
 
+inline void swap_quat(quat* q1, quat* q2) {
+    quat temp = *q1;
+    *q1 = *q2;
+    *q2 = temp;
+}
+
 inline quat quat_from_euler_angles(const vec3f angles) {
     const vec3f half_angles = scale_vec3f(angles, 0.5f);
     const vec3f c = {

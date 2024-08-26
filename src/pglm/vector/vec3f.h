@@ -10,6 +10,12 @@ typedef struct {
     float z;
 } vec3f;
 
+inline void swap_vec3f(vec3f* v1, vec3f* v2) {
+    vec3f temp = *v1;
+    *v1 = *v2;
+    *v2 = temp;
+}
+
 inline vec3f neg_vec3f(const vec3f v) {
     return (vec3f) {
         -v.x,

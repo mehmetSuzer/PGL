@@ -2,8 +2,7 @@
 #ifndef __CAMERA_H__
 #define __CAMERA_H__
 
-#include "device.h"
-#include "pglm.h"
+#include "pgl.h"
 
 typedef enum {
     NEGATIVE = -1,
@@ -12,8 +11,6 @@ typedef enum {
 } Move;
 
 typedef struct {
-    mat4f projection;
-    mat4f view;
     vec3f position;
     vec3f forward;
     vec3f up;

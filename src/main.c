@@ -5,6 +5,7 @@
 
 #include "camera.h"
 #include "mesh.h"
+#include "pgl.h"
 
 Vertex cube_vertices[] = {
  	//     positions      /                  normals                     /      colors      //
@@ -65,16 +66,8 @@ void button_irq_callback(uint gpio, uint32_t event_mask) {
     }
 }
 
-void render(uint32_t core_number) {
-    if (core_number == 0) {
-        process_mesh(&cube);
-    }
-}
-
 int main() {
     device_init();
-    set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL|GPIO_IRQ_EDGE_RISE, true);
-
     camera_init(
         (vec3f) {0.0f,  0.0f,  0.0f},   // position
         (vec3f) {0.0f,  0.0f, -1.0f},   // forward
@@ -83,8 +76,14 @@ int main() {
         100.0f,                         // far
         M_PI/4.0f                       // fov
     );
+    
+    set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL|GPIO_IRQ_EDGE_RISE, true);
 
-    cube.model = mul_mat4f_mat4f(translate3D((vec3f) {0.0f, 0.2f, -5.0f}), rotate3D_y(M_PI_4*3));
+    pgl_viewport(0, 0, LCD_WIDTH, LCD_HEIGHT);
+    pgl_projection(camera.fov, camera.near, camera.far);
+    pgl_view(camera.position, camera.right, camera.up, camera.forward);
+
+    cube.model = mul_mat4f_mat4f(translate3D((vec3f) {0.0f, 0.2f, -5.0f}), rotate3D_y(M_PI_4));
 
     uint32_t last_time = time_us_32();
     uint32_t current_time;
@@ -96,9 +95,9 @@ int main() {
 
         camera_update(dt);
 
-        clear_screen(0x0000);
-        render(0);
-        lcd_display((uint16_t*)screen);
+        pgl_clear(0x0000);
+        pgl_draw(&cube);
+        pgl_display();
     }
 
     return 0;

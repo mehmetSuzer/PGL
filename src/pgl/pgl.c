@@ -1,6 +1,13 @@
 
-#include "mesh.h"
+#include "pgl.h"
 
+PGL pgl = {
+    .screen = {{0x0000}},
+    .mesh_type = PGL_TRIANGLE,
+    .render_type = PGL_WIRED,
+};
+
+// Delete when no longer needed
 static void printf_mat4f(const mat4f m) {
     printf("%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n\n", 
         m.xx, m.xy, m.xz, m.xw, 
@@ -9,9 +16,177 @@ static void printf_mat4f(const mat4f m) {
         m.wx, m.wy, m.wz, m.ww);
 }
 
-void process_mesh(const Mesh* mesh) {
-    const mat4f viewp = viewport(0, 0, LCD_WIDTH, LCD_HEIGHT, 0.0f, 1.0f);
-    const mat4f projection_view_model = mul_mat4f_mat4f(camera.projection, mul_mat4f_mat4f(camera.view, mesh->model));
+static void pgl_horizontal_line(int x0, int x1, int y, uint16_t color) {
+    for (int x = x0; x <= x1; x++) {
+        pgl.screen[y][x] = color;
+    }
+}
+
+static void pgl_vertical_line(int y0, int y1, int x, uint16_t color) {
+    for (int y = y0; y <= y1; y++) {
+        pgl.screen[y][x] = color;
+    }
+}
+
+// Draws a line where x0 < x1 and the slope is in [-1, 1]
+static void pgl_line_low(int x0, int y0, int x1, int y1, uint16_t color) {    
+    int dx = x1 - x0; // 120
+    int dy = y1 - y0; // 0
+    int yi = 1;
+
+    if (dy < 0) {
+        yi = -1;
+        dy = -dy;
+    }
+
+    int d = 2*dy - dx; // -120
+    int y = y0; // 180
+
+    for (int x = x0; x <= x1; x++) {
+        pgl.screen[y][x] = color;
+        if (d > 0) {
+            y += yi;
+            d += 2 * (dy - dx);
+        }
+        else {
+            d += 2*dy;
+        }
+    }
+}
+
+// Draws a line where x0 < x1 and the slope is in [-inf, -1] U [1, inf]
+static void pgl_line_high(int x0, int y0, int x1, int y1, uint16_t color) {
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    int xi = 1;
+
+    if (dx < 0) {
+        xi = -1;
+        dx = -dx;
+    }
+
+    int d = 2*dx - dy;
+    int x = x0;
+
+    for (int y = y0; y <= y1; y++) {
+        pgl.screen[y][x] = color;
+        if (d > 0) {
+            x += xi;
+            d += 2 * (dx - dy);
+        }
+        else {
+            d += 2*dx;
+        }
+    }
+}
+
+// Draws a line and handles all cases
+static void pgl_line(int x0, int y0, int x1, int y1, uint16_t color) {
+    if (abs(y1 - y0) < abs(x1 - x0)) {
+        if (x0 > x1) {
+            pgl_line_low(x1, y1, x0, y0, color);
+        }
+        else {
+            pgl_line_low(x0, y0, x1, y1, color);
+        }
+    }
+    else {
+        if (y0 > y1) {
+            pgl_line_high(x1, y1, x0, y0, color);
+        }
+        else {
+            pgl_line_high(x0, y0, x1, y1, color);
+        }
+    }
+}
+
+static void pgl_wired_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint16_t color) {
+    pgl_line(x0, y0, x1, y1, color);
+    pgl_line(x0, y0, x2, y2, color);
+    pgl_line(x1, y1, x2, y2, color);
+}
+
+static void pgl_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint16_t color) {
+    if (y1 < y0) {
+        const int tempx = x1;
+        const int tempy = y1;
+        x1 = x0;
+        y1 = y0;
+        x0 = tempx;
+        y0 = tempy;
+    }
+    if (y2 < y1) {
+        const int tempx = x2;
+        const int tempy = y2;
+        x2 = x1;
+        y2 = y1;
+        x1 = tempx;
+        y1 = tempy;
+    }
+    if (y1 < y0) {
+        const int tempx = x1;
+        const int tempy = y1;
+        x1 = x0;
+        y1 = y0;
+        x0 = tempx;
+        y0 = tempy;
+    }
+
+    // Check whether the neighbor triangles have gap between them. If there is a gap, uncomment.
+    // pgl_wire_triangle(x0, y0, x1, y1, x2, y2, color);
+
+    for (int y = y0; y <= y2; y++) {
+        int x_left;
+        int x_right;
+
+        if (y >= y1) {
+            const int dxl = (y2 != y1) ? (y - y1) * (x2 - x1) / (y2 - y1) : 0;
+            const int dxr = (y2 != y0) ? (y - y0) * (x2 - x0) / (y2 - y0) : 0;
+            x_left  = x1 + dxl;
+            x_right = x0 + dxr;
+        } 
+        else {
+            const int dxl = (y1 != y0) ? (y - y0) * (x1 - x0) / (y1 - y0) : 0;
+            const int dxr = (y2 != y0) ? (y - y0) * (x2 - x0) / (y2 - y0) : 0;
+            x_left  = x0 + dxl;
+            x_right = x0 + dxr;
+        }
+
+        if (x_left > x_right) {
+            const int temp = x_left;
+            x_left = x_right;
+            x_right = temp;
+        }
+
+        for (int x = x_left; x <= x_right; x++) {
+            pgl.screen[y][x] = color;
+        }
+    }
+}
+
+// ------------------------------------------------------------------------------------------------------------------- // 
+
+void pgl_view(const vec3f position, const vec3f right, const vec3f up, const vec3f forward) {
+    pgl.view = view(position, right, up, forward);
+}
+
+void pgl_projection(float fov, float near, float far) {
+    pgl.projection = perspective(fov, ASPECT_RATIO, near, far);
+}
+
+void pgl_viewport(int x, int y, uint32_t width, uint32_t height) {
+    pgl.viewport = viewport(0, 0, width, height, 0.0f, 1.0f);
+}
+
+void pgl_clear(uint16_t color) {
+    uint16_t* color_ptr = (uint16_t*)pgl.screen;
+    for (uint32_t i = 0; i < LCD_HEIGHT*LCD_WIDTH; i++) {
+        color_ptr[i] = color;
+    }
+}
+
+void pgl_draw(const Mesh* mesh) {
+    const mat4f projection_view_model = mul_mat4f_mat4f(pgl.projection, mul_mat4f_mat4f(pgl.view, mesh->model));
 
     // Broad Phase Clipping
 
@@ -128,18 +303,22 @@ void process_mesh(const Mesh* mesh) {
             c3.x, c3.y, c3.z, c3.w);
 
         // Screen coordinates
-        const vec4f sc0 = mul_mat4f_vec4f(viewp, c0);
-        const vec4f sc1 = mul_mat4f_vec4f(viewp, c1);
-        const vec4f sc2 = mul_mat4f_vec4f(viewp, c2);
+        const vec4f sc0 = mul_mat4f_vec4f(pgl.viewport, c0);
+        const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, c1);
+        const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, c2);
         
         // Rasterize
         const uint16_t color = vec3f_to_rgb565(v0->color);
-        plot_wired_triangle((int)sc0.x, (int)sc0.y, (int)sc1.x, (int)sc1.y, (int)sc2.x, (int)sc2.y, color);
+        pgl_wired_triangle((int)sc0.x, (int)sc0.y, (int)sc1.x, (int)sc1.y, (int)sc2.x, (int)sc2.y, color);
 
         if (in_number == 2) {
-            const vec4f sc3 = mul_mat4f_vec4f(viewp, c3);
+            const vec4f sc3 = mul_mat4f_vec4f(pgl.viewport, c3);
             const uint16_t color = vec3f_to_rgb565(v0->color);
-            plot_wired_triangle((int)sc0.x, (int)sc0.y, (int)sc2.x, (int)sc2.y, (int)sc3.x, (int)sc3.y, color);
+            pgl_wired_triangle((int)sc0.x, (int)sc0.y, (int)sc2.x, (int)sc2.y, (int)sc3.x, (int)sc3.y, color);
         }
     }
+}
+
+void pgl_display() {
+    lcd_display((uint16_t*)pgl.screen);
 }

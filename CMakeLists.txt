@@ -19,11 +19,9 @@ pico_sdk_init()
 
 add_subdirectory(src/device)
 add_subdirectory(src/pglm)
+add_subdirectory(src/pgl)
 add_subdirectory(src/light_source)
 add_subdirectory(src/camera)
-add_subdirectory(src/rasterizer)
-add_subdirectory(src/vertex)
-add_subdirectory(src/mesh)
 
 add_executable(${PROJECT_NAME} src/main.c)
 
@@ -37,11 +35,9 @@ pico_add_extra_outputs(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME}
     device
     pglm
+    pgl
     light_source
     camera
-    rasterizer
-    vertex
-    mesh
 
     pico_stdlib
     pico_multicore

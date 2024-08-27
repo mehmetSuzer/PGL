@@ -4,13 +4,10 @@
 Camera camera;
 
 void camera_init(const vec3f position, const vec3f forward, const vec3f up, float near, float far, float fov) {
-    const vec3f right = cross_vec3f(forward, up);
-    camera.projection = perspective(fov, ASPECT_RATIO, near, far);
-    camera.view = view(position, right, up, forward);
     camera.position = position;
     camera.forward = forward;
     camera.up = up;
-    camera.right = right;
+    camera.right = cross_vec3f(forward, up);
     camera.fov = fov;
     camera.near = near;
     camera.far = far;
@@ -34,5 +31,5 @@ void camera_update(float dt) {
     }
 
     camera.position = add_vec3f(camera.position, displacement);
-    camera.view = view(camera.position, camera.right, camera.up, camera.forward);
+    pgl_view(camera.position, camera.right, camera.up, camera.forward);
 }

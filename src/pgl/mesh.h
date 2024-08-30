@@ -8,21 +8,21 @@ typedef enum {
     TRIANGLE,
     TRIANGLE_FAN,
     TRIANGLE_STRIP,
-} MeshType;
+} mesh_type_t;
 
 typedef enum {
     WIRED,
     FILLED,
-} RenderType;
+} render_type_t;
 
 typedef struct {
     mat4f model;
-    const Vertex* vertices;
+    const vertex_t* vertices;
     const uint32_t* indices;
     uint32_t vertex_number;
     uint32_t index_number;
-    MeshType mesh_type;
-    RenderType render_type;
-} Mesh;
+    mesh_type_t mesh_type;
+    render_type_t render_type;
+} mesh_t;
 
 #endif // __MESH_H__

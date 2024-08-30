@@ -8,7 +8,7 @@ typedef enum {
     NEGATIVE = -1,
     NONE = 0,
     POSITIVE = 1,
-} Move;
+} move_t;
 
 typedef struct {
     vec3f position;
@@ -19,11 +19,11 @@ typedef struct {
     float near;
     float far;
     float speed;
-    Move forward_move;
-    Move right_move;
-    Move up_move;
-} Camera;
-extern Camera camera;
+    move_t forward_move;
+    move_t right_move;
+    move_t up_move;
+} camera_t;
+extern camera_t camera;
 
 // forward and up must be unit perpendicular vectors
 void camera_init(const vec3f position, const vec3f forward, const vec3f up, float near, float far, float fov);

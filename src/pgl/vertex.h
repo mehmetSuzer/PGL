@@ -8,6 +8,6 @@ typedef struct {
     vec3f position;
     vec3f normal;
     vec3f color;
-} Vertex;
+} vertex_t;
 
 #endif // __VERTEX_H__

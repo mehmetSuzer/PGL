@@ -1,7 +1,7 @@
 
 #include "camera.h"
 
-Camera camera;
+camera_t camera;
 
 void camera_init(const vec3f position, const vec3f forward, const vec3f up, float near, float far, float fov) {
     camera.position = position;

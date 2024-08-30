@@ -7,7 +7,7 @@
 #include "mesh.h"
 #include "pgl.h"
 
-const Vertex cube_vertices[] = {
+const vertex_t cube_vertices[] = {
  	//     positions      /                  normals                     /      colors      //
 	{{-0.5f, -0.5f, -0.5f}, {-1.0f/M_SQRT3, -1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
 	{{-0.5f,  0.5f, -0.5f}, {-1.0f/M_SQRT3,  1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
@@ -35,16 +35,16 @@ const uint32_t cube_indices[] = {
 	2, 6, 3,
 };
 
-Mesh cube = {
+mesh_t cube = {
     .vertices = cube_vertices,
     .indices = cube_indices,
-    .vertex_number = sizeof(cube_vertices) / sizeof(Vertex),
+    .vertex_number = sizeof(cube_vertices) / sizeof(vertex_t),
     .index_number = sizeof(cube_indices) / sizeof(uint32_t),
     .mesh_type = TRIANGLE,
     .render_type = WIRED,
 };
 
-const Vertex triangle_vertices[] = {
+const vertex_t triangle_vertices[] = {
     //          positions         /             normals         /      colors      //
 	{{-0.5f,          0.0f,  0.0f}, {-M_SQRT3/2.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
 	{{ 0.5f,          0.0f,  0.0f}, { M_SQRT3/2.0f,  0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
@@ -55,10 +55,10 @@ const uint32_t triangle_indices[] = {
     0, 1, 2
 };
 
-Mesh triangle = {
+mesh_t triangle = {
     .vertices = triangle_vertices,
     .indices = triangle_indices,
-    .vertex_number = sizeof(triangle_vertices) / sizeof(Vertex),
+    .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
     .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
     .mesh_type = TRIANGLE,
     .render_type = WIRED,

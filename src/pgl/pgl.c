@@ -4,13 +4,13 @@
 
 typedef struct {
     uint16_t screen[SCREEN_HEIGHT][SCREEN_HEIGHT];
-    TriangleQueue queue;
+    triangle_queue_t queue;
     mat4f view;
     mat4f projection;
     mat4f viewport;
-} PGL;
+} pgl_t;
 
-PGL pgl = {
+pgl_t pgl = {
     .screen = {{0x0000}},
 };
 
@@ -201,7 +201,7 @@ void pgl_clear(uint16_t color) {
 
 // ----------------------------------------------- DRAW ------------------------------------------------------------ // 
 
-void triangle_clip_plane_intersection(Triangle* t, const vec4f clip_plane_vector, vec4f* c10, vec4f* c20) {
+void triangle_clip_plane_intersection(triangle_t* t, const vec4f clip_plane_vector, vec4f* c10, vec4f* c20) {
     const float d0 = dot_vec4f(t->c0, clip_plane_vector); // TODO: clip plane vector can be sent with a pointer
     const float d1 = dot_vec4f(t->c1, clip_plane_vector);
     const float d2 = dot_vec4f(t->c2, clip_plane_vector);
@@ -213,20 +213,20 @@ void triangle_clip_plane_intersection(Triangle* t, const vec4f clip_plane_vector
     *c20 = add_vec4f(scale_vec4f(t->c0, 1.0f - b), scale_vec4f(t->c2, b));
 }
 
-void pgl_draw(const Mesh* mesh) {
+void pgl_draw(const mesh_t* mesh) {
     const mat4f projection_view_model = mul_mat4f_mat4f(pgl.projection, mul_mat4f_mat4f(pgl.view, mesh->model));
 
     // TODO: Broad Phase Clipping
 
-    Triangle subtriangles[16];
+    triangle_t subtriangles[16];
     int subtriangle_index;
     vec4f c10;
     vec4f c20;
 
     for (uint32_t i = 0; i < mesh->index_number; i += 3) {
-        const Vertex* v0 = &mesh->vertices[mesh->indices[i]];
-        const Vertex* v1 = &mesh->vertices[mesh->indices[i+1]];
-        const Vertex* v2 = &mesh->vertices[mesh->indices[i+2]];
+        const vertex_t* v0 = &mesh->vertices[mesh->indices[i]];
+        const vertex_t* v1 = &mesh->vertices[mesh->indices[i+1]];
+        const vertex_t* v2 = &mesh->vertices[mesh->indices[i+2]];
     
         // Homogeneous local space coordinates
         const vec4f p0 = to_homogeneous(v0->position);
@@ -234,7 +234,7 @@ void pgl_draw(const Mesh* mesh) {
         const vec4f p2 = to_homogeneous(v2->position);
 
         // Clip space coordinates
-        Triangle triangle = {
+        triangle_t triangle = {
             .c0 = mul_mat4f_vec4f(projection_view_model, p0),
             .c1 = mul_mat4f_vec4f(projection_view_model, p1),
             .c2 = mul_mat4f_vec4f(projection_view_model, p2),
@@ -246,7 +246,7 @@ void pgl_draw(const Mesh* mesh) {
 
         // Near Clip: Z + W > 0
         while (!pgl.queue.empty) {
-            Triangle t = *triangle_queue_pop(&pgl.queue);
+            triangle_t t = *triangle_queue_pop(&pgl.queue);
             const int in0 = t.c0.z > -t.c0.w; // TODO: can be written as dot(t.c0, clip_plane_vector)
             const int in1 = t.c1.z > -t.c1.w;
             const int in2 = t.c2.z > -t.c2.w;
@@ -262,8 +262,8 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, 1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -272,7 +272,7 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, 1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
 
@@ -283,7 +283,7 @@ void pgl_draw(const Mesh* mesh) {
 
         // Far Clip: Z - W < 0
         while (!pgl.queue.empty) {
-            Triangle t = *triangle_queue_pop(&pgl.queue);
+            triangle_t t = *triangle_queue_pop(&pgl.queue);
             const int in0 = t.c0.z < t.c0.w;
             const int in1 = t.c1.z < t.c1.w;
             const int in2 = t.c2.z < t.c2.w;
@@ -299,8 +299,8 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, -1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -309,7 +309,7 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, -1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
 
@@ -320,7 +320,7 @@ void pgl_draw(const Mesh* mesh) {
 
         // Left Clip: X + W > 0
         while (!pgl.queue.empty) {
-            Triangle t = *triangle_queue_pop(&pgl.queue);
+            triangle_t t = *triangle_queue_pop(&pgl.queue);
             const int in0 = t.c0.x > -t.c0.w;
             const int in1 = t.c1.x > -t.c1.w;
             const int in2 = t.c2.x > -t.c2.w;
@@ -336,8 +336,8 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, 1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -346,7 +346,7 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, 1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
 
@@ -357,7 +357,7 @@ void pgl_draw(const Mesh* mesh) {
 
         // Right Clip: X - W < 0
         while (!pgl.queue.empty) {
-            Triangle t = *triangle_queue_pop(&pgl.queue);
+            triangle_t t = *triangle_queue_pop(&pgl.queue);
             const int in0 = t.c0.x < t.c0.w;
             const int in1 = t.c1.x < t.c1.w;
             const int in2 = t.c2.x < t.c2.w;
@@ -373,8 +373,8 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, -1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -383,7 +383,7 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, -1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
 
@@ -394,7 +394,7 @@ void pgl_draw(const Mesh* mesh) {
 
         // Bottom Clip: Y + W > 0
         while (!pgl.queue.empty) {
-            Triangle t = *triangle_queue_pop(&pgl.queue);
+            triangle_t t = *triangle_queue_pop(&pgl.queue);
             const int in0 = t.c0.y > -t.c0.w;
             const int in1 = t.c1.y > -t.c1.w;
             const int in2 = t.c2.y > -t.c2.w;
@@ -410,8 +410,8 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, 1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -420,7 +420,7 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, 1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
 
@@ -431,7 +431,7 @@ void pgl_draw(const Mesh* mesh) {
 
         // Top Clip: Y - W < 0
         while (!pgl.queue.empty) {
-            Triangle t = *triangle_queue_pop(&pgl.queue);
+            triangle_t t = *triangle_queue_pop(&pgl.queue);
             const int in0 = t.c0.y < t.c0.w;
             const int in1 = t.c1.y < t.c1.w;
             const int in2 = t.c2.y < t.c2.w;
@@ -447,8 +447,8 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, -1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -457,12 +457,12 @@ void pgl_draw(const Mesh* mesh) {
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, -1.0f};
                 triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
 
         while (subtriangle_index >= 0) {
-            Triangle* subt = subtriangles + subtriangle_index;
+            triangle_t* subt = subtriangles + subtriangle_index;
             subtriangle_index--;
 
             // Screen coordinates

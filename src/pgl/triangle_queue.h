@@ -8,34 +8,34 @@ typedef struct {
     vec4f c0;
     vec4f c1;
     vec4f c2;
-} Triangle;
+} triangle_t;
 
 typedef struct {
-    Triangle triangles[16];
+    triangle_t triangles[16];
     uint32_t front; // next slot for pop
     uint32_t back;  // next slot for push
     bool empty;
-} TriangleQueue;
+} triangle_queue_t;
 
-inline void triangle_queue_init(TriangleQueue* queue) {
+inline void triangle_queue_init(triangle_queue_t* queue) {
     queue->front = 0;
     queue->back = 0;
     queue->empty = true;
 }
 
-inline Triangle* triangle_queue_front(TriangleQueue* queue) {
+inline triangle_t* triangle_queue_front(triangle_queue_t* queue) {
     return (queue->empty) ? NULL : queue->triangles + queue->front;
 }
 
-inline Triangle* triangle_queue_back(TriangleQueue* queue) {
+inline triangle_t* triangle_queue_back(triangle_queue_t* queue) {
     return (queue->empty) ? NULL : queue->triangles + queue->back;
 }
 
-inline bool triangle_queue_full(TriangleQueue* queue) {
+inline bool triangle_queue_full(triangle_queue_t* queue) {
     return queue->front == queue->back && !queue->empty;
 }
 
-inline uint32_t triangle_queue_length(TriangleQueue* queue) {
+inline uint32_t triangle_queue_length(triangle_queue_t* queue) {
     if (queue->empty) {
         return 0;
     }
@@ -47,7 +47,7 @@ inline uint32_t triangle_queue_length(TriangleQueue* queue) {
     }
 }
 
-inline void triangle_queue_push(TriangleQueue* queue, Triangle* triangle) {
+inline void triangle_queue_push(triangle_queue_t* queue, triangle_t* triangle) {
     if (triangle_queue_full(queue)) {
         return;
     }
@@ -57,12 +57,12 @@ inline void triangle_queue_push(TriangleQueue* queue, Triangle* triangle) {
     queue->empty = false;
 }
 
-inline Triangle* triangle_queue_pop(TriangleQueue* queue) {
+inline triangle_t* triangle_queue_pop(triangle_queue_t* queue) {
     if (queue->empty) {
         return NULL;
     }
 
-    Triangle* triangle = queue->triangles + queue->front;
+    triangle_t* triangle = queue->triangles + queue->front;
     queue->front = (queue->front + 1) & 0xF; // rolls back to 0 when it reaches 16
     queue->empty = queue->front == queue->back;
     return triangle;

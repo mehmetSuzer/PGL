@@ -125,6 +125,7 @@ int main() {
         pgl_clear(0x0000);
         pgl_draw(&cube);
         pgl_draw(&triangle);
+        printf("dt: %f\n", dt);
         pgl_display();
     }
 

@@ -14,14 +14,7 @@ PGL pgl = {
     .screen = {{0x0000}},
 };
 
-// Delete when no longer needed
-static void printf_mat4f(const mat4f m) {
-    printf("%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n\n", 
-        m.xx, m.xy, m.xz, m.xw, 
-        m.yx, m.yy, m.yz, m.yw,
-        m.zx, m.zy, m.zz, m.zw,
-        m.wx, m.wy, m.wz, m.ww);
-}
+// ------------------------------------------------ RASTERIZATION -------------------------------------------------------------- // 
 
 static void pgl_horizontal_line(int x0, int x1, int y, uint16_t color) {
     for (int x = x0; x <= x1; x++) {
@@ -185,7 +178,7 @@ static void pgl_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, 
     }
 }
 
-// ------------------------------------------------------------------------------------------------------------------- // 
+// -------------------------------------------- TRANSFORMATION MATRICES --------------------------------------------------------- // 
 
 void pgl_view(const vec3f position, const vec3f right, const vec3f up, const vec3f forward) {
     pgl.view = view(position, right, up, forward);
@@ -206,10 +199,29 @@ void pgl_clear(uint16_t color) {
     }
 }
 
+// ----------------------------------------------- DRAW ------------------------------------------------------------ // 
+
+void triangle_clip_plane_intersection(Triangle* t, const vec4f clip_plane_vector, vec4f* c10, vec4f* c20) {
+    const float d0 = dot_vec4f(t->c0, clip_plane_vector); // TODO: clip plane vector can be sent with a pointer
+    const float d1 = dot_vec4f(t->c1, clip_plane_vector);
+    const float d2 = dot_vec4f(t->c2, clip_plane_vector);
+
+    const float a = d0 / (d0 - d1);
+    const float b = d0 / (d0 - d2);
+
+    *c10 = add_vec4f(scale_vec4f(t->c0, 1.0f - a), scale_vec4f(t->c1, a));
+    *c20 = add_vec4f(scale_vec4f(t->c0, 1.0f - b), scale_vec4f(t->c2, b));
+}
+
 void pgl_draw(const Mesh* mesh) {
     const mat4f projection_view_model = mul_mat4f_mat4f(pgl.projection, mul_mat4f_mat4f(pgl.view, mesh->model));
 
     // TODO: Broad Phase Clipping
+
+    Triangle subtriangles[16];
+    int subtriangle_index;
+    vec4f c10;
+    vec4f c20;
 
     for (uint32_t i = 0; i < mesh->index_number; i += 3) {
         const Vertex* v0 = &mesh->vertices[mesh->indices[i]];
@@ -230,13 +242,12 @@ void pgl_draw(const Mesh* mesh) {
 
         triangle_queue_init(&pgl.queue);
         triangle_queue_push(&pgl.queue, &triangle);
-        Triangle subtriangles[16];
-        int subtriangle_index = -1;
+        subtriangle_index = -1;
 
         // Near Clip: Z + W > 0
         while (!pgl.queue.empty) {
             Triangle t = *triangle_queue_pop(&pgl.queue);
-            const int in0 = t.c0.z > -t.c0.w;
+            const int in0 = t.c0.z > -t.c0.w; // TODO: can be written as dot(t.c0, clip_plane_vector)
             const int in1 = t.c1.z > -t.c1.w;
             const int in2 = t.c2.z > -t.c2.w;
             const int in_number = in0 + in1 + in2;
@@ -250,26 +261,9 @@ void pgl_draw(const Mesh* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, 1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-
-                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
-                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
-
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = t.c1,
-                    .c2 = t.c2,
-                };
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = c20,
-                    .c2 = t.c2,
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -277,18 +271,8 @@ void pgl_draw(const Mesh* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, 1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-                
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = t.c0,
-                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
-                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
             }
         }
 
@@ -314,26 +298,9 @@ void pgl_draw(const Mesh* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, -1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-
-                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
-                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
-
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = t.c1,
-                    .c2 = t.c2,
-                };
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = c20,
-                    .c2 = t.c2,
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -341,18 +308,8 @@ void pgl_draw(const Mesh* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, -1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-                
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = t.c0,
-                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
-                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
             }
         }
 
@@ -378,26 +335,9 @@ void pgl_draw(const Mesh* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, 1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-
-                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
-                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
-
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = t.c1,
-                    .c2 = t.c2,
-                };
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = c20,
-                    .c2 = t.c2,
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -405,18 +345,8 @@ void pgl_draw(const Mesh* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, 1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-                
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = t.c0,
-                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
-                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
             }
         }
 
@@ -442,26 +372,9 @@ void pgl_draw(const Mesh* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, -1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-
-                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
-                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
-
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = t.c1,
-                    .c2 = t.c2,
-                };
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = c20,
-                    .c2 = t.c2,
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -469,18 +382,8 @@ void pgl_draw(const Mesh* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, -1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-                
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = t.c0,
-                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
-                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
             }
         }
 
@@ -506,26 +409,9 @@ void pgl_draw(const Mesh* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, 1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-
-                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
-                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
-
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = t.c1,
-                    .c2 = t.c2,
-                };
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = c20,
-                    .c2 = t.c2,
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -533,18 +419,8 @@ void pgl_draw(const Mesh* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, 1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-                
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = t.c0,
-                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
-                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
             }
         }
 
@@ -570,26 +446,9 @@ void pgl_draw(const Mesh* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, -1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-
-                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
-                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
-
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = t.c1,
-                    .c2 = t.c2,
-                };
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = c10,
-                    .c1 = c20,
-                    .c2 = t.c2,
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (Triangle) {c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
@@ -597,18 +456,8 @@ void pgl_draw(const Mesh* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, -1.0f};
-                const float d0 = dot_vec4f(t.c0, v);
-                const float d1 = dot_vec4f(t.c1, v);
-                const float d2 = dot_vec4f(t.c2, v);
-
-                const float alpha = d0 / (d0 - d1);
-                const float beta  = d0 / (d0 - d2);
-                
-                subtriangles[++subtriangle_index] = (Triangle) {
-                    .c0 = t.c0,
-                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
-                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
-                };
+                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                subtriangles[++subtriangle_index] = (Triangle) {t.c0, c10, c20};
             }
         }
 

@@ -3,7 +3,7 @@
 #include "triangle_queue.h"
 
 typedef struct {
-    uint16_t screen[LCD_HEIGHT][LCD_HEIGHT];
+    uint16_t screen[SCREEN_HEIGHT][SCREEN_HEIGHT];
     TriangleQueue queue;
     mat4f view;
     mat4f projection;
@@ -108,13 +108,13 @@ static void pgl_line(int x0, int y0, int x1, int y1, uint16_t color) {
 }
 
 static void clamp_coordinates(int* x0, int* y0, int* x1, int* y1, int* x2, int* y2) {
-    *x0 = clamp(*x0, 0, LCD_WIDTH-1);
-    *x1 = clamp(*x1, 0, LCD_WIDTH-1);
-    *x2 = clamp(*x2, 0, LCD_WIDTH-1);
+    *x0 = clamp(*x0, 0, SCREEN_WIDTH-1);
+    *x1 = clamp(*x1, 0, SCREEN_WIDTH-1);
+    *x2 = clamp(*x2, 0, SCREEN_WIDTH-1);
 
-    *y0 = clamp(*y0, 0, LCD_HEIGHT-1);
-    *y1 = clamp(*y1, 0, LCD_HEIGHT-1);
-    *y2 = clamp(*y2, 0, LCD_HEIGHT-1);
+    *y0 = clamp(*y0, 0, SCREEN_HEIGHT-1);
+    *y1 = clamp(*y1, 0, SCREEN_HEIGHT-1);
+    *y2 = clamp(*y2, 0, SCREEN_HEIGHT-1);
 }
 
 static void pgl_wired_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint16_t color) {
@@ -196,12 +196,12 @@ void pgl_projection(float fov, float near, float far) {
 }
 
 void pgl_viewport(int x, int y, uint32_t width, uint32_t height) {
-    pgl.viewport = viewport(0, 0, width, height, 0.0f, 1.0f);
+    pgl.viewport = viewport(x, y, width, height, 0.0f, 1.0f);
 }
 
 void pgl_clear(uint16_t color) {
     uint16_t* color_ptr = (uint16_t*)pgl.screen;
-    for (uint32_t i = 0; i < LCD_HEIGHT*LCD_WIDTH; i++) {
+    for (uint32_t i = 0; i < SCREEN_HEIGHT*SCREEN_WIDTH; i++) {
         color_ptr[i] = color;
     }
 }

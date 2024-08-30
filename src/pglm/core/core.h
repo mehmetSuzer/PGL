@@ -6,10 +6,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif 
-
 #ifndef M_SQRT1_3
 #define M_SQRT1_3 (1.0f/M_SQRT3)
 #endif

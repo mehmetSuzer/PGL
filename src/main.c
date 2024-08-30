@@ -105,7 +105,7 @@ int main() {
     
     set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL|GPIO_IRQ_EDGE_RISE, true);
 
-    pgl_viewport(0, 0, LCD_WIDTH, LCD_HEIGHT);
+    pgl_viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     pgl_projection(camera.fov, camera.near, camera.far);
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
 

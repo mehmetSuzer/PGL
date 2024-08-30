@@ -1,6 +1,36 @@
 
 #include "device.h"
 
+#include "hardware/clocks.h"
+#include "hardware/spi.h"
+#include "hardware/pwm.h"
+#include "hardware/vreg.h"
+
+// Use it to set the clock frequency of Pico
+#define CLOCK_FREQUENCY_KHZ 300000u
+
+#ifdef CLOCK_FREQUENCY_KHZ
+    // spi baudrate when the cpu is overclocked
+    #define SPI_BAUDRATE_HZ (CLOCK_FREQUENCY_KHZ * 250)
+#else
+    // default spi baudrate for default cpu clock frequency 
+    #define SPI_BAUDRATE_HZ 62500000u
+#endif
+
+#define LOW     false
+#define HIGH    true
+
+#define SPI_PORT spi1
+
+#define LCD_RST_PIN    12u
+#define LCD_DC_PIN      8u
+#define LCD_BL_PIN     13u
+#define LCD_CS_PIN      9u
+#define LCD_CLK_PIN    10u
+#define LCD_MOSI_PIN   11u
+#define LCD_SCL_PIN     7u
+#define LCD_SDA_PIN     6u
+
 static void lcd_reset() {
     gpio_put(LCD_RST_PIN, HIGH);
     sleep_ms(100);
@@ -163,15 +193,15 @@ static void buttons_init() {
 }
 
 void lcd_display(uint16_t* screen) {
-    for (uint32_t i = 0; i < (LCD_HEIGHT*LCD_WIDTH); i++) {
+    for (uint32_t i = 0; i < (SCREEN_HEIGHT*SCREEN_WIDTH); i++) {
         uint16_t color = screen[i];
         screen[i] = (color << 8) | ((color & 0xFF00) >> 8);
     }
 
-    lcd_set_window(0, LCD_WIDTH, 0, LCD_HEIGHT);
+    lcd_set_window(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT);
     gpio_put(LCD_DC_PIN, HIGH);
     gpio_put(LCD_CS_PIN, LOW);
-    spi_write_blocking(SPI_PORT, (uint8_t*)screen, (LCD_HEIGHT*LCD_WIDTH) << 1);
+    spi_write_blocking(SPI_PORT, (uint8_t*)screen, (SCREEN_HEIGHT*SCREEN_WIDTH) << 1);
     gpio_put(LCD_CS_PIN, HIGH);
     lcd_command(0x29);
 }

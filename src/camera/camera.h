@@ -21,6 +21,7 @@ typedef struct {
     float speed;
     Move forward_move;
     Move right_move;
+    Move up_move;
 } Camera;
 extern Camera camera;
 

@@ -7,7 +7,7 @@
 #include "mesh.h"
 #include "pgl.h"
 
-Vertex cube_vertices[] = {
+const Vertex cube_vertices[] = {
  	//     positions      /                  normals                     /      colors      //
 	{{-0.5f, -0.5f, -0.5f}, {-1.0f/M_SQRT3, -1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
 	{{-0.5f,  0.5f, -0.5f}, {-1.0f/M_SQRT3,  1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
@@ -20,7 +20,7 @@ Vertex cube_vertices[] = {
 	{{-0.5f,  0.5f,  0.5f}, {-1.0f/M_SQRT3,  1.0f/M_SQRT3,  1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
 };
 
-uint32_t cube_indices[] = {
+const uint32_t cube_indices[] = {
 	0, 1, 2,
 	0, 2, 3,
 	4, 5, 6,
@@ -40,6 +40,28 @@ Mesh cube = {
     .indices = cube_indices,
     .vertex_number = sizeof(cube_vertices) / sizeof(Vertex),
     .index_number = sizeof(cube_indices) / sizeof(uint32_t),
+    .mesh_type = TRIANGLE,
+    .render_type = WIRED,
+};
+
+const Vertex triangle_vertices[] = {
+    //          positions         /             normals         /      colors      //
+	{{-0.5f,          0.0f,  0.0f}, {-M_SQRT3/2.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f,          0.0f,  0.0f}, { M_SQRT3/2.0f,  0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.0f,  M_SQRT3/2.0f,  0.0f}, {         0.0f,  1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+};
+
+const uint32_t triangle_indices[] = {
+    0, 1, 2
+};
+
+Mesh triangle = {
+    .vertices = triangle_vertices,
+    .indices = triangle_indices,
+    .vertex_number = sizeof(triangle_vertices) / sizeof(Vertex),
+    .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
+    .mesh_type = TRIANGLE,
+    .render_type = WIRED,
 };
 
 void button_irq_callback(uint gpio, uint32_t event_mask) {
@@ -56,11 +78,15 @@ void button_irq_callback(uint gpio, uint32_t event_mask) {
     case KEY_LEFT:
         camera.right_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
         break;
-    case KEY_CTRL:
     case KEY_A:
+        camera.up_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        break;
     case KEY_B:
+        camera.up_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        break;
     case KEY_X:
     case KEY_Y:
+    case KEY_CTRL:
     default:
         break;
     }
@@ -84,6 +110,7 @@ int main() {
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
 
     cube.model = mul_mat4f_mat4f(translate3D((vec3f) {0.0f, 0.2f, -5.0f}), rotate3D_y(M_PI_4));
+    triangle.model = translate3D((vec3f) {5.0f, -0.5/M_SQRT3, -3.0f});
 
     uint32_t last_time = time_us_32();
     uint32_t current_time;
@@ -97,6 +124,7 @@ int main() {
 
         pgl_clear(0x0000);
         pgl_draw(&cube);
+        pgl_draw(&triangle);
         pgl_display();
     }
 

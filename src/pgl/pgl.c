@@ -1,10 +1,17 @@
 
 #include "pgl.h"
+#include "triangle_queue.h"
+
+typedef struct {
+    uint16_t screen[LCD_HEIGHT][LCD_HEIGHT];
+    TriangleQueue queue;
+    mat4f view;
+    mat4f projection;
+    mat4f viewport;
+} PGL;
 
 PGL pgl = {
     .screen = {{0x0000}},
-    .mesh_type = PGL_TRIANGLE,
-    .render_type = PGL_WIRED,
 };
 
 // Delete when no longer needed
@@ -100,13 +107,27 @@ static void pgl_line(int x0, int y0, int x1, int y1, uint16_t color) {
     }
 }
 
+static void clamp_coordinates(int* x0, int* y0, int* x1, int* y1, int* x2, int* y2) {
+    *x0 = clamp(*x0, 0, LCD_WIDTH-1);
+    *x1 = clamp(*x1, 0, LCD_WIDTH-1);
+    *x2 = clamp(*x2, 0, LCD_WIDTH-1);
+
+    *y0 = clamp(*y0, 0, LCD_HEIGHT-1);
+    *y1 = clamp(*y1, 0, LCD_HEIGHT-1);
+    *y2 = clamp(*y2, 0, LCD_HEIGHT-1);
+}
+
 static void pgl_wired_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint16_t color) {
+    clamp_coordinates(&x0, &y0, &x1, &y1, &x2, &y2);
+
     pgl_line(x0, y0, x1, y1, color);
     pgl_line(x0, y0, x2, y2, color);
     pgl_line(x1, y1, x2, y2, color);
 }
 
 static void pgl_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint16_t color) {
+    clamp_coordinates(&x0, &y0, &x1, &y1, &x2, &y2);
+
     if (y1 < y0) {
         const int tempx = x1;
         const int tempy = y1;
@@ -188,133 +209,425 @@ void pgl_clear(uint16_t color) {
 void pgl_draw(const Mesh* mesh) {
     const mat4f projection_view_model = mul_mat4f_mat4f(pgl.projection, mul_mat4f_mat4f(pgl.view, mesh->model));
 
-    // Broad Phase Clipping
+    // TODO: Broad Phase Clipping
 
     for (uint32_t i = 0; i < mesh->index_number; i += 3) {
         const Vertex* v0 = &mesh->vertices[mesh->indices[i]];
         const Vertex* v1 = &mesh->vertices[mesh->indices[i+1]];
         const Vertex* v2 = &mesh->vertices[mesh->indices[i+2]];
     
-        // Local space coordinates
-        const vec4f p0 = {v0->position.x, v0->position.y, v0->position.z, 1.0f};
-        const vec4f p1 = {v1->position.x, v1->position.y, v1->position.z, 1.0f};
-        const vec4f p2 = {v2->position.x, v2->position.y, v2->position.z, 1.0f};
+        // Homogeneous local space coordinates
+        const vec4f p0 = to_homogeneous(v0->position);
+        const vec4f p1 = to_homogeneous(v1->position);
+        const vec4f p2 = to_homogeneous(v2->position);
 
-        // Normalized clip space coordinates
-        vec4f c0 = normalize_homogeneous(mul_mat4f_vec4f(projection_view_model, p0));
-        vec4f c1 = normalize_homogeneous(mul_mat4f_vec4f(projection_view_model, p1));
-        vec4f c2 = normalize_homogeneous(mul_mat4f_vec4f(projection_view_model, p2));
-        vec4f c3;
+        // Clip space coordinates
+        Triangle triangle = {
+            .c0 = mul_mat4f_vec4f(projection_view_model, p0),
+            .c1 = mul_mat4f_vec4f(projection_view_model, p1),
+            .c2 = mul_mat4f_vec4f(projection_view_model, p2),
+        };
 
-        // Check whether the points are in the view frustum
-        const int in0 = abs(c0.x) < 1.0f && abs(c0.y) < 1.0f && abs(c0.z) < 1.0f;
-        const int in1 = abs(c1.x) < 1.0f && abs(c1.y) < 1.0f && abs(c1.z) < 1.0f;
-        const int in2 = abs(c2.x) < 1.0f && abs(c2.y) < 1.0f && abs(c2.z) < 1.0f;
-        const int in_number = in0 + in1 + in2;
+        triangle_queue_init(&pgl.queue);
+        triangle_queue_push(&pgl.queue, &triangle);
+        Triangle subtriangles[16];
+        int subtriangle_index = -1;
 
-        // All vertices are out of the view frustum; discard the triangle
-        if (in_number == 0) {
-            continue;
+        // Near Clip: Z + W > 0
+        while (!pgl.queue.empty) {
+            Triangle t = *triangle_queue_pop(&pgl.queue);
+            const int in0 = t.c0.z > -t.c0.w;
+            const int in1 = t.c1.z > -t.c1.w;
+            const int in2 = t.c2.z > -t.c2.w;
+            const int in_number = in0 + in1 + in2;
+
+            if (in_number == 3) {
+                subtriangles[++subtriangle_index] = t;
+            }
+            else if (in_number == 2) {
+                // Ensure that c0 is the vertex that is not in
+                if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, 1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+
+                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
+                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
+
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = t.c1,
+                    .c2 = t.c2,
+                };
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = c20,
+                    .c2 = t.c2,
+                };
+            }
+            else if (in_number == 1) {
+                // Ensure that c0 is the vertex that is in
+                if      (in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, 1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+                
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = t.c0,
+                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
+                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
+                };
+            }
         }
-        // One of the vertices is in the view frustum
-        else if (in_number == 1) {
-            // Ensure c0 is the one that is in the view frustum
-            if      (in1) { swap_vec4f(&c0, &c1); }
-            else if (in2) { swap_vec4f(&c0, &c2); }
 
-            printf("In1: %d | (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f)\n", in_number,
-            c0.x, c0.y, c0.z, c0.w,
-            c1.x, c1.y, c1.z, c1.w,
-            c2.x, c2.y, c2.z, c2.w,
-            c3.x, c3.y, c3.z, c3.w);
-
-            float alpha;
-            float beta;
-            if (c1.x >= 1.0f) {
-                alpha = (c0.x - 0.999f) / (c0.x - c1.x);
-                beta  = (c0.x - 0.999f) / (c0.x - c2.x);
-            }
-            else if (c1.x <= -1.0f) {
-                alpha = (c0.x + 0.999f) / (c0.x - c1.x);
-                beta  = (c0.x + 0.999f) / (c0.x - c2.x);
-            }
-            else if (c1.y >= 1.0f) {
-                alpha = (c0.y - 0.999f) / (c0.y - c1.y);
-                beta  = (c0.y - 0.999f) / (c0.y - c2.y);
-            }
-            else if (c1.y <= -1.0f) {
-                alpha = (c0.y + 0.999f) / (c0.y - c1.y);
-                beta  = (c0.y + 0.999f) / (c0.y - c2.y);
-            }
-            else if (c1.z >= 1.0f) {
-                alpha = (c0.z - 0.999f) / (c0.z - c1.z);
-                beta  = (c0.z - 0.999f) / (c0.z - c2.z);
-            }
-            else if (c1.z <= -1.0f) {
-                alpha = (c0.z + 0.999f) / (c0.z - c1.z);
-                beta  = (c0.z + 0.999f) / (c0.z - c2.z);
-            }
-            
-            printf("Alpha: %f, Beta: %f\n", alpha, beta);
-            c1 = add_vec4f(c0, scale_vec4f(sub_vec4f(c1, c0), alpha));
-            c2 = add_vec4f(c0, scale_vec4f(sub_vec4f(c2, c0), beta));
+        while (subtriangle_index >= 0) {
+            triangle_queue_push(&pgl.queue, subtriangles + subtriangle_index);
+            subtriangle_index--;
         }
-        // Two of the vertices are in the view frustum
-        else if (in_number == 2) {
-            // Ensure c0 is the one that is out the view frustum
-            if      (!in1) { swap_vec4f(&c0, &c1); }
-            else if (!in2) { swap_vec4f(&c0, &c2); }
 
-            float alpha;
-            float beta;
-            if (c0.x >= 1.0f) {
-                alpha = (c0.x - 0.999f) / (c0.x - c1.x);
-                beta  = (c0.x - 0.999f) / (c0.x - c2.x);
+        // Far Clip: Z - W < 0
+        while (!pgl.queue.empty) {
+            Triangle t = *triangle_queue_pop(&pgl.queue);
+            const int in0 = t.c0.z < t.c0.w;
+            const int in1 = t.c1.z < t.c1.w;
+            const int in2 = t.c2.z < t.c2.w;
+            const int in_number = in0 + in1 + in2;
+
+            if (in_number == 3) {
+                subtriangles[++subtriangle_index] = t;
             }
-            else if (c0.x <= -1.0f) {
-                alpha = (c0.x + 0.999f) / (c0.x - c1.x);
-                beta  = (c0.x + 0.999f) / (c0.x - c2.x);
+            else if (in_number == 2) {
+                // Ensure that c0 is the vertex that is not in
+                if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, -1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+
+                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
+                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
+
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = t.c1,
+                    .c2 = t.c2,
+                };
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = c20,
+                    .c2 = t.c2,
+                };
             }
-            else if (c0.y >= 1.0f) {
-                alpha = (c0.y - 0.999f) / (c0.y - c1.y);
-                beta  = (c0.y - 0.999f) / (c0.y - c2.y);
+            else if (in_number == 1) {
+                // Ensure that c0 is the vertex that is in
+                if      (in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, -1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+                
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = t.c0,
+                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
+                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
+                };
             }
-            else if (c0.y <= -1.0f) {
-                alpha = (c0.y + 0.999f) / (c0.y - c1.y);
-                beta  = (c0.y + 0.999f) / (c0.y - c2.y);
-            }
-            else if (c0.z >= 1.0f) {
-                alpha = (c0.z - 0.999f) / (c0.z - c1.z);
-                beta  = (c0.z - 0.999f) / (c0.z - c2.z);
-            }
-            else if (c0.z <= -1.0f) {
-                alpha = (c0.z + 0.999f) / (c0.z - c1.z);
-                beta  = (c0.z + 0.999f) / (c0.z - c2.z);
-            }
-            
-            c0 = add_vec4f(c0, scale_vec4f(sub_vec4f(c1, c0), alpha));
-            c3 = add_vec4f(c0, scale_vec4f(sub_vec4f(c2, c0), beta));
         }
-            
-        printf("In2: %d | (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f)\n", in_number,
-            c0.x, c0.y, c0.z, c0.w,
-            c1.x, c1.y, c1.z, c1.w,
-            c2.x, c2.y, c2.z, c2.w,
-            c3.x, c3.y, c3.z, c3.w);
 
-        // Screen coordinates
-        const vec4f sc0 = mul_mat4f_vec4f(pgl.viewport, c0);
-        const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, c1);
-        const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, c2);
+        while (subtriangle_index >= 0) {
+            triangle_queue_push(&pgl.queue, subtriangles + subtriangle_index);
+            subtriangle_index--;
+        }
+
+        // Left Clip: X + W > 0
+        while (!pgl.queue.empty) {
+            Triangle t = *triangle_queue_pop(&pgl.queue);
+            const int in0 = t.c0.x > -t.c0.w;
+            const int in1 = t.c1.x > -t.c1.w;
+            const int in2 = t.c2.x > -t.c2.w;
+            const int in_number = in0 + in1 + in2;
+
+            if (in_number == 3) {
+                subtriangles[++subtriangle_index] = t;
+            }
+            else if (in_number == 2) {
+                // Ensure that c0 is the vertex that is not in
+                if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, 1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+
+                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
+                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
+
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = t.c1,
+                    .c2 = t.c2,
+                };
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = c20,
+                    .c2 = t.c2,
+                };
+            }
+            else if (in_number == 1) {
+                // Ensure that c0 is the vertex that is in
+                if      (in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, 1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+                
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = t.c0,
+                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
+                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
+                };
+            }
+        }
+
+        while (subtriangle_index >= 0) {
+            triangle_queue_push(&pgl.queue, subtriangles + subtriangle_index);
+            subtriangle_index--;
+        }
+
+        // Right Clip: X - W < 0
+        while (!pgl.queue.empty) {
+            Triangle t = *triangle_queue_pop(&pgl.queue);
+            const int in0 = t.c0.x < t.c0.w;
+            const int in1 = t.c1.x < t.c1.w;
+            const int in2 = t.c2.x < t.c2.w;
+            const int in_number = in0 + in1 + in2;
+
+            if (in_number == 3) {
+                subtriangles[++subtriangle_index] = t;
+            }
+            else if (in_number == 2) {
+                // Ensure that c0 is the vertex that is not in
+                if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, -1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+
+                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
+                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
+
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = t.c1,
+                    .c2 = t.c2,
+                };
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = c20,
+                    .c2 = t.c2,
+                };
+            }
+            else if (in_number == 1) {
+                // Ensure that c0 is the vertex that is in
+                if      (in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, -1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+                
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = t.c0,
+                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
+                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
+                };
+            }
+        }
+
+        while (subtriangle_index >= 0) {
+            triangle_queue_push(&pgl.queue, subtriangles + subtriangle_index);
+            subtriangle_index--;
+        }
+
+        // Bottom Clip: Y + W > 0
+        while (!pgl.queue.empty) {
+            Triangle t = *triangle_queue_pop(&pgl.queue);
+            const int in0 = t.c0.y > -t.c0.w;
+            const int in1 = t.c1.y > -t.c1.w;
+            const int in2 = t.c2.y > -t.c2.w;
+            const int in_number = in0 + in1 + in2;
+
+            if (in_number == 3) {
+                subtriangles[++subtriangle_index] = t;
+            }
+            else if (in_number == 2) {
+                // Ensure that c0 is the vertex that is not in
+                if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, 1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+
+                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
+                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
+
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = t.c1,
+                    .c2 = t.c2,
+                };
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = c20,
+                    .c2 = t.c2,
+                };
+            }
+            else if (in_number == 1) {
+                // Ensure that c0 is the vertex that is in
+                if      (in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, 1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+                
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = t.c0,
+                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
+                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
+                };
+            }
+        }
+
+        while (subtriangle_index >= 0) {
+            triangle_queue_push(&pgl.queue, subtriangles + subtriangle_index);
+            subtriangle_index--;
+        }
+
+        // Top Clip: Y - W < 0
+        while (!pgl.queue.empty) {
+            Triangle t = *triangle_queue_pop(&pgl.queue);
+            const int in0 = t.c0.y < t.c0.w;
+            const int in1 = t.c1.y < t.c1.w;
+            const int in2 = t.c2.y < t.c2.w;
+            const int in_number = in0 + in1 + in2;
+
+            if (in_number == 3) {
+                subtriangles[++subtriangle_index] = t;
+            }
+            else if (in_number == 2) {
+                // Ensure that c0 is the vertex that is not in
+                if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, -1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+
+                const vec4f c10 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha));
+                const vec4f c20 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta));
+
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = t.c1,
+                    .c2 = t.c2,
+                };
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = c10,
+                    .c1 = c20,
+                    .c2 = t.c2,
+                };
+            }
+            else if (in_number == 1) {
+                // Ensure that c0 is the vertex that is in
+                if      (in1) { swap_vec4f(&t.c0, &t.c1); }
+                else if (in2) { swap_vec4f(&t.c0, &t.c2); }
+
+                const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, -1.0f};
+                const float d0 = dot_vec4f(t.c0, v);
+                const float d1 = dot_vec4f(t.c1, v);
+                const float d2 = dot_vec4f(t.c2, v);
+
+                const float alpha = d0 / (d0 - d1);
+                const float beta  = d0 / (d0 - d2);
+                
+                subtriangles[++subtriangle_index] = (Triangle) {
+                    .c0 = t.c0,
+                    .c1 = add_vec4f(scale_vec4f(t.c0, 1.0f - alpha), scale_vec4f(t.c1, alpha)),
+                    .c2 = add_vec4f(scale_vec4f(t.c0, 1.0f - beta), scale_vec4f(t.c2, beta)),
+                };
+            }
+        }
+
+        while (subtriangle_index >= 0) {
+            Triangle* subt = subtriangles + subtriangle_index;
+            subtriangle_index--;
+
+            // Screen coordinates
+            const vec4f sc0 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->c0));
+            const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->c1));
+            const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->c2));
         
-        // Rasterize
-        const uint16_t color = vec3f_to_rgb565(v0->color);
-        pgl_wired_triangle((int)sc0.x, (int)sc0.y, (int)sc1.x, (int)sc1.y, (int)sc2.x, (int)sc2.y, color);
-
-        if (in_number == 2) {
-            const vec4f sc3 = mul_mat4f_vec4f(pgl.viewport, c3);
-            const uint16_t color = vec3f_to_rgb565(v0->color);
-            pgl_wired_triangle((int)sc0.x, (int)sc0.y, (int)sc2.x, (int)sc2.y, (int)sc3.x, (int)sc3.y, color);
+            // Rasterize
+            if (mesh->render_type == WIRED) {
+                pgl_wired_triangle((int)sc0.x, (int)sc0.y, (int)sc1.x, (int)sc1.y, (int)sc2.x, (int)sc2.y, 0xF100u);
+            }
+            else if (mesh->render_type == FILLED) {
+                pgl_filled_triangle((int)sc0.x, (int)sc0.y, (int)sc1.x, (int)sc1.y, (int)sc2.x, (int)sc2.y, 0xF100u);
+            }
         }
     }
 }

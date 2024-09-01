@@ -8,6 +8,7 @@
 #include "color/rgb565.h"
 
 #include "vector/vec2f.h"
+#include "vector/vec3i.h"
 #include "vector/vec3f.h"
 #include "vector/vec4f.h"
 

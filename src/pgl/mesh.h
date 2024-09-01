@@ -4,15 +4,16 @@
 
 #include "vertex.h"
 
+// TODO: these enums can be collected under one uint32_t
 typedef enum {
-    TRIANGLE,
-    TRIANGLE_FAN,
-    TRIANGLE_STRIP,
+    MESH_TRIANGLE,
+    MESH_TRIANGLE_FAN,
+    MESH_TRIANGLE_STRIP,
 } mesh_type_t;
 
 typedef enum {
-    WIRED,
-    FILLED,
+    RENDER_WIRED,
+    RENDER_FILLED,
 } render_type_t;
 
 typedef struct {

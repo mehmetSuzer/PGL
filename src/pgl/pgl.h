@@ -12,7 +12,7 @@ typedef enum {
 } pgl_buffer_bit_t;
 
 void pgl_view(const vec3f position, const vec3f right, const vec3f up, const vec3f forward);
-void pgl_projection(float fov, float near, float far);
+void pgl_projection(float near, float far, float fov);
 void pgl_viewport(int x, int y, uint32_t width, uint32_t height);
 
 void pgl_clear_color(uint16_t color);

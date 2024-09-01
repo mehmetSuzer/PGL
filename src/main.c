@@ -106,16 +106,13 @@ int main() {
     camera_init(
         (vec3f) {0.0f,  0.0f,  0.0f},   // position
         (vec3f) {0.0f,  0.0f, -1.0f},   // forward
-        (vec3f) {0.0f,  1.0f,  0.0f},   // up
-        0.1f,                           // near
-        100.0f,                         // far
-        M_PI/4.0f                       // fov
+        (vec3f) {0.0f,  1.0f,  0.0f}    // up
     );
     
     set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL|GPIO_IRQ_EDGE_RISE, true);
 
     pgl_viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    pgl_projection(camera.fov, camera.near, camera.far);
+    pgl_projection(0.1f, 30.0f, M_PI_4);
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
     pgl_clear_color(0x0000);
 
@@ -138,7 +135,7 @@ int main() {
         // pgl_draw(&cube);
         pgl_draw(&triangle1);
         pgl_draw(&triangle2);
-        // printf("dt: %f\n", dt);
+        printf("dt: %f\n", dt);
         pgl_display();
     }
 

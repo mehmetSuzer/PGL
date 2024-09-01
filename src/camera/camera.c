@@ -3,14 +3,11 @@
 
 camera_t camera;
 
-void camera_init(const vec3f position, const vec3f forward, const vec3f up, float near, float far, float fov) {
+void camera_init(const vec3f position, const vec3f forward, const vec3f up) {
     camera.position = position;
     camera.forward = forward;
     camera.up = up;
     camera.right = cross_vec3f(forward, up);
-    camera.fov = fov;
-    camera.near = near;
-    camera.far = far;
     camera.speed = 2.0f;
     camera.forward_move = NONE;
     camera.right_move = NONE;

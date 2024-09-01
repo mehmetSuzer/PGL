@@ -15,9 +15,6 @@ typedef struct {
     vec3f forward;
     vec3f up;
     vec3f right;
-    float fov;
-    float near;
-    float far;
     float speed;
     move_t forward_move;
     move_t right_move;
@@ -26,7 +23,7 @@ typedef struct {
 extern camera_t camera;
 
 // forward and up must be unit perpendicular vectors
-void camera_init(const vec3f position, const vec3f forward, const vec3f up, float near, float far, float fov);
+void camera_init(const vec3f position, const vec3f forward, const vec3f up);
 
 void camera_update(float dt);
 

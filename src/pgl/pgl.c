@@ -9,6 +9,8 @@ typedef struct {
     mat4f view;
     mat4f projection;
     mat4f viewport;
+    float near;
+    float far;
     uint16_t clear_color;
 } pgl_t;
 
@@ -16,6 +18,8 @@ pgl_t pgl = {
     .color_buffer = {{0x0000u}},
     .depth_buffer = {{0x00u}},
     .clear_color = 0x0000u,
+    .near = 0.1f,
+    .far = 30.0f,
 };
 
 // ------------------------------------------------ RASTERIZATION -------------------------------------------------------------- // 
@@ -43,17 +47,17 @@ static void pgl_line_low(vec3i* v0, vec3i* v1, uint16_t color) {
         dy = -dy;
     }
 
-    int d = 2 * dy - dx;
+    int dyy = 2 * dy - dx;
     int y = v0->y;
 
     for (int x = v0->x; x <= v1->x; x++) {
         pgl.color_buffer[y][x] = color;
-        if (d > 0) {
+        if (dyy > 0) {
             y += yi;
-            d += 2 * (dy - dx);
+            dyy += 2 * (dy - dx);
         }
         else {
-            d += 2 * dy;
+            dyy += 2 * dy;
         }
     }
 }
@@ -69,17 +73,17 @@ static void pgl_line_high(vec3i* v0, vec3i* v1, uint16_t color) {
         dx = -dx;
     }
 
-    int d = 2 * dx - dy;
+    int dxx = 2 * dx - dy;
     int x = v0->x;
 
     for (int y = v0->y; y <= v1->y; y++) {
         pgl.color_buffer[y][x] = color;
-        if (d > 0) {
+        if (dxx > 0) {
             x += xi;
-            d += 2 * (dx - dy);
+            dxx += 2 * (dx - dy);
         }
         else {
-            d += 2 * dx;
+            dxx += 2 * dx;
         }
     }
 }
@@ -104,7 +108,7 @@ static void pgl_line(vec3i* v0, vec3i* v1, uint16_t color) {
     }
 }
 
-static void clamp_coordinates(vec3i* v0, vec3i* v1, vec3i* v2) {
+static void pgl_clamp_coordinates(vec3i* v0, vec3i* v1, vec3i* v2) {
     v0->x = clamp(v0->x, 0, SCREEN_WIDTH-1);
     v0->y = clamp(v0->y, 0, SCREEN_HEIGHT-1);
     
@@ -116,7 +120,7 @@ static void clamp_coordinates(vec3i* v0, vec3i* v1, vec3i* v2) {
 }
 
 static void pgl_wired_triangle(vec3i* v0, vec3i* v1, vec3i* v2, uint16_t color) {
-    clamp_coordinates(v0, v1, v2);
+    pgl_clamp_coordinates(v0, v1, v2);
 
     pgl_line(v0, v1, color);
     pgl_line(v0, v2, color);
@@ -124,7 +128,7 @@ static void pgl_wired_triangle(vec3i* v0, vec3i* v1, vec3i* v2, uint16_t color) 
 }
 
 static void pgl_filled_triangle(vec3i* v0, vec3i* v1, vec3i* v2, uint16_t color) {
-    clamp_coordinates(v0, v1, v2);
+    pgl_clamp_coordinates(v0, v1, v2);
 
     if (v1->y < v0->y) {
         swap_vec3i(v0, v1);
@@ -171,7 +175,9 @@ void pgl_view(const vec3f position, const vec3f right, const vec3f up, const vec
     pgl.view = view(position, right, up, forward);
 }
 
-void pgl_projection(float fov, float near, float far) {
+void pgl_projection(float near, float far, float fov) {
+    pgl.near = near;
+    pgl.far = far;
     pgl.projection = perspective(fov, ASPECT_RATIO, near, far);
 }
 
@@ -201,7 +207,7 @@ void pgl_clear(pgl_buffer_bit_t buffer_bits) {
 
 // ----------------------------------------------- DRAW ------------------------------------------------------------ // 
 
-void triangle_clip_plane_intersection(triangle_t* t, const vec4f clip_plane_vector, vec4f* c10, vec4f* c20) {
+static void pgl_triangle_clip_plane_intersection(triangle_t* t, const vec4f clip_plane_vector, vec4f* c10, vec4f* c20) {
     const float d0 = dot_vec4f(t->c0, clip_plane_vector); // TODO: clip plane vector can be sent with a pointer
     const float d1 = dot_vec4f(t->c1, clip_plane_vector);
     const float d2 = dot_vec4f(t->c2, clip_plane_vector);
@@ -211,6 +217,11 @@ void triangle_clip_plane_intersection(triangle_t* t, const vec4f clip_plane_vect
 
     *c10 = add_vec4f(scale_vec4f(t->c0, 1.0f - a), scale_vec4f(t->c1, a));
     *c20 = add_vec4f(scale_vec4f(t->c0, 1.0f - b), scale_vec4f(t->c2, b));
+}
+
+// Maps non-linear [0, 1] screen space depth range to linear [0, 255] range.
+static int pgl_depth_value(float screen_space_depth) {
+    return (int) ((255.0f * pgl.near * screen_space_depth) / (pgl.far - (pgl.far - pgl.near) * screen_space_depth));
 }
 
 void pgl_draw(const mesh_t* mesh) {
@@ -257,7 +268,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, 1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
                 subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
@@ -267,7 +278,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, 1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
@@ -294,7 +305,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, -1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
                 subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
@@ -304,7 +315,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, -1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
@@ -331,7 +342,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, 1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
                 subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
@@ -341,7 +352,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, 1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
@@ -368,7 +379,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, -1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
                 subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
@@ -378,7 +389,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, -1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
@@ -405,7 +416,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, 1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
                 subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
@@ -415,7 +426,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, 1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
@@ -442,7 +453,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, -1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
                 subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
             }
@@ -452,7 +463,7 @@ void pgl_draw(const mesh_t* mesh) {
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
                 const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, -1.0f};
-                triangle_clip_plane_intersection(&t, v, &c10, &c20);
+                pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
                 subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
             }
         }
@@ -466,10 +477,10 @@ void pgl_draw(const mesh_t* mesh) {
             const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->c1));
             const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->c2));
 
-            // We assume that w components are 1.0f
-            vec3i v0 = {(int)sc0.x, (int)sc0.y, (int)sc0.z};
-            vec3i v1 = {(int)sc1.x, (int)sc1.y, (int)sc1.z};
-            vec3i v2 = {(int)sc2.x, (int)sc2.y, (int)sc2.z};
+            vec3i v0 = {(int)sc0.x, (int)sc0.y, pgl_depth_value(sc0.z)};
+            vec3i v1 = {(int)sc1.x, (int)sc1.y, pgl_depth_value(sc1.z)};
+            vec3i v2 = {(int)sc2.x, (int)sc2.y, pgl_depth_value(sc2.z)};
+            printf("%d, %d, %d\n", v0.z, v1.z, v2.z);
         
             // Rasterize
             if (mesh->render_type == RENDER_WIRED) {

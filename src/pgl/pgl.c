@@ -24,7 +24,7 @@ pgl_t pgl = {
 
 // --------------------------------------------------- RASTERIZATION ----------------------------------------------------------- // 
 
-static void pgl_horizontal_line(vec3i v0, vec3i v1, uint16_t color) {
+static void pgl_horizontal_line(const vec3i v0, const vec3i v1, uint16_t color) {
     const int dx = v1.x - v0.x;
     const int dz = v1.z - v0.z;
     const int y = v0.y;
@@ -38,7 +38,7 @@ static void pgl_horizontal_line(vec3i v0, vec3i v1, uint16_t color) {
     }
 }
 
-static void pgl_vertical_line(vec3i v0, vec3i v1, uint16_t color) {
+static void pgl_vertical_line(const vec3i v0, const vec3i v1, uint16_t color) {
     const int dy = v1.y - v0.y;
     const int dz = v1.z - v0.z;
     const int x = v0.x;
@@ -52,8 +52,7 @@ static void pgl_vertical_line(vec3i v0, vec3i v1, uint16_t color) {
     }
 }
 
-// TODO: This may not be working properly. Check and fix.
-static void pgl_line(vec3i* v0, vec3i* v1, uint16_t color) {
+static void pgl_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
     int dx = abs(v1->x - v0->x);
     int sx = (v0->x < v1->x) ? 1 : -1;
 
@@ -93,7 +92,6 @@ static void pgl_line(vec3i* v0, vec3i* v1, uint16_t color) {
         int ez2 = 2 * ez;
         if (ez2 >= dz) {
             ez += dz;
-            // x += sx;
         }
         if (ez2 <= dx) {
             ez += dx;
@@ -207,8 +205,8 @@ void pgl_clear(pgl_buffer_bit_t buffer_bits) {
 
 // ----------------------------------------------- DRAW ------------------------------------------------------------ // 
 
-static void pgl_triangle_clip_plane_intersection(triangle_t* t, const vec4f clip_plane_vector, vec4f* c10, vec4f* c20) {
-    const float d0 = dot_vec4f(t->c0, clip_plane_vector); // TODO: clip plane vector can be sent with a pointer
+static void pgl_triangle_clip_plane_intersection(const triangle_t* t, const vec4f clip_plane_vector, vec4f* c10, vec4f* c20) {
+    const float d0 = dot_vec4f(t->c0, clip_plane_vector);
     const float d1 = dot_vec4f(t->c1, clip_plane_vector);
     const float d2 = dot_vec4f(t->c2, clip_plane_vector);
 
@@ -254,7 +252,7 @@ void pgl_draw(const mesh_t* mesh) {
         // Near Clip: Z + W > 0
         while (!pgl.queue.empty) {
             triangle_t t = *triangle_queue_pop(&pgl.queue);
-            const int in0 = t.c0.z > -t.c0.w; // TODO: can be written as dot(t.c0, clip_plane_vector)
+            const int in0 = t.c0.z > -t.c0.w;
             const int in1 = t.c1.z > -t.c1.w;
             const int in2 = t.c2.z > -t.c2.w;
             const int in_number = in0 + in1 + in2;

@@ -37,10 +37,10 @@ void camera_update(float dt) {
     }
 
     if (active_axis_number == 2) {
-        displacement = scale_vec3f(displacement, M_SQRT1_2);
+        displacement = scale_vec3f(displacement, PGLM_1_SQRT2);
     }
     else if (active_axis_number == 3) {
-        displacement = scale_vec3f(displacement, M_SQRT1_3);
+        displacement = scale_vec3f(displacement, PGLM_1_SQRT3);
     }
 
     camera.position = add_vec3f(camera.position, displacement);

@@ -9,15 +9,15 @@
 
 const vertex_t cube_vertices[] = {
  	//     positions      /                  normals                     /      colors      //
-	{{-0.5f, -0.5f, -0.5f}, {-1.0f/M_SQRT3, -1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
-	{{-0.5f,  0.5f, -0.5f}, {-1.0f/M_SQRT3,  1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f,  0.5f, -0.5f}, { 1.0f/M_SQRT3,  1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f, -0.5f, -0.5f}, { 1.0f/M_SQRT3, -1.0f/M_SQRT3, -1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{-0.5f, -0.5f, -0.5f}, {-1.0f/PGLM_SQRT3, -1.0f/PGLM_SQRT3, -1.0f/PGLM_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{-0.5f,  0.5f, -0.5f}, {-1.0f/PGLM_SQRT3,  1.0f/PGLM_SQRT3, -1.0f/PGLM_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f,  0.5f, -0.5f}, { 1.0f/PGLM_SQRT3,  1.0f/PGLM_SQRT3, -1.0f/PGLM_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f, -0.5f, -0.5f}, { 1.0f/PGLM_SQRT3, -1.0f/PGLM_SQRT3, -1.0f/PGLM_SQRT3}, {1.0f, 0.0f, 0.0f}},
 	 
-	{{-0.5f, -0.5f,  0.5f}, {-1.0f/M_SQRT3, -1.0f/M_SQRT3,  1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f, -0.5f,  0.5f}, { 1.0f/M_SQRT3, -1.0f/M_SQRT3,  1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f,  0.5f,  0.5f}, { 1.0f/M_SQRT3,  1.0f/M_SQRT3,  1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
-	{{-0.5f,  0.5f,  0.5f}, {-1.0f/M_SQRT3,  1.0f/M_SQRT3,  1.0f/M_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{-0.5f, -0.5f,  0.5f}, {-1.0f/PGLM_SQRT3, -1.0f/PGLM_SQRT3,  1.0f/PGLM_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f, -0.5f,  0.5f}, { 1.0f/PGLM_SQRT3, -1.0f/PGLM_SQRT3,  1.0f/PGLM_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f,  0.5f,  0.5f}, { 1.0f/PGLM_SQRT3,  1.0f/PGLM_SQRT3,  1.0f/PGLM_SQRT3}, {1.0f, 0.0f, 0.0f}},
+	{{-0.5f,  0.5f,  0.5f}, {-1.0f/PGLM_SQRT3,  1.0f/PGLM_SQRT3,  1.0f/PGLM_SQRT3}, {1.0f, 0.0f, 0.0f}},
 };
 
 const uint32_t cube_indices[] = {
@@ -46,16 +46,16 @@ mesh_t cube = {
 
 const vertex_t triangle_green_vertices[] = {
     //          positions         /             normals         /      colors      //
-	{{-0.5f,          0.0f,  0.0f}, {-M_SQRT3/2.0f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-	{{ 0.5f,          0.0f,  0.0f}, { M_SQRT3/2.0f,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-	{{ 0.0f,  M_SQRT3/2.0f,  0.0f}, {         0.0f,  1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+	{{-0.5f,          0.0f,  0.0f}, {-PGLM_SQRT3_2, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+	{{ 0.5f,          0.0f,  0.0f}, { PGLM_SQRT3_2,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+	{{ 0.0f,  PGLM_SQRT3_2,  0.0f}, {         0.0f,  1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
 };
 
 const vertex_t triangle_red_vertices[] = {
     //          positions         /             normals         /      colors      //
-	{{-0.5f,          0.0f,  0.0f}, {-M_SQRT3/2.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f,          0.0f,  0.0f}, { M_SQRT3/2.0f,  0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.0f,  M_SQRT3/2.0f,  0.0f}, {         0.0f,  1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+	{{-0.5f,          0.0f,  0.0f}, {-PGLM_SQRT3_2, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f,          0.0f,  0.0f}, { PGLM_SQRT3_2,  0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.0f,  PGLM_SQRT3_2,  0.0f}, {         0.0f,  1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
 };
 
 const uint32_t triangle_indices[] = {
@@ -68,7 +68,7 @@ mesh_t triangle_green = {
     .vertex_number = sizeof(triangle_green_vertices) / sizeof(vertex_t),
     .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
     .mesh_type = MESH_TRIANGLE,
-    .render_type = RENDER_FILLED,
+    .render_type = RENDER_WIRED,
 };
 
 mesh_t triangle_red = {
@@ -77,7 +77,7 @@ mesh_t triangle_red = {
     .vertex_number = sizeof(triangle_red_vertices) / sizeof(vertex_t),
     .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
     .mesh_type = MESH_TRIANGLE,
-    .render_type = RENDER_FILLED,
+    .render_type = RENDER_WIRED,
 };
 
 void button_irq_callback(uint gpio, uint32_t event_mask) {
@@ -119,13 +119,12 @@ int main() {
     set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL|GPIO_IRQ_EDGE_RISE, true);
 
     pgl_viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    pgl_projection(0.1f, 30.0f, M_PI_4);
+    pgl_projection(0.1f, 30.0f, PGLM_PI_4);
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
     pgl_clear_color(0x0000);
 
-    // cube.model = mul_mat4f_mat4f(translate3D((vec3f) {0.0f, 0.2f, -5.0f}), rotate3D_y(M_PI_4));
-    triangle_green.model = translate3D((vec3f) {0.1f, -0.5f/M_SQRT3, -3.5f});
-    triangle_red.model = translate3D((vec3f) {0.0f, -0.5f/M_SQRT3, -3.0f});
+    triangle_red.model = translate3D((vec3f) {0.0f, -PGLM_1_2SQRT3, -3.5f});
+    triangle_green.model = translate3D((vec3f) {0.0f, -PGLM_1_2SQRT3, -3.0f});
 
     uint32_t last_time = time_us_32();
     uint32_t current_time;
@@ -139,9 +138,8 @@ int main() {
 
         pgl_clear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
 
-        // pgl_draw(&cube);
-        pgl_draw(&triangle_red);
         pgl_draw(&triangle_green);
+        pgl_draw(&triangle_red);
         printf("dt: %f\n", dt);
         pgl_display();
     }

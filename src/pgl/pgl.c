@@ -22,88 +22,82 @@ pgl_t pgl = {
     .far = 30.0f,
 };
 
-// ------------------------------------------------ RASTERIZATION -------------------------------------------------------------- // 
+// --------------------------------------------------- RASTERIZATION ----------------------------------------------------------- // 
 
-static void pgl_horizontal_line(int x0, int x1, int y, uint16_t color) {
-    for (int x = x0; x <= x1; x++) {
-        pgl.color_buffer[y][x] = color;
-    }
-}
+static void pgl_horizontal_line(vec3i v0, vec3i v1, uint16_t color) {
+    const int dx = v1.x - v0.x;
+    const int dz = v1.z - v0.z;
+    const int y = v0.y;
 
-static void pgl_vertical_line(int y0, int y1, int x, uint16_t color) {
-    for (int y = y0; y <= y1; y++) {
-        pgl.color_buffer[y][x] = color;
-    }
-}
-
-// Draws a line where x0 < x1 and the slope is in [-1, 1]
-static void pgl_line_low(vec3i* v0, vec3i* v1, uint16_t color) {    
-    int dx = v1->x - v0->x;
-    int dy = v1->y - v0->y;
-    int yi = 1;
-
-    if (dy < 0) {
-        yi = -1;
-        dy = -dy;
-    }
-
-    int dyy = 2 * dy - dx;
-    int y = v0->y;
-
-    for (int x = v0->x; x <= v1->x; x++) {
-        pgl.color_buffer[y][x] = color;
-        if (dyy > 0) {
-            y += yi;
-            dyy += 2 * (dy - dx);
-        }
-        else {
-            dyy += 2 * dy;
+    for (int x = v0.x; x <= v1.x; x++) {
+        int z = dz * (x - v0.x) / dx + v0.z;
+        if (z < pgl.depth_buffer[y][x]) {
+            pgl.color_buffer[y][x] = color;
+            pgl.depth_buffer[y][x] = z;
         }
     }
 }
 
-// Draws a line where x0 < x1 and the slope is in [-inf, -1] U [1, inf]
-static void pgl_line_high(vec3i* v0, vec3i* v1, uint16_t color) {
-    int dx = v1->x - v0->x;
-    int dy = v1->y - v0->y;
-    int xi = 1;
+static void pgl_vertical_line(vec3i v0, vec3i v1, uint16_t color) {
+    const int dy = v1.y - v0.y;
+    const int dz = v1.z - v0.z;
+    const int x = v0.x;
 
-    if (dx < 0) {
-        xi = -1;
-        dx = -dx;
-    }
-
-    int dxx = 2 * dx - dy;
-    int x = v0->x;
-
-    for (int y = v0->y; y <= v1->y; y++) {
-        pgl.color_buffer[y][x] = color;
-        if (dxx > 0) {
-            x += xi;
-            dxx += 2 * (dx - dy);
-        }
-        else {
-            dxx += 2 * dx;
+    for (int y = v0.y; y <= v1.y; y++) {
+        int z = dz * (y - v0.y) / dy + v0.z;
+        if (z < pgl.depth_buffer[y][x]) {
+            pgl.color_buffer[y][x] = color;
+            pgl.depth_buffer[y][x] = z;
         }
     }
 }
 
-// Draws a line and handles all cases
+// TODO: This may not be working properly. Check and fix.
 static void pgl_line(vec3i* v0, vec3i* v1, uint16_t color) {
-    if (abs(v1->y - v0->y) < abs(v1->x - v0->x)) {
-        if (v0->x > v1->x) {
-            pgl_line_low(v1, v0, color);
+    int dx = abs(v1->x - v0->x);
+    int sx = (v0->x < v1->x) ? 1 : -1;
+
+    int dy = -abs(v1->y - v0->y);
+    int sy = (v0->y < v1->y) ? 1 : -1;
+
+    int dz = -abs(v1->z - v0->z);
+    int sz = (v0->z < v1->z) ? 1 : -1;
+
+    int ey = dx + dy;
+    int ez = dx + dz;
+
+    int x = v0->x;
+    int y = v0->y;
+    int z = v0->z;
+
+    while (true) {
+        if (z < pgl.depth_buffer[y][x]) {
+            pgl.color_buffer[y][x] = color;
+            pgl.depth_buffer[y][x] = z;
         }
-        else {
-            pgl_line_low(v0, v1, color);
+
+        if (x == v1->x && y == v1->y) {
+            break;
         }
-    }
-    else {
-        if (v0->y > v1->y) {
-            pgl_line_high(v1, v0, color);
+
+        int ey2 = 2 * ey;
+        if (ey2 >= dy) {
+            ey += dy;
+            x += sx;
         }
-        else {
-            pgl_line_high(v0, v1, color);
+        if (ey2 <= dx) {
+            ey += dx;
+            y += sy;
+        }
+
+        int ez2 = 2 * ez;
+        if (ez2 >= dz) {
+            ez += dz;
+            // x += sx;
+        }
+        if (ez2 <= dx) {
+            ez += dx;
+            z += sz;
         }
     }
 }
@@ -141,31 +135,37 @@ static void pgl_filled_triangle(vec3i* v0, vec3i* v1, vec3i* v2, uint16_t color)
     }
 
     for (int y = v0->y; y <= v2->y; y++) {
-        int x_left;
-        int x_right;
-
+        vec3i left  = {.y = y};
+        vec3i right = {.y = y};
+                              
         if (y >= v1->y) {
             const int dxl = (v2->y != v1->y) ? (y - v1->y) * (v2->x - v1->x) / (v2->y - v1->y) : 0;
             const int dxr = (v2->y != v0->y) ? (y - v0->y) * (v2->x - v0->x) / (v2->y - v0->y) : 0;
-            x_left  = v1->x + dxl;
-            x_right = v0->x + dxr;
+            left.x  = v1->x + dxl;
+            right.x = v0->x + dxr;
+
+            const int dzl = (v2->y != v1->y) ? (y - v1->y) * (v2->z - v1->z) / (v2->y - v1->y) : 0;
+            const int dzr = (v2->y != v0->y) ? (y - v0->y) * (v2->z - v0->z) / (v2->y - v0->y) : 0;
+            left.z = v1->z + dzl;
+            right.z = v0->z + dzr;
         } 
         else {
-            const int dxl = (v1->y != v0->y) ? (y - v0->y) * (v1->x - v0->x) / (v1->y - v0->x) : 0;
-            const int dxr = (v2->y != v0->y) ? (y - v0->y) * (v2->x - v0->x) / (v2->y - v0->x) : 0;
-            x_left  = v0->x + dxl;
-            x_right = v0->x + dxr;
+            const int dxl = (v1->y != v0->y) ? (y - v0->y) * (v1->x - v0->x) / (v1->y - v0->y) : 0;
+            const int dxr = (v2->y != v0->y) ? (y - v0->y) * (v2->x - v0->x) / (v2->y - v0->y) : 0;
+            left.x  = v0->x + dxl;
+            right.x = v0->x + dxr;
+
+            const int dzl = (v1->y != v0->y) ? (y - v0->y) * (v1->z - v0->z) / (v1->y - v0->y) : 0;
+            const int dzr = (v2->y != v0->y) ? (y - v0->y) * (v2->z - v0->z) / (v2->y - v0->y) : 0;
+            left.z  = v0->z + dzl;
+            right.z = v0->z + dzr;
         }
 
-        if (x_left > x_right) {
-            const int temp = x_left;
-            x_left = x_right;
-            x_right = temp;
+        if (left.x > right.x) {
+            swap_vec3i(&left, &right);
         }
 
-        for (int x = x_left; x <= x_right; x++) {
-            pgl.color_buffer[y][x] = color;
-        }
+        pgl_horizontal_line(left, right, color);
     }
 }
 
@@ -480,14 +480,13 @@ void pgl_draw(const mesh_t* mesh) {
             vec3i v0 = {(int)sc0.x, (int)sc0.y, pgl_depth_value(sc0.z)};
             vec3i v1 = {(int)sc1.x, (int)sc1.y, pgl_depth_value(sc1.z)};
             vec3i v2 = {(int)sc2.x, (int)sc2.y, pgl_depth_value(sc2.z)};
-            printf("%d, %d, %d\n", v0.z, v1.z, v2.z);
         
             // Rasterize
             if (mesh->render_type == RENDER_WIRED) {
-                pgl_wired_triangle(&v0, &v1, &v2, 0xF100u);
+                pgl_wired_triangle(&v0, &v1, &v2, vec3f_to_rgb565(mesh->vertices[0].color));
             }
             else if (mesh->render_type == RENDER_FILLED) {
-                pgl_filled_triangle(&v0, &v1, &v2, 0xF100u);
+                pgl_filled_triangle(&v0, &v1, &v2, vec3f_to_rgb565(mesh->vertices[0].color));
             }
         }
     }

@@ -7,78 +7,33 @@
 #include "mesh.h"
 #include "pgl.h"
 
-const vertex_t cube_vertices[] = {
- 	//     positions      /                         normals                          /      colors      //
-	{{-0.5f, -0.5f, -0.5f}, {-1.0f/PGLM_SQRT3f, -1.0f/PGLM_SQRT3f, -1.0f/PGLM_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{-0.5f,  0.5f, -0.5f}, {-1.0f/PGLM_SQRT3f,  1.0f/PGLM_SQRT3f, -1.0f/PGLM_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f,  0.5f, -0.5f}, { 1.0f/PGLM_SQRT3f,  1.0f/PGLM_SQRT3f, -1.0f/PGLM_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f, -0.5f, -0.5f}, { 1.0f/PGLM_SQRT3f, -1.0f/PGLM_SQRT3f, -1.0f/PGLM_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	 
-	{{-0.5f, -0.5f,  0.5f}, {-1.0f/PGLM_SQRT3f, -1.0f/PGLM_SQRT3f,  1.0f/PGLM_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f, -0.5f,  0.5f}, { 1.0f/PGLM_SQRT3f, -1.0f/PGLM_SQRT3f,  1.0f/PGLM_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f,  0.5f,  0.5f}, { 1.0f/PGLM_SQRT3f,  1.0f/PGLM_SQRT3f,  1.0f/PGLM_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{-0.5f,  0.5f,  0.5f}, {-1.0f/PGLM_SQRT3f,  1.0f/PGLM_SQRT3f,  1.0f/PGLM_SQRT3f}, {1.0f, 0.0f, 0.0f}},
+mesh_t meshes[] = {
+    {
+        .vertices = cube_vertices,
+        .indices = cube_indices,
+        .vertex_number = sizeof(cube_vertices) / sizeof(vertex_t),
+        .index_number = sizeof(cube_indices) / sizeof(uint32_t),
+        .mesh_type = MESH_TRIANGLE,
+        .render_type = RENDER_WIRED,
+    }, 
+    {
+        .vertices = triangle_vertices,
+        .indices = triangle_indices,
+        .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
+        .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
+        .mesh_type = MESH_TRIANGLE,
+        .render_type = RENDER_WIRED,
+    },
+    {
+        .vertices = triangle_vertices,
+        .indices = triangle_indices,
+        .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
+        .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
+        .mesh_type = MESH_TRIANGLE,
+        .render_type = RENDER_WIRED,
+    },
 };
-
-const uint32_t cube_indices[] = {
-	0, 1, 2,
-	0, 2, 3,
-	4, 5, 6,
-	4, 6, 7,
-	0, 3, 6, 
-	0, 6, 5,
-	1, 4, 7,
-	1, 7, 2,
-	0, 5, 4,
-	0, 4, 1,
-	2, 7, 6,
-	2, 6, 3,
-};
-
-mesh_t cube = {
-    .vertices = cube_vertices,
-    .indices = cube_indices,
-    .vertex_number = sizeof(cube_vertices) / sizeof(vertex_t),
-    .index_number = sizeof(cube_indices) / sizeof(uint32_t),
-    .mesh_type = MESH_TRIANGLE,
-    .render_type = RENDER_WIRED,
-};
-
-const vertex_t triangle_green_vertices[] = {
-    //          positions          /             normals          /      colors      //
-	{{-0.5f,           0.0f,  0.0f}, {-PGLM_SQRT3_2f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-	{{ 0.5f,           0.0f,  0.0f}, { PGLM_SQRT3_2f,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-	{{ 0.0f,  PGLM_SQRT3_2f,  0.0f}, {          0.0f,  1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-};
-
-const vertex_t triangle_red_vertices[] = {
-    //          positions          /             normals          /      colors      //
-	{{-0.5f,           0.0f,  0.0f}, {-PGLM_SQRT3_2f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f,           0.0f,  0.0f}, { PGLM_SQRT3_2f,  0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.0f,  PGLM_SQRT3_2f,  0.0f}, {          0.0f,  1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-};
-
-const uint32_t triangle_indices[] = {
-    0, 1, 2
-};
-
-mesh_t triangle_green = {
-    .vertices = triangle_green_vertices,
-    .indices = triangle_indices,
-    .vertex_number = sizeof(triangle_green_vertices) / sizeof(vertex_t),
-    .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
-    .mesh_type = MESH_TRIANGLE,
-    .render_type = RENDER_WIRED,
-};
-
-mesh_t triangle_red = {
-    .vertices = triangle_red_vertices,
-    .indices = triangle_indices,
-    .vertex_number = sizeof(triangle_red_vertices) / sizeof(vertex_t),
-    .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
-    .mesh_type = MESH_TRIANGLE,
-    .render_type = RENDER_WIRED,
-};
+const uint32_t mesh_number = sizeof(meshes) / sizeof(mesh_t);
 
 void button_irq_callback(uint gpio, uint32_t event_mask) {
     switch (gpio) {
@@ -123,8 +78,9 @@ int main() {
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
     pgl_clear_color(0x0000);
 
-    triangle_red.model = translate3D((vec3f){0.0f, -PGLM_1_2SQRT3f, -3.5f});
-    triangle_green.model = translate3D((vec3f){0.0f, -PGLM_1_2SQRT3f, -3.0f});
+    meshes[0].model = mul_mat4f_mat4f(translate3D((vec3f){0.0f, 0.0f, 0.0f}), rotate3D_y(PGLM_PI_4f));
+    meshes[1].model = translate3D((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f});
+    meshes[2].model = translate3D((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.5f});
 
     uint32_t last_time = time_us_32();
     uint32_t current_time;
@@ -133,13 +89,12 @@ int main() {
         current_time = time_us_32();
         float dt = (current_time - last_time) / 1E6f;
         last_time = current_time;
-
         camera_update(dt);
 
         pgl_clear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
-
-        pgl_draw(&triangle_green);
-        pgl_draw(&triangle_red);
+        for (uint32_t i = 0; i < mesh_number; i++) {
+            pgl_draw(meshes+i);
+        }
         printf("dt: %f\n", dt);
         pgl_display();
     }

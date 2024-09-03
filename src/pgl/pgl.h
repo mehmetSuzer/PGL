@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "device.h"
 #include "mesh.h"
+#include "shapes.h"
 
 typedef enum {
     COLOR_BUFFER_BIT = 1,

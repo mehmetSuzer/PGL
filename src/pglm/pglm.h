@@ -21,6 +21,9 @@
 
 #include "quat/quat.h"
 
+#include "ray_intersect/ray.h"
+#include "ray_intersect/intersect.h"
+
 #include "transformation/homogeneous.h"
 #include "transformation/transform2d.h"
 #include "transformation/transform3d.h"

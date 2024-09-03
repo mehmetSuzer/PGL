@@ -134,24 +134,6 @@ static void lcd_init() {
     lcd_command(0x29);          //Display On
 }
 
-static void lcd_set_window(uint32_t x_start, uint32_t x_end, uint32_t y_start, uint32_t y_end) {
-    //set the X coordinates
-    lcd_command(0x2A);
-    lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(x_start);
-	lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(x_end-1);
-
-    //set the Y coordinates
-    lcd_command(0x2B);
-    lcd_write_8bit_data(0x00);
-	lcd_write_8bit_data(y_start);
-	lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(y_end-1);
-
-    lcd_command(0X2C);
-}
-
 static void gpio_set(uint pin, bool mode) {
     gpio_init(pin);
     gpio_set_dir(pin, mode);
@@ -193,12 +175,27 @@ static void buttons_init() {
 }
 
 void lcd_display(uint16_t* screen) {
-    for (uint32_t i = 0; i < (SCREEN_HEIGHT*SCREEN_WIDTH); i++) {
+    for (uint32_t i = 0; i < SCREEN_HEIGHT*SCREEN_WIDTH; i++) {
         uint16_t color = screen[i];
         screen[i] = (color << 8) | ((color & 0xFF00) >> 8);
     }
 
-    lcd_set_window(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT);
+    // Set the Xstart and Xend coordinates of the LCD
+    lcd_command(0x2A);
+    lcd_write_8bit_data(0x00);
+    lcd_write_8bit_data(0); // Xstart
+	lcd_write_8bit_data(0x00);
+    lcd_write_8bit_data(SCREEN_WIDTH-1); // Xend
+
+    // Set the Ystart and Yend coordinates of the LCD
+    lcd_command(0x2B);
+    lcd_write_8bit_data(0x00);
+	lcd_write_8bit_data(0); // Ystart
+	lcd_write_8bit_data(0x00);
+    lcd_write_8bit_data(SCREEN_HEIGHT-1); // Yend
+
+    lcd_command(0x2C);
+
     gpio_put(LCD_DC_PIN, HIGH);
     gpio_put(LCD_CS_PIN, LOW);
     spi_write_blocking(SPI_PORT, (uint8_t*)screen, 2*SCREEN_HEIGHT*SCREEN_WIDTH);

@@ -11,6 +11,8 @@ typedef struct {
     float w;
 } vec4f;
 
+#define zero_vec4f ((vec4f){0.0f, 0.0f, 0.0f, 0.0f})
+
 inline void swap_vec4f(vec4f* v1, vec4f* v2) {
     vec4f temp = *v1;
     *v1 = *v2;
@@ -18,7 +20,7 @@ inline void swap_vec4f(vec4f* v1, vec4f* v2) {
 }
 
 inline vec4f neg_vec4f(const vec4f v) {
-    return (vec4f) {
+    return (vec4f){
         -v.x,
         -v.y,
         -v.z,
@@ -27,7 +29,7 @@ inline vec4f neg_vec4f(const vec4f v) {
 }
 
 inline vec4f add_vec4f(const vec4f v1, const vec4f v2) {
-    return (vec4f) {
+    return (vec4f){
         v1.x + v2.x, 
         v1.y + v2.y, 
         v1.z + v2.z,
@@ -36,7 +38,7 @@ inline vec4f add_vec4f(const vec4f v1, const vec4f v2) {
 }
 
 inline vec4f sub_vec4f(const vec4f v1, const vec4f v2) {
-    return (vec4f) {
+    return (vec4f){
         v1.x - v2.x, 
         v1.y - v2.y, 
         v1.z - v2.z,
@@ -45,7 +47,7 @@ inline vec4f sub_vec4f(const vec4f v1, const vec4f v2) {
 }
 
 inline vec4f mul_vec4f(const vec4f v1, const vec4f v2) {
-    return (vec4f) {
+    return (vec4f){
         v1.x * v2.x, 
         v1.y * v2.y, 
         v1.z * v2.z,
@@ -54,7 +56,7 @@ inline vec4f mul_vec4f(const vec4f v1, const vec4f v2) {
 }
 
 inline vec4f div_vec4f(const vec4f v1, const vec4f v2) {
-    return (vec4f) {
+    return (vec4f){
         v1.x / v2.x, 
         v1.y / v2.y, 
         v1.z / v2.z,
@@ -62,8 +64,8 @@ inline vec4f div_vec4f(const vec4f v1, const vec4f v2) {
     };
 }
 
-inline vec4f scale_vec4f(const vec4f v, const float scale) {
-    return (vec4f) {
+inline vec4f scale_vec4f(const vec4f v, float scale) {
+    return (vec4f){
         v.x * scale, 
         v.y * scale, 
         v.z * scale,
@@ -72,7 +74,7 @@ inline vec4f scale_vec4f(const vec4f v, const float scale) {
 }
 
 inline float dot_vec4f(const vec4f v1, const vec4f v2) {
-    return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z + v1.w*v2.w;
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
 }
 
 inline float mag2_vec4f(const vec4f v) {

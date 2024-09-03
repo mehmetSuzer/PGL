@@ -7,6 +7,8 @@ typedef struct {
     int y;
 } vec2i;
 
+#define zero_vec2i ((vec2i){0, 0})
+
 inline void swap_vec2i(vec2i* v1, vec2i* v2) {
     vec2i temp = *v1;
     *v1 = *v2;
@@ -14,42 +16,42 @@ inline void swap_vec2i(vec2i* v1, vec2i* v2) {
 }
 
 inline vec2i neg_vec2i(const vec2i v) {
-    return (vec2i) {
+    return (vec2i){
         -v.x,
         -v.y,
     };
 }
 
 inline vec2i add_vec2i(const vec2i v1, const vec2i v2) {
-    return (vec2i) {
+    return (vec2i){
         v1.x + v2.x, 
         v1.y + v2.y, 
     };
 }
 
 inline vec2i sub_vec2i(const vec2i v1, const vec2i v2) {
-    return (vec2i) {
+    return (vec2i){
         v1.x - v2.x, 
         v1.y - v2.y, 
     };
 }
 
 inline vec2i mul_vec2i(const vec2i v1, const vec2i v2) {
-    return (vec2i) {
+    return (vec2i){
         v1.x * v2.x, 
         v1.y * v2.y, 
     };
 }
 
 inline vec2i div_vec2i(const vec2i v1, const vec2i v2) {
-    return (vec2i) {
+    return (vec2i){
         v1.x / v2.x, 
         v1.y / v2.y, 
     };
 }
 
-inline vec2i scale_vec2i(const vec2i v, const float scale) {
-    return (vec2i) {
+inline vec2i scale_vec2i(const vec2i v, float scale) {
+    return (vec2i){
         (int)(v.x * scale), 
         (int)(v.y * scale), 
     };

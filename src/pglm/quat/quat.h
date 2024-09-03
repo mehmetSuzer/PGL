@@ -10,6 +10,8 @@ typedef struct {
     float w;
 } quat;
 
+#define identity_quat ((quat){(vec3f){0.0f, 0.0f, 0.0f}, 1.0f})
+
 inline void swap_quat(quat* q1, quat* q2) {
     quat temp = *q1;
     *q1 = *q2;
@@ -35,7 +37,7 @@ inline quat quat_from_euler_angles(const vec3f angles) {
 	const float z = c.x * c.y * s.z - s.x * s.y * c.z;
     const vec3f v = {x, y, z};
 
-    return (quat) {v, w};
+    return (quat){v, w};
 }
 
 inline quat quat_from_vec3f_angle(const vec3f v, const float radian) {
@@ -43,11 +45,11 @@ inline quat quat_from_vec3f_angle(const vec3f v, const float radian) {
     const float c = cosf(half_radian);
     const float s = sinf(half_radian);
 
-    return (quat) {scale_vec3f(v, s), c};
+    return (quat){scale_vec3f(v, s), c};
 }
 
 inline quat neg_quat(const quat q) {
-    return (quat) {neg_vec3f(q.v), -q.w};
+    return (quat){neg_vec3f(q.v), -q.w};
 }
 
 inline quat add_quat(const quat q1, const quat q2) {
@@ -58,7 +60,7 @@ inline quat add_quat(const quat q1, const quat q2) {
         q1.v.z + q2.v.z,
     };
 
-    return (quat) {v, w};
+    return (quat){v, w};
 }
 
 inline quat sub_quat(const quat q1, const quat q2) {
@@ -69,7 +71,7 @@ inline quat sub_quat(const quat q1, const quat q2) {
         q1.v.z - q2.v.z,
     };
 
-    return (quat) {v, w};
+    return (quat){v, w};
 }
 
 inline quat scale_quat(const quat q1, const float scale) {
@@ -80,11 +82,11 @@ inline quat scale_quat(const quat q1, const float scale) {
         q1.v.z * scale,
     };
 
-    return (quat) {v, w};
+    return (quat){v, w};
 }
 
 inline quat conjugate_quat(const quat q) {
-    return (quat) {neg_vec3f(q.v), q.w};
+    return (quat){neg_vec3f(q.v), q.w};
 }
 
 inline float norm2_quat(const quat q) {
@@ -114,7 +116,7 @@ inline quat mul_quat_quat(const quat q1, const quat q2) {
     const vec3f v1v2 = cross_vec3f(q1.v, q2.v);
     const vec3f v = add_vec3f(w1v2, add_vec3f(w2v1, v1v2));
 
-    return (quat) {v, w};
+    return (quat){v, w};
 }
 
 inline quat mul_quat_vec3f(const quat q, const vec3f v) {
@@ -123,7 +125,7 @@ inline quat mul_quat_vec3f(const quat q, const vec3f v) {
     const vec3f xyz2 = cross_vec3f(q.v, v);
     const vec3f xyz  = add_vec3f(xyz1, xyz2);
 
-    return (quat) {xyz, w};
+    return (quat){xyz, w};
 }
 
 inline quat mul_vec3f_quat(const vec3f v, const quat q) {
@@ -132,7 +134,7 @@ inline quat mul_vec3f_quat(const vec3f v, const quat q) {
     const vec3f xyz2 = cross_vec3f(v, q.v);
     const vec3f xyz  = add_vec3f(xyz1, xyz2);
 
-    return (quat) {xyz, w};
+    return (quat){xyz, w};
 }
 
 inline vec3f rotate_vec3f(const quat q, const vec3f v) {
@@ -154,7 +156,7 @@ inline mat3f cast_quat_to_mat3f(const quat q) {
     const float wy = q.w   * q.v.y;
     const float wz = q.w   * q.v.z;
 
-    return (mat3f) {
+    return (mat3f){
         1.0f - 2.0f * (yy + zz),        2.0f * (xy - wz),        2.0f * (xz + wy),
                2.0f * (xy + wz), 1.0f - 2.0f * (xx + zz),        2.0f * (yz - wx),
                2.0f * (xz - wy),        2.0f * (yz + wx), 1.0f - 2.0f * (xx + yy),

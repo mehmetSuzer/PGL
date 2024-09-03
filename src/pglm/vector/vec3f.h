@@ -10,6 +10,8 @@ typedef struct {
     float z;
 } vec3f;
 
+#define zero_vec3f ((vec3f){0.0f, 0.0f, 0.0f})
+
 inline void swap_vec3f(vec3f* v1, vec3f* v2) {
     vec3f temp = *v1;
     *v1 = *v2;
@@ -17,7 +19,7 @@ inline void swap_vec3f(vec3f* v1, vec3f* v2) {
 }
 
 inline vec3f neg_vec3f(const vec3f v) {
-    return (vec3f) {
+    return (vec3f){
         -v.x,
         -v.y,
         -v.z,
@@ -25,7 +27,7 @@ inline vec3f neg_vec3f(const vec3f v) {
 }
 
 inline vec3f add_vec3f(const vec3f v1, const vec3f v2) {
-    return (vec3f) {
+    return (vec3f){
         v1.x + v2.x, 
         v1.y + v2.y, 
         v1.z + v2.z,
@@ -33,7 +35,7 @@ inline vec3f add_vec3f(const vec3f v1, const vec3f v2) {
 }
 
 inline vec3f sub_vec3f(const vec3f v1, const vec3f v2) {
-    return (vec3f) {
+    return (vec3f){
         v1.x - v2.x, 
         v1.y - v2.y, 
         v1.z - v2.z,
@@ -41,7 +43,7 @@ inline vec3f sub_vec3f(const vec3f v1, const vec3f v2) {
 }
 
 inline vec3f mul_vec3f(const vec3f v1, const vec3f v2) {
-    return (vec3f) {
+    return (vec3f){
         v1.x * v2.x, 
         v1.y * v2.y, 
         v1.z * v2.z,
@@ -49,15 +51,15 @@ inline vec3f mul_vec3f(const vec3f v1, const vec3f v2) {
 }
 
 inline vec3f div_vec3f(const vec3f v1, const vec3f v2) {
-    return (vec3f) {
+    return (vec3f){
         v1.x / v2.x, 
         v1.y / v2.y, 
         v1.z / v2.z,
     };
 }
 
-inline vec3f scale_vec3f(const vec3f v, const float scale) {
-    return (vec3f) {
+inline vec3f scale_vec3f(const vec3f v, float scale) {
+    return (vec3f){
         v.x * scale, 
         v.y * scale, 
         v.z * scale,
@@ -65,7 +67,7 @@ inline vec3f scale_vec3f(const vec3f v, const float scale) {
 }
 
 inline float dot_vec3f(const vec3f v1, const vec3f v2) {
-    return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
 inline float mag2_vec3f(const vec3f v) {
@@ -86,7 +88,7 @@ inline vec3f cross_vec3f(const vec3f v1, const vec3f v2) {
     const float x = v1.y*v2.z - v1.z*v2.y;
     const float y = v1.z*v2.x - v1.x-v2.z;
     const float z = v1.x*v2.y - v1.y*v2.x;
-    return (vec3f) {x, y, z};
+    return (vec3f){x, y, z};
 }
 
 // Reflects unit vector v with respect to unit vector n.

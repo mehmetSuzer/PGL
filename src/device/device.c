@@ -201,7 +201,7 @@ void lcd_display(uint16_t* screen) {
     lcd_set_window(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT);
     gpio_put(LCD_DC_PIN, HIGH);
     gpio_put(LCD_CS_PIN, LOW);
-    spi_write_blocking(SPI_PORT, (uint8_t*)screen, (SCREEN_HEIGHT*SCREEN_WIDTH) << 1);
+    spi_write_blocking(SPI_PORT, (uint8_t*)screen, 2*SCREEN_HEIGHT*SCREEN_WIDTH);
     gpio_put(LCD_CS_PIN, HIGH);
     lcd_command(0x29);
 }

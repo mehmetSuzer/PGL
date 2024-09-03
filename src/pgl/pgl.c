@@ -52,6 +52,7 @@ static void pgl_vertical_line(const vec3i v0, const vec3i v1, uint16_t color) {
     }
 }
 
+// TODO: may not be working, check and fix.
 static void pgl_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
     int dx = abs(v1->x - v0->x);
     int sx = (v0->x < v1->x) ? 1 : -1;
@@ -265,19 +266,19 @@ void pgl_draw(const mesh_t* mesh) {
                 if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, 1.0f};
+                const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, 1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
                 if      (in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, 1.0f};
+                const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, 1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t){t.c0, c10, c20};
             }
         }
 
@@ -302,19 +303,19 @@ void pgl_draw(const mesh_t* mesh) {
                 if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, -1.0f};
+                const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, -1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
                 if      (in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {0.0f, 0.0f, 1.0f, -1.0f};
+                const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, -1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t){t.c0, c10, c20};
             }
         }
 
@@ -339,19 +340,19 @@ void pgl_draw(const mesh_t* mesh) {
                 if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, 1.0f};
+                const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, 1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
                 if      (in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, 1.0f};
+                const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, 1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t){t.c0, c10, c20};
             }
         }
 
@@ -376,19 +377,19 @@ void pgl_draw(const mesh_t* mesh) {
                 if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, -1.0f};
+                const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, -1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
                 if      (in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {1.0f, 0.0f, 0.0f, -1.0f};
+                const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, -1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t){t.c0, c10, c20};
             }
         }
 
@@ -413,19 +414,19 @@ void pgl_draw(const mesh_t* mesh) {
                 if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, 1.0f};
+                const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, 1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
                 if      (in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, 1.0f};
+                const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, 1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t){t.c0, c10, c20};
             }
         }
 
@@ -450,19 +451,19 @@ void pgl_draw(const mesh_t* mesh) {
                 if      (!in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (!in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, -1.0f};
+                const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, -1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {c10, t.c1, t.c2};
-                subtriangles[++subtriangle_index] = (triangle_t) {c10,  c20, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10, t.c1, t.c2};
+                subtriangles[++subtriangle_index] = (triangle_t){c10,  c20, t.c2};
             }
             else if (in_number == 1) {
                 // Ensure that c0 is the vertex that is in
                 if      (in1) { swap_vec4f(&t.c0, &t.c1); }
                 else if (in2) { swap_vec4f(&t.c0, &t.c2); }
 
-                const vec4f v = (vec4f) {0.0f, 1.0f, 0.0f, -1.0f};
+                const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, -1.0f};
                 pgl_triangle_clip_plane_intersection(&t, v, &c10, &c20);
-                subtriangles[++subtriangle_index] = (triangle_t) {t.c0, c10, c20};
+                subtriangles[++subtriangle_index] = (triangle_t){t.c0, c10, c20};
             }
         }
 

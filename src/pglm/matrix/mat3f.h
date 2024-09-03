@@ -16,26 +16,25 @@ typedef struct {
     float zx, zy, zz; // row2
 } mat3f;
 
+#define zero_mat3f     ((mat3f){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
+#define identity_mat3f ((mat3f){1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f})
+
 inline void swap_mat3f(mat3f* m1, mat3f* m2) {
     mat3f temp = *m1;
     *m1 = *m2;
     *m2 = temp;
 }
 
-inline mat3f diagonal_mat3f(float s) {
-    return (mat3f) {
-           s, 0.0f, 0.0f,
-        0.0f,    s, 0.0f,
-        0.0f, 0.0f,    s,
+inline mat3f diagonal_mat3f(const vec3f v) {
+    return (mat3f){
+         v.x, 0.0f, 0.0f,
+        0.0f,  v.y, 0.0f,
+        0.0f, 0.0f,  v.z,
     };
 }
 
-inline mat3f identity_mat3f() {
-    return diagonal_mat3f(1.0f);
-}
-
 inline mat3f neg_mat3f(const mat3f m) {
-    return (mat3f) {
+    return (mat3f){
         -m.xx, -m.xy, -m.xz,
         -m.yx, -m.yy, -m.yz,
         -m.zx, -m.zy, -m.zz,
@@ -43,7 +42,7 @@ inline mat3f neg_mat3f(const mat3f m) {
 }
 
 inline mat3f mat3f_from_rows(const vec3f row0, const vec3f row1, const vec3f row2) {
-    return (mat3f) {
+    return (mat3f){
         row0.x, row0.y, row0.z,
         row1.x, row1.y, row1.z,
         row2.x, row2.y, row2.z,
@@ -51,7 +50,7 @@ inline mat3f mat3f_from_rows(const vec3f row0, const vec3f row1, const vec3f row
 }
 
 inline mat3f mat3f_from_cols(const vec3f col0, const vec3f col1, const vec3f col2) {
-    return (mat3f) {
+    return (mat3f){
         col0.x, col1.x, col2.x,
         col0.y, col1.y, col2.y,
         col0.z, col1.z, col2.z,
@@ -59,7 +58,7 @@ inline mat3f mat3f_from_cols(const vec3f col0, const vec3f col1, const vec3f col
 }
 
 inline mat3f add_mat3f(const mat3f m1, const mat3f m2) {
-    return (mat3f) {
+    return (mat3f){
         m1.xx + m2.xx, m1.xy + m2.xy, m1.xz + m2.xz,
         m1.yx + m2.yx, m1.yy + m2.yy, m1.yz + m2.yz,
         m1.zx + m2.zx, m1.zy + m2.zy, m1.zz + m2.zz,
@@ -67,7 +66,7 @@ inline mat3f add_mat3f(const mat3f m1, const mat3f m2) {
 }
 
 inline mat3f sub_mat3f(const mat3f m1, const mat3f m2) {
-    return (mat3f) {
+    return (mat3f){
         m1.xx - m2.xx, m1.xy - m2.xy, m1.xz - m2.xz,
         m1.yx - m2.yx, m1.yy - m2.yy, m1.yz - m2.yz,
         m1.zx - m2.zx, m1.zy - m2.zy, m1.zz - m2.zz,
@@ -75,7 +74,7 @@ inline mat3f sub_mat3f(const mat3f m1, const mat3f m2) {
 }
 
 inline mat3f scale_mat3f(const mat3f m, const float scale) {
-    return (mat3f) {
+    return (mat3f){
         m.xx * scale, m.xy * scale, m.xz * scale,
         m.yx * scale, m.yy * scale, m.yz * scale,
         m.zx * scale, m.zy * scale, m.zz * scale,
@@ -83,7 +82,7 @@ inline mat3f scale_mat3f(const mat3f m, const float scale) {
 }
 
 inline vec3f mul_mat3f_vec3f(const mat3f m, const vec3f v) {
-    return (vec3f) {
+    return (vec3f){
         m.xx * v.x + m.xy * v.y + m.xz * v.z, // x
         m.yx * v.x + m.yy * v.y + m.yz * v.z, // y
         m.zx * v.x + m.zy * v.y + m.zz * v.z, // z
@@ -91,7 +90,7 @@ inline vec3f mul_mat3f_vec3f(const mat3f m, const vec3f v) {
 }
 
 inline mat3f mul_mat3f_mat3f(const mat3f m1, const mat3f m2) {
-    return (mat3f) {
+    return (mat3f){
         m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx,
         m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy,
         m1.xx * m2.xz + m1.xy * m2.yz + m1.xz * m2.zz,
@@ -107,7 +106,7 @@ inline mat3f mul_mat3f_mat3f(const mat3f m1, const mat3f m2) {
 }
 
 inline mat3f tr_mat3f(const mat3f m) {
-    return (mat3f) {
+    return (mat3f){
         m.xx, m.yx, m.zx,
         m.xy, m.yy, m.zy,
         m.xz, m.yz, m.zz,
@@ -123,7 +122,7 @@ inline float det_mat3f(const mat3f m) {
 inline mat3f inv_mat3f(const mat3f m) {
     const float one_over_determinant = 1.0f / det_mat3f(m);
 
-    return (mat3f) {
+    return (mat3f){
         (m.yy * m.zz - m.yz * m.zy) * one_over_determinant,
         (m.xz * m.zy - m.xy * m.zz) * one_over_determinant,
         (m.xy * m.yz - m.xz * m.yy) * one_over_determinant,
@@ -151,7 +150,7 @@ inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
     const float dety = m.xx * factor3 - v.x  * factor1 + m.xz * factor4;
     const float detz = v.x  * factor2 - m.xx * factor5 - m.xy * factor4;
 
-    return (vec3f) {
+    return (vec3f){
         detx * one_over_determinant, // x
         dety * one_over_determinant, // y
         detz * one_over_determinant, // z
@@ -159,7 +158,7 @@ inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
 }
 
 inline mat3f cast_mat2f_to_mat3f(const mat2f m) {
-    return (mat3f) {
+    return (mat3f){
         m.xx, m.xy, 0.0f,
         m.yx, m.yy, 0.0f,
         0.0f, 0.0f, 1.0f,

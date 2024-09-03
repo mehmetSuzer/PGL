@@ -18,27 +18,26 @@ typedef struct {
     float wx, wy, wz, ww; // row3
 } mat4f;
 
+#define zero_mat4f     ((mat4f){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
+#define identity_mat4f ((mat4f){1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f})
+
 inline void swap_mat4f(mat4f* m1, mat4f* m2) {
     mat4f temp = *m1;
     *m1 = *m2;
     *m2 = temp;
 }
 
-inline mat4f diagonal_mat4f(float s) {
-    return (mat4f) {
-           s, 0.0f, 0.0f, 0.0f,
-        0.0f,    s, 0.0f, 0.0f,
-        0.0f, 0.0f,    s, 0.0f,
-        0.0f, 0.0f, 0.0f,    s,
+inline mat4f diagonal_mat4f(const vec4f v) {
+    return (mat4f){
+         v.x, 0.0f, 0.0f, 0.0f,
+        0.0f,  v.y, 0.0f, 0.0f,
+        0.0f, 0.0f,  v.z, 0.0f,
+        0.0f, 0.0f, 0.0f,  v.w,
     };
 }
 
-inline mat4f identity_mat4f() {
-    return diagonal_mat4f(1.0f);
-}
-
 inline mat4f neg_mat4f(const mat4f m) {
-    return (mat4f) {
+    return (mat4f){
         -m.xx, -m.xy, -m.xz, -m.xw,
         -m.yx, -m.yy, -m.yz, -m.yw,
         -m.zx, -m.zy, -m.zz, -m.zw,
@@ -47,7 +46,7 @@ inline mat4f neg_mat4f(const mat4f m) {
 }
 
 inline mat4f mat4f_from_rows(const vec4f row0, const vec4f row1, const vec4f row2, const vec4f row3) {
-    return (mat4f) {
+    return (mat4f){
         row0.x, row0.y, row0.z, row0.w,
         row1.x, row1.y, row1.z, row1.w,
         row2.x, row2.y, row2.z, row2.w,
@@ -56,7 +55,7 @@ inline mat4f mat4f_from_rows(const vec4f row0, const vec4f row1, const vec4f row
 }
 
 inline mat4f mat4f_from_cols(const vec4f col0, const vec4f col1, const vec4f col2, const vec4f col3) {
-    return (mat4f) {
+    return (mat4f){
         col0.x, col1.x, col2.x, col3.x,
         col0.y, col1.y, col2.y, col3.y,
         col0.z, col1.z, col2.z, col3.z,
@@ -65,7 +64,7 @@ inline mat4f mat4f_from_cols(const vec4f col0, const vec4f col1, const vec4f col
 }
 
 inline mat4f add_mat4f(const mat4f m1, const mat4f m2) {
-    return (mat4f) {
+    return (mat4f){
         m1.xx + m2.xx, m1.xy + m2.xy, m1.xz + m2.xz, m1.xw + m2.xw,
         m1.yx + m2.yx, m1.yy + m2.yy, m1.yz + m2.yz, m1.yw + m2.yw,
         m1.zx + m2.zx, m1.zy + m2.zy, m1.zz + m2.zz, m1.zw + m2.zw,
@@ -74,7 +73,7 @@ inline mat4f add_mat4f(const mat4f m1, const mat4f m2) {
 }
 
 inline mat4f sub_mat4f(const mat4f m1, const mat4f m2) {
-    return (mat4f) {
+    return (mat4f){
         m1.xx - m2.xx, m1.xy - m2.xy, m1.xz - m2.xz, m1.xw - m2.xw,
         m1.yx - m2.yx, m1.yy - m2.yy, m1.yz - m2.yz, m1.yw - m2.yw,
         m1.zx - m2.zx, m1.zy - m2.zy, m1.zz - m2.zz, m1.zw - m2.zw,
@@ -83,7 +82,7 @@ inline mat4f sub_mat4f(const mat4f m1, const mat4f m2) {
 }
 
 inline mat4f scale_mat4f(const mat4f m, const float scale) {
-    return (mat4f) {
+    return (mat4f){
         m.xx * scale, m.xy * scale, m.xz * scale, m.xw * scale,
         m.yx * scale, m.yy * scale, m.yz * scale, m.yw * scale,
         m.zx * scale, m.zy * scale, m.zz * scale, m.zw * scale,
@@ -92,7 +91,7 @@ inline mat4f scale_mat4f(const mat4f m, const float scale) {
 }
 
 inline vec4f mul_mat4f_vec4f(const mat4f m, const vec4f v) {
-    return (vec4f) {
+    return (vec4f){
         m.xx * v.x + m.xy * v.y + m.xz * v.z + m.xw * v.w, // x
         m.yx * v.x + m.yy * v.y + m.yz * v.z + m.yw * v.w, // y
         m.zx * v.x + m.zy * v.y + m.zz * v.z + m.zw * v.w, // z
@@ -101,7 +100,7 @@ inline vec4f mul_mat4f_vec4f(const mat4f m, const vec4f v) {
 }
 
 static inline mat4f mul_mat4f_mat4f(const mat4f m1, const mat4f m2) {
-    return (mat4f) {
+    return (mat4f){
         m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx + m1.xw * m2.wx,
         m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy + m1.xw * m2.wy,
         m1.xx * m2.xz + m1.xy * m2.yz + m1.xz * m2.zz + m1.xw * m2.wz,
@@ -125,7 +124,7 @@ static inline mat4f mul_mat4f_mat4f(const mat4f m1, const mat4f m2) {
 }
 
 inline mat4f tr_mat4f(const mat4f m) {
-    return (mat4f) {
+    return (mat4f){
         m.xx, m.yx, m.zx, m.wx,
         m.xy, m.yy, m.zy, m.wy,
         m.xz, m.yz, m.zz, m.wz,
@@ -190,10 +189,10 @@ static inline mat4f inv_mat4f(const mat4f m) {
 }
 
 static inline vec4f solve_cramers_mat4f(const mat4f m, const vec4f v) {
-    const vec4f col0 = (vec4f) {m.xx, m.yx, m.zx, m.wx};
-    const vec4f col1 = (vec4f) {m.xy, m.yy, m.zy, m.wy};
-    const vec4f col2 = (vec4f) {m.xz, m.yz, m.zz, m.wz};
-    const vec4f col3 = (vec4f) {m.xw, m.yw, m.zw, m.ww};
+    const vec4f col0 = (vec4f){m.xx, m.yx, m.zx, m.wx};
+    const vec4f col1 = (vec4f){m.xy, m.yy, m.zy, m.wy};
+    const vec4f col2 = (vec4f){m.xz, m.yz, m.zz, m.wz};
+    const vec4f col3 = (vec4f){m.xw, m.yw, m.zw, m.ww};
 
     const mat4f m0 = mat4f_from_cols(   v, col1, col2, col3);
     const mat4f m1 = mat4f_from_cols(col0,    v, col2, col3);
@@ -211,11 +210,11 @@ static inline vec4f solve_cramers_mat4f(const mat4f m, const vec4f v) {
     const float z = det2 * one_over_determinant;
     const float w = det3 * one_over_determinant;
 
-    return (vec4f) {x, y, z, w};
+    return (vec4f){x, y, z, w};
 }
 
 inline mat4f cast_mat3f_to_mat4f(const mat3f m) {
-    return (mat4f) {
+    return (mat4f){
         m.xx, m.xy, m.xz, 0.0f,
         m.yx, m.yy, m.yz, 0.0f,
         m.zx, m.zy, m.zz, 0.0f,

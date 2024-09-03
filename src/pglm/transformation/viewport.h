@@ -10,7 +10,7 @@ inline mat4f viewport(int x, int y, uint32_t width, uint32_t height) {
     const float hw =  width * 0.5f;
     const float hh = height * 0.5f;
 
-    return (mat4f) {
+    return (mat4f){
           hw,  0.0f,   0.0f,  x + hw,
         0.0f,   -hh,   0.0f,  y + hh,
         0.0f,  0.0f,   0.5f,    0.5f,

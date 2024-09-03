@@ -9,6 +9,8 @@ typedef struct {
     float y;
 } vec2f;
 
+#define zero_vec2f ((vec2f){0.0f, 0.0f})
+
 inline void swap_vec2f(vec2f* v1, vec2f* v2) {
     vec2f temp = *v1;
     *v1 = *v2;
@@ -16,49 +18,49 @@ inline void swap_vec2f(vec2f* v1, vec2f* v2) {
 }
 
 inline vec2f neg_vec2f(const vec2f v) {
-    return (vec2f) {
+    return (vec2f){
         -v.x,
         -v.y,
     };
 }
 
 inline vec2f add_vec2f(const vec2f v1, const vec2f v2) {
-    return (vec2f) {
+    return (vec2f){
         v1.x + v2.x, 
         v1.y + v2.y,
     };
 }
 
 inline vec2f sub_vec2f(const vec2f v1, const vec2f v2) {
-    return (vec2f) {
+    return (vec2f){
         v1.x - v2.x, 
         v1.y - v2.y,
     };
 }
 
 inline vec2f mul_vec2f(const vec2f v1, const vec2f v2) {
-    return (vec2f) {
+    return (vec2f){
         v1.x * v2.x, 
         v1.y * v2.y,
     };
 }
 
 inline vec2f div_vec2f(const vec2f v1, const vec2f v2) {
-    return (vec2f) {
+    return (vec2f){
         v1.x / v2.x, 
         v1.y / v2.y,
     };
 }
 
-inline vec2f scale_vec2f(const vec2f v, const float scale) {
-    return (vec2f) {
+inline vec2f scale_vec2f(const vec2f v, float scale) {
+    return (vec2f){
         v.x * scale, 
         v.y * scale,
     };
 }
 
 inline float dot_vec2f(const vec2f v1, const vec2f v2) {
-    return v1.x*v2.x + v1.y*v2.y;
+    return v1.x * v2.x + v1.y * v2.y;
 }
 
 inline float mag2_vec2f(const vec2f v) {

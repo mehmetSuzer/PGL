@@ -13,81 +13,80 @@ typedef struct {
     float yx, yy; // row1
 } mat2f;
 
+#define zero_mat2f     ((mat2f){0.0f, 0.0f, 0.0f, 0.0f})
+#define identity_mat2f ((mat2f){1.0f, 0.0f, 0.0f, 1.0f})
+
 inline void swap_mat2f(mat2f* m1, mat2f* m2) {
     mat2f temp = *m1;
     *m1 = *m2;
     *m2 = temp;
 }
 
-inline mat2f diagonal_mat2f(float s) {
-    return (mat2f) {
-           s, 0.0f,
-        0.0f,    s,
+inline mat2f diagonal_mat2f(const vec2f v) {
+    return (mat2f){
+         v.x, 0.0f,
+        0.0f,  v.y,
     };
 }
 
-inline mat2f identity_mat2f() {
-    return diagonal_mat2f(1.0f);
-}
-
 inline mat2f neg_mat2f(const mat2f m) {
-    return (mat2f) {
+    return (mat2f){
         -m.xx, -m.xy,
         -m.yx, -m.yy,
     };
 }
 
 inline mat2f mat2f_from_rows(const vec2f row0, const vec2f row1) {
-    return (mat2f) {
+    return (mat2f){
         row0.x, row0.y,
         row1.x, row1.y,
     };
 }
 
 inline mat2f mat2f_from_cols(const vec2f col0, const vec2f col1) {
-    return (mat2f) {
+    return (mat2f){
         col0.x, col1.x,
         col0.y, col1.y,
     };
 }
 
 inline mat2f add_mat2f(const mat2f m1, const mat2f m2) {
-    return (mat2f) {
+    return (mat2f){
         m1.xx + m2.xx, m1.xy + m2.xy, 
         m1.yx + m2.yx, m1.yy + m2.yy,
     };
 }
 
 inline mat2f sub_mat2f(const mat2f m1, const mat2f m2) {
-    return (mat2f) {
+    return (mat2f){
         m1.xx - m2.xx, m1.xy - m2.xy, 
         m1.yx - m2.yx, m1.yy - m2.yy,
     };
 }
 
 inline mat2f scale_mat2f(const mat2f m, float scale) {
-    return (mat2f) {
+    return (mat2f){
         m.xx * scale, m.xy * scale, 
         m.yx * scale, m.yy * scale,
     };
 }
 
 inline vec2f mul_mat2f_vec2f(const mat2f m, const vec2f v) {
-    return (vec2f) {
+    return (vec2f){
         m.xx * v.x + m.xy * v.y, // x
         m.yx * v.x + m.yy * v.y, // y
     };
 }
 
 inline mat2f mul_mat2f_mat2f(const mat2f m1, const mat2f m2) {
-    return (mat2f) {
+    return (mat2f){
         m1.xx * m2.xx + m1.xy * m2.yx, m1.xx * m2.xy + m1.xy * m2.yy,
         m1.yx * m2.xx + m1.yy * m2.yx, m1.yx * m2.xy + m1.yy * m2.yy,
     };
 }
 
 inline mat2f tr_mat2f(const mat2f m) {
-    return (mat2f) {
+    return (mat2f){
         m.xx, m.yx, 
         m.xy, m.yy,
     };
@@ -100,7 +99,7 @@ inline float det_mat2f(const mat2f m) {
 inline mat2f inv_mat2f(const mat2f m) {
     const float one_over_determinant = 1.0f / det_mat2f(m);
 
-    return (mat2f) {
+    return (mat2f){
          m.yy * one_over_determinant, -m.xy * one_over_determinant, 
         -m.yx * one_over_determinant,  m.xx * one_over_determinant,
     };
@@ -111,7 +110,7 @@ inline vec2f solve_cramers_mat2f(const mat2f m, const vec2f v) {
     const float detx = m.yy * v.x - m.xy * v.y;
     const float dety = m.xx * v.y - m.yx * v.x;
 
-    return (vec2f) {
+    return (vec2f){
         detx * one_over_determinant, // x
         dety * one_over_determinant, // y
     };

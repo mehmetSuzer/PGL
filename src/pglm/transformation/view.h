@@ -10,7 +10,7 @@ inline mat4f view(const vec3f position, const vec3f right, const vec3f up, const
     const float dotu = dot_vec3f(up, position);
     const float dotf = dot_vec3f(forward, position);
     
-    return (mat4f) {
+    return (mat4f){
            right.x,    right.y,    right.z, -dotr,
               up.x,       up.y,       up.z, -dotu,
         -forward.x, -forward.y, -forward.z,  dotf,

@@ -2,6 +2,8 @@
 #include "pgl.h"
 #include "pgl_queue.h"
 
+// #define BROAD_PHASE_CLIPPING
+
 #define PGL_DEFAULT_CLEAR_COLOR 0x0000u
 #define PGL_DEFAULT_NEAR    0.1f
 #define PGL_DEFAULT_FAR     30.0f
@@ -14,6 +16,7 @@ typedef struct {
     mat4f viewport;
     float near;
     float far;
+    float fov;
     float depth_coef;
     uint16_t clear_color;
 } pgl_t;
@@ -182,6 +185,7 @@ void pgl_view(const vec3f position, const vec3f right, const vec3f up, const vec
 void pgl_projection(float near, float far, float fov) {
     pgl.near = near;
     pgl.far = far;
+    pgl.fov = fov;
     pgl.depth_coef = 255.0f / (far - near);
     pgl.projection = perspective(fov, ASPECT_RATIO, near, far);
 }
@@ -225,10 +229,26 @@ static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, 
 }
 
 void pgl_draw(const mesh_t* mesh) {
-    const mat4f projection_view_model = mul_mat4f_mat4f(pgl.projection, mul_mat4f_mat4f(pgl.view, mesh->model));
+    const mat4f view_model = mul_mat4f_mat4f(pgl.view, mesh->model);
+    const mat4f projection_view_model = mul_mat4f_mat4f(pgl.projection, view_model);
 
-    // TODO: Broad Phase Clipping
+#ifdef BROAD_PHASE_CLIPPING
+    // TODO: Needs optimization 
+    const vec3f center = from_homogeneous(mul_mat4f_vec4f(view_model, to_homogeneous(mesh->bounding_volume.center)));
+    const plane_t left   = {{ cosf(pgl.fov * 0.5f),                  0.0f, -sinf(pgl.fov * 0.5f)}, 0.0f};
+    const plane_t right  = {{-cosf(pgl.fov * 0.5f),                  0.0f, -sinf(pgl.fov * 0.5f)}, 0.0f};
+    const plane_t bottom = {{                 0.0f,  cosf(pgl.fov * 0.5f), -sinf(pgl.fov * 0.5f)}, 0.0f};
+    const plane_t top    = {{                 0.0f, -cosf(pgl.fov * 0.5f), -sinf(pgl.fov * 0.5f)}, 0.0f};
 
+    if (plane_signed_distance(left, center)   < -mesh->bounding_volume.radius ||
+        plane_signed_distance(right, center)  < -mesh->bounding_volume.radius ||
+        plane_signed_distance(bottom, center) < -mesh->bounding_volume.radius ||
+        plane_signed_distance(top, center)    < -mesh->bounding_volume.radius) {
+        return;
+    }
+#endif
+    
+    // Triangle Clipping
     pgl_queue_t queue;
     pgl_queue_triangle_t subtriangles[16];
     int subtriangle_index;

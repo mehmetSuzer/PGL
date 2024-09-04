@@ -18,6 +18,7 @@ typedef enum {
 
 typedef struct {
     mat4f model;
+    sphere_t bounding_volume;
     const vertex_t* vertices;
     const uint32_t* indices;
     uint32_t vertex_number;
@@ -40,5 +41,7 @@ extern const uint32_t triangle_pyramid_indices[12];
 
 extern const vertex_t square_pyramid_vertices[5];
 extern const uint32_t square_pyramid_indices[18];
+
+void find_mesh_bounding_volume(mesh_t* mesh);
 
 #endif // __MESH_H__

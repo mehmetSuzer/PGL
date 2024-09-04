@@ -22,6 +22,7 @@
 #include "quat/quat.h"
 
 #include "ray_intersect/ray.h"
+#include "ray_intersect/primitive.h"
 #include "ray_intersect/intersect.h"
 
 #include "transformation/homogeneous.h"

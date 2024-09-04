@@ -12,7 +12,7 @@ static inline bool intersect_sphere(const ray_t ray, const sphere_t sphere, floa
     const float dot = dot_vec3f(center_to_source, ray.dir);
     const float quarter_discriminant = dot * dot - dist2 + sphere.radius * sphere.radius;
 
-    if (quarter_discriminant < 0.0f) {
+    if (quarter_discriminant < 1E-6f) {
         return false;
     }
 
@@ -36,12 +36,23 @@ static inline bool intersect_triangle(const ray_t ray, const triangle_t triangle
     const vec3f solution = solve_cramers_mat3f(matrix, vector);
 
     // Alpha > epsilon and Beta > epsilon and Alpha + Beta < 1.0 and near < t < far
-    if (solution.x > 0.0f && solution.y > 0.0f && solution.x + solution.y < 1.0f && near < solution.z && solution.z < far) {
+    if (solution.x > 1E-6f && solution.y > 1E-6f && solution.x + solution.y < 1.0f && near < solution.z && solution.z < far) {
         *t = solution.z;
         return true;
     }
 
     return false;
+}
+
+static inline bool intersect_plane(const ray_t ray, const plane_t plane, float near, float far, float* t) {
+    if (dot_vec3f(ray.dir, plane.normal) < 1E-6f) {
+        return false;
+    }
+
+    const float dot_sn = dot_vec3f(ray.source, plane.normal);
+    const float dot_dn = dot_vec3f(ray.dir, plane.normal);
+    *t = -(plane.d + dot_sn) / dot_dn;
+    return true;
 }
 
 #endif // __INTERSECT_H__

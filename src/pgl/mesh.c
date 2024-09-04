@@ -98,5 +98,19 @@ const uint32_t square_pyramid_indices[18] = {
 // ------------------------------------------------------------------------------------------------------ //
 
 void find_mesh_bounding_volume(mesh_t* mesh) {
+	vec3f center = {0.0f, 0.0f, 0.0f};
+	for (uint32_t i = 0; i < mesh->vertex_number; i++) {
+		center = add_vec3f(center, mesh->vertices[i].position);
+	}
+	center = scale_vec3f(center, 1.0f / mesh->vertex_number);
 
+	float radius = 0.0f;
+	for (uint32_t i = 0; i < mesh->vertex_number; i++) {
+		const float distance = mag_vec3f(sub_vec3f(center, mesh->vertices[i].position));
+		if (distance > radius) {
+			radius = distance;
+		}
+	}
+
+	mesh->bounding_volume = (sphere_t){center, radius};
 }

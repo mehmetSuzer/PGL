@@ -80,7 +80,11 @@ int main() {
     pgl_viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     pgl_projection(0.1f, 30.0f, PGLM_PI_4f);
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
-    pgl_clear_color(0x0000);
+    pgl_clear_color(0x0000u);
+
+    for (uint32_t i = 0; i < mesh_number; i++) {
+        find_mesh_bounding_volume(meshes+i);
+    }
 
     meshes[0].model = mul_mat4f_mat4f(translate3D_mat4f((vec3f){0.0f, 0.0f, -2.0f}), rotate3D_y_mat4f(PGLM_PI_4f));
     meshes[1].model = translate3D_mat4f((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f});

@@ -24,13 +24,13 @@ pgl_t pgl = {
 
 // --------------------------------------------------- RASTERIZATION ----------------------------------------------------------- // 
 
-static void pgl_horizontal_line(const vec3i v0, const vec3i v1, uint16_t color) {
-    const int dx = v1.x - v0.x;
-    const int dz = v1.z - v0.z;
-    const int y = v0.y;
+static void pgl_horizontal_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
+    const int dx = v1->x - v0->x;
+    const int dz = v1->z - v0->z;
+    const int y = v0->y;
 
-    for (int x = v0.x; x <= v1.x; x++) {
-        int z = dz * (x - v0.x) / dx + v0.z;
+    for (int x = v0->x; x <= v1->x; x++) {
+        int z = dz * (x - v0->x) / dx + v0->z;
         if (z < pgl.depth_buffer[y][x]) {
             pgl.color_buffer[y][x] = color;
             pgl.depth_buffer[y][x] = z;
@@ -38,13 +38,13 @@ static void pgl_horizontal_line(const vec3i v0, const vec3i v1, uint16_t color) 
     }
 }
 
-static void pgl_vertical_line(const vec3i v0, const vec3i v1, uint16_t color) {
-    const int dy = v1.y - v0.y;
-    const int dz = v1.z - v0.z;
-    const int x = v0.x;
+static void pgl_vertical_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
+    const int dy = v1->y - v0->y;
+    const int dz = v1->z - v0->z;
+    const int x = v0->x;
 
-    for (int y = v0.y; y <= v1.y; y++) {
-        int z = dz * (y - v0.y) / dy + v0.z;
+    for (int y = v0->y; y <= v1->y; y++) {
+        int z = dz * (y - v0->y) / dy + v0->z;
         if (z < pgl.depth_buffer[y][x]) {
             pgl.color_buffer[y][x] = color;
             pgl.depth_buffer[y][x] = z;
@@ -164,7 +164,7 @@ static void pgl_filled_triangle(vec3i* v0, vec3i* v1, vec3i* v2, uint16_t color)
             swap_vec3i(&left, &right);
         }
 
-        pgl_horizontal_line(left, right, color);
+        pgl_horizontal_line(&left, &right, color);
     }
 }
 

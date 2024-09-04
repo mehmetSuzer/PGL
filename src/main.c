@@ -1,4 +1,4 @@
-// 0.014800 s
+// 0.016573 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
@@ -82,7 +82,7 @@ int main() {
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
     pgl_clear_color(0x0000);
 
-    meshes[0].model = mul_mat4f_mat4f(translate3D_mat4f((vec3f){0.0f, 0.0f, 0.0f}), rotate3D_y_mat4f(PGLM_PI_4f));
+    meshes[0].model = mul_mat4f_mat4f(translate3D_mat4f((vec3f){0.0f, 0.0f, -2.0f}), rotate3D_y_mat4f(PGLM_PI_4f));
     meshes[1].model = translate3D_mat4f((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f});
     meshes[2].model = translate3D_mat4f((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.5f});
 

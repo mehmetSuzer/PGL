@@ -6,13 +6,14 @@
 
 inline mat4f orthographic(float width, float height, float near, float far) {
     const float inverse_far_minus_near = 1.0f / (far - near);
-    mat4f result = identity_mat4f;
+    mat4f result = zero_mat4f;
 	
     result.xx =  2.0f / width;
 	result.yy =  2.0f / height;
 	result.zz = -2.0f * inverse_far_minus_near;
     result.zw = -(far + near) * inverse_far_minus_near;
-
+    result.ww = 1.0f;
+    
     return result;
 }
 

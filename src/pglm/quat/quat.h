@@ -18,7 +18,7 @@ inline void swap_quat(quat* q1, quat* q2) {
     *q2 = temp;
 }
 
-inline quat quat_from_euler_angles(const vec3f angles) {
+inline quat quat_euler_angle(const vec3f angles) {
     const vec3f half_angles = scale_vec3f(angles, 0.5f);
     const vec3f c = {
         cosf(half_angles.x),
@@ -40,7 +40,7 @@ inline quat quat_from_euler_angles(const vec3f angles) {
     return (quat){v, w};
 }
 
-inline quat quat_from_vec3f_angle(const vec3f v, const float radian) {
+inline quat quat_angle_axis(const vec3f v, float radian) {
     const float half_radian = radian * 0.5f;
     const float c = cosf(half_radian);
     const float s = sinf(half_radian);
@@ -74,7 +74,7 @@ inline quat sub_quat(const quat q1, const quat q2) {
     return (quat){v, w};
 }
 
-inline quat scale_quat(const quat q1, const float scale) {
+inline quat scale_quat(const quat q1, float scale) {
     const float w = q1.w * scale;
     const vec3f v = {
         q1.v.x * scale, 

@@ -6,7 +6,6 @@
 
 typedef struct {
     vec3f position;
-    vec3f normal;
     vec3f color;
 } vertex_t;
 

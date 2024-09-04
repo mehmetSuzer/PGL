@@ -8,17 +8,17 @@ typedef enum {
     NEGATIVE = -1,
     NONE = 0,
     POSITIVE = 1,
-} move_t;
+} camera_change_t;
 
 typedef struct {
     vec3f position;
     vec3f forward;
     vec3f up;
     vec3f right;
-    float speed;
-    move_t forward_move;
-    move_t right_move;
-    move_t up_move;
+    camera_change_t forward_change;
+    camera_change_t right_change;
+    camera_change_t up_change;
+    camera_change_t rotate_y_change;
 } camera_t;
 extern camera_t camera;
 

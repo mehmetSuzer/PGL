@@ -4,10 +4,10 @@
 // ------------------------------------------------------------------------------------------------------ //
 
 const vertex_t triangle_vertices[3] = {
-    //          positions          /             normals          /      colors      //
-	{{-0.5f,           0.0f,  0.0f}, {-PGLM_SQRT3_2f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-	{{ 0.5f,           0.0f,  0.0f}, { PGLM_SQRT3_2f,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-	{{ 0.0f,  PGLM_SQRT3_2f,  0.0f}, {          0.0f,  1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+    //           positions          /      colors      //
+	{{-0.5f, -PGLM_1_2SQRT3f,  0.0f}, {0.0f, 1.0f, 0.0f}},
+	{{ 0.5f, -PGLM_1_2SQRT3f,  0.0f}, {0.0f, 1.0f, 0.0f}},
+	{{ 0.0f,   PGLM_1_SQRT3f,  0.0f}, {0.0f, 1.0f, 0.0f}},
 };
 
 const uint32_t triangle_indices[3] = {
@@ -17,11 +17,11 @@ const uint32_t triangle_indices[3] = {
 // ------------------------------------------------------------------------------------------------------ //
 
 const vertex_t square_vertices[4] = {
-    //          positions          /             normals          /      colors      //
-	{{-0.5f, -0.5f,  0.0f}, {-PGLM_1_SQRT2f, -PGLM_1_SQRT2f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-	{{ 0.5f, -0.5f,  0.0f}, { PGLM_1_SQRT2f, -PGLM_1_SQRT2f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-	{{ 0.5f,  0.5f,  0.0f}, { PGLM_1_SQRT2f,  PGLM_1_SQRT2f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-	{{-0.5f,  0.5f,  0.0f}, {-PGLM_1_SQRT2f,  PGLM_1_SQRT2f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+    //      positions     /      colors      //
+	{{-0.5f, -0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}},
+	{{ 0.5f, -0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}},
+	{{ 0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}},
 };
 
 const uint32_t square_indices[6] = {
@@ -32,16 +32,15 @@ const uint32_t square_indices[6] = {
 // ------------------------------------------------------------------------------------------------------ //
 
 const vertex_t cube_vertices[8] = {
- 	//     positions      /                    normals                      /      colors      //
-	{{-0.5f, -0.5f, -0.5f}, {-PGLM_1_SQRT3f, -PGLM_1_SQRT3f, -PGLM_1_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{-0.5f,  0.5f, -0.5f}, {-PGLM_1_SQRT3f,  PGLM_1_SQRT3f, -PGLM_1_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f,  0.5f, -0.5f}, { PGLM_1_SQRT3f,  PGLM_1_SQRT3f, -PGLM_1_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f, -0.5f, -0.5f}, { PGLM_1_SQRT3f, -PGLM_1_SQRT3f, -PGLM_1_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	 
-	{{-0.5f, -0.5f,  0.5f}, {-PGLM_1_SQRT3f, -PGLM_1_SQRT3f,  PGLM_1_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f, -0.5f,  0.5f}, { PGLM_1_SQRT3f, -PGLM_1_SQRT3f,  PGLM_1_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{ 0.5f,  0.5f,  0.5f}, { PGLM_1_SQRT3f,  PGLM_1_SQRT3f,  PGLM_1_SQRT3f}, {1.0f, 0.0f, 0.0f}},
-	{{-0.5f,  0.5f,  0.5f}, {-PGLM_1_SQRT3f,  PGLM_1_SQRT3f,  PGLM_1_SQRT3f}, {1.0f, 0.0f, 0.0f}},
+ 	//     positions      /      colors      //
+	{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{-0.5f,  0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f,  0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{-0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f,  0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{-0.5f,  0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}},
 };
 
 const uint32_t cube_indices[36] = {
@@ -61,18 +60,30 @@ const uint32_t cube_indices[36] = {
 
 // ------------------------------------------------------------------------------------------------------ //
 
-// TODO: triangle pyramid
+const vertex_t triangle_pyramid_vertices[4] = {
+	//                    positions                   /      colors      //
+	{{-0.5f, 					0.0f,  PGLM_1_2SQRT3f}, {0.0f, 1.0f, 0.0f}},
+	{{ 0.5f, 					0.0f,  PGLM_1_2SQRT3f}, {0.0f, 1.0f, 0.0f}},
+	{{ 0.0f, 					0.0f,  -PGLM_1_SQRT3f}, {0.0f, 1.0f, 0.0f}},
+	{{ 0.0f, PGLM_SQRT2f/PGLM_SQRT3f, 		     0.0f}, {0.0f, 1.0f, 0.0f}},
+};
+
+const uint32_t triangle_pyramid_indices[12] = {
+	0, 2, 1,
+	0, 1, 3,
+	1, 2, 3,
+	2, 0, 3, 
+};
 
 // ------------------------------------------------------------------------------------------------------ //
 
-// TODO: calculate normal vectors when necessary
 const vertex_t square_pyramid_vertices[5] = {
-	//         positions /       normals        /     colors       //
-	{{-0.6f, 0.0f, -0.6f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 1.0f, 1.0f}}, 
-	{{ 0.6f, 0.0f, -0.6f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 1.0f, 1.0f}}, 
-	{{ 0.6f, 0.0f,  0.6f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 1.0f, 1.0f}}, 	
-	{{-0.6f, 0.0f,  0.6f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 1.0f, 1.0f}}, 
-	{{ 0.0f, 0.8f,  0.0f}, { 0.0f,  1.0f,  0.0f}, {0.0f, 1.0f, 1.0f}}, 
+	//     positions     /     colors       //
+	{{-0.6f, 0.0f, -0.6f}, {0.0f, 1.0f, 1.0f}}, 
+	{{ 0.6f, 0.0f, -0.6f}, {0.0f, 1.0f, 1.0f}}, 
+	{{ 0.6f, 0.0f,  0.6f}, {0.0f, 1.0f, 1.0f}}, 	
+	{{-0.6f, 0.0f,  0.6f}, {0.0f, 1.0f, 1.0f}}, 
+	{{ 0.0f, 0.8f,  0.0f}, {0.0f, 1.0f, 1.0f}}, 
 };
 
 const uint32_t square_pyramid_indices[18] = {

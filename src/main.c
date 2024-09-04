@@ -38,25 +38,29 @@ const uint32_t mesh_number = sizeof(meshes) / sizeof(mesh_t);
 void button_irq_callback(uint gpio, uint32_t event_mask) {
     switch (gpio) {
     case KEY_FORWARD:
-        camera.forward_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        camera.forward_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
         break;
     case KEY_BACKWARD:
-        camera.forward_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        camera.forward_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
         break;
     case KEY_RIGHT:
-        camera.right_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        camera.right_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
         break;
     case KEY_LEFT:
-        camera.right_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        camera.right_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
         break;
     case KEY_A:
-        camera.up_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        camera.up_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
         break;
     case KEY_B:
-        camera.up_move = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        camera.up_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
         break;
     case KEY_X:
+        camera.rotate_y_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        break;
     case KEY_Y:
+        camera.rotate_y_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        break;
     case KEY_CTRL:
     default:
         break;
@@ -78,9 +82,9 @@ int main() {
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
     pgl_clear_color(0x0000);
 
-    meshes[0].model = mul_mat4f_mat4f(translate3D((vec3f){0.0f, 0.0f, 0.0f}), rotate3D_y(PGLM_PI_4f));
-    meshes[1].model = translate3D((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f});
-    meshes[2].model = translate3D((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.5f});
+    meshes[0].model = mul_mat4f_mat4f(translate3D_mat4f((vec3f){0.0f, 0.0f, 0.0f}), rotate3D_y_mat4f(PGLM_PI_4f));
+    meshes[1].model = translate3D_mat4f((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f});
+    meshes[2].model = translate3D_mat4f((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.5f});
 
     uint32_t last_time = time_us_32();
     uint32_t current_time;

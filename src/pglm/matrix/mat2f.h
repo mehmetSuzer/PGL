@@ -97,22 +97,22 @@ inline float det_mat2f(const mat2f m) {
 }
 
 inline mat2f inv_mat2f(const mat2f m) {
-    const float one_over_determinant = 1.0f / det_mat2f(m);
+    const float inverse_determinant = 1.0f / det_mat2f(m);
 
     return (mat2f){
-         m.yy * one_over_determinant, -m.xy * one_over_determinant, 
-        -m.yx * one_over_determinant,  m.xx * one_over_determinant,
+         m.yy * inverse_determinant, -m.xy * inverse_determinant, 
+        -m.yx * inverse_determinant,  m.xx * inverse_determinant,
     };
 }
 
 inline vec2f solve_cramers_mat2f(const mat2f m, const vec2f v) {
-    const float one_over_determinant = 1.0f / det_mat2f(m);
+    const float inverse_determinant = 1.0f / det_mat2f(m);
     const float detx = m.yy * v.x - m.xy * v.y;
     const float dety = m.xx * v.y - m.yx * v.x;
 
     return (vec2f){
-        detx * one_over_determinant, // x
-        dety * one_over_determinant, // y
+        detx * inverse_determinant, // x
+        dety * inverse_determinant, // y
     };
 }
 

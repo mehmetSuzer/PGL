@@ -81,7 +81,7 @@ inline mat4f sub_mat4f(const mat4f m1, const mat4f m2) {
     };
 }
 
-inline mat4f scale_mat4f(const mat4f m, const float scale) {
+inline mat4f scale_mat4f(const mat4f m, float scale) {
     return (mat4f){
         m.xx * scale, m.xy * scale, m.xz * scale, m.xw * scale,
         m.yx * scale, m.yy * scale, m.yz * scale, m.yw * scale,
@@ -184,8 +184,8 @@ static inline mat4f inv_mat4f(const mat4f m) {
         (m.xx * factor2 - m.xy * factor4 + m.xz * factor5)
     };
 
-    const float one_over_determinant = 1.0f / det_mat4f(m);
-    return scale_mat4f(adjugate, one_over_determinant);
+    const float inverse_determinant = 1.0f / det_mat4f(m);
+    return scale_mat4f(adjugate, inverse_determinant);
 }
 
 static inline vec4f solve_cramers_mat4f(const mat4f m, const vec4f v) {
@@ -199,16 +199,16 @@ static inline vec4f solve_cramers_mat4f(const mat4f m, const vec4f v) {
     const mat4f m2 = mat4f_from_cols(col0, col1,    v, col3);
     const mat4f m3 = mat4f_from_cols(col0, col1, col2,    v);
 
-    const float one_over_determinant = 1.0f / det_mat4f(m);
+    const float inverse_determinant = 1.0f / det_mat4f(m);
     const float det0 = det_mat4f(m0);
     const float det1 = det_mat4f(m1);
     const float det2 = det_mat4f(m2);
     const float det3 = det_mat4f(m3);
 
-    const float x = det0 * one_over_determinant;
-    const float y = det1 * one_over_determinant;
-    const float z = det2 * one_over_determinant;
-    const float w = det3 * one_over_determinant;
+    const float x = det0 * inverse_determinant;
+    const float y = det1 * inverse_determinant;
+    const float z = det2 * inverse_determinant;
+    const float w = det3 * inverse_determinant;
 
     return (vec4f){x, y, z, w};
 }

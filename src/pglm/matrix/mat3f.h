@@ -73,7 +73,7 @@ inline mat3f sub_mat3f(const mat3f m1, const mat3f m2) {
     };
 }
 
-inline mat3f scale_mat3f(const mat3f m, const float scale) {
+inline mat3f scale_mat3f(const mat3f m, float scale) {
     return (mat3f){
         m.xx * scale, m.xy * scale, m.xz * scale,
         m.yx * scale, m.yy * scale, m.yz * scale,
@@ -120,20 +120,20 @@ inline float det_mat3f(const mat3f m) {
 }
 
 inline mat3f inv_mat3f(const mat3f m) {
-    const float one_over_determinant = 1.0f / det_mat3f(m);
+    const float inverse_determinant = 1.0f / det_mat3f(m);
 
     return (mat3f){
-        (m.yy * m.zz - m.yz * m.zy) * one_over_determinant,
-        (m.xz * m.zy - m.xy * m.zz) * one_over_determinant,
-        (m.xy * m.yz - m.xz * m.yy) * one_over_determinant,
+        (m.yy * m.zz - m.yz * m.zy) * inverse_determinant,
+        (m.xz * m.zy - m.xy * m.zz) * inverse_determinant,
+        (m.xy * m.yz - m.xz * m.yy) * inverse_determinant,
         
-        (m.yz * m.zx - m.yx * m.zz) * one_over_determinant,
-        (m.xx * m.zz - m.xz * m.zx) * one_over_determinant,
-        (m.xz * m.yx - m.xx * m.yz) * one_over_determinant,
+        (m.yz * m.zx - m.yx * m.zz) * inverse_determinant,
+        (m.xx * m.zz - m.xz * m.zx) * inverse_determinant,
+        (m.xz * m.yx - m.xx * m.yz) * inverse_determinant,
         
-        (m.yx * m.zy - m.yy * m.zx) * one_over_determinant,
-        (m.xy * m.zx - m.xx * m.zy) * one_over_determinant,
-        (m.xx * m.yy - m.xy * m.yx) * one_over_determinant,
+        (m.yx * m.zy - m.yy * m.zx) * inverse_determinant,
+        (m.xy * m.zx - m.xx * m.zy) * inverse_determinant,
+        (m.xx * m.yy - m.xy * m.yx) * inverse_determinant,
     };
 }
 
@@ -141,19 +141,21 @@ inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
     const float factor0 = m.yy * m.zz - m.yz * m.zy;
     const float factor1 = m.yx * m.zz - m.yz * m.zx;
     const float factor2 = m.yx * m.zy - m.yy * m.zx;
-    const float factor3 = v.y  * m.zz - m.yz * v.z;
-    const float factor4 = m.yx * v.z  - v.y  * m.zx;
-    const float factor5 = v.y  * m.zy - m.yy * v.z;
+    const float factor3 = m.zz * v.y  - m.yz * v.z;
+    const float factor4 = m.yx * v.z  - m.zx * v.y;
+    const float factor5 = m.zy * v.y  - m.yy * v.z;
 
-    const float one_over_determinant = 1.0f / (m.xx * factor0 - m.xy * factor1 + m.xz * factor2);
+    const float determinant = m.xx * factor0 - m.xy * factor1 + m.xz * factor2;
+    const float inverse_determinant = 1.0f / determinant;
+
     const float detx = v.x  * factor0 - m.xy * factor3 + m.xz * factor5;
     const float dety = m.xx * factor3 - v.x  * factor1 + m.xz * factor4;
     const float detz = v.x  * factor2 - m.xx * factor5 - m.xy * factor4;
 
     return (vec3f){
-        detx * one_over_determinant, // x
-        dety * one_over_determinant, // y
-        detz * one_over_determinant, // z
+        detx * inverse_determinant, // x
+        dety * inverse_determinant, // y
+        detz * inverse_determinant, // z
     };
 }
 

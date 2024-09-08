@@ -4,6 +4,9 @@
 
 #include "pico/stdlib.h"
 
+#define LOW  false
+#define HIGH true
+
 #define KEY_A          15u
 #define KEY_B          17u
 #define KEY_X          19u

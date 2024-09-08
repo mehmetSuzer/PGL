@@ -2,7 +2,7 @@
 #include "pgl.h"
 #include "pgl_queue.h"
 
-// #define BROAD_PHASE_CLIPPING
+#define BROAD_PHASE_CLIPPING
 
 #define PGL_DEFAULT_CLEAR_COLOR 0x0000u
 #define PGL_DEFAULT_NEAR    0.1f
@@ -233,17 +233,21 @@ void pgl_draw(const mesh_t* mesh) {
     const mat4f projection_view_model = mul_mat4f_mat4f(pgl.projection, view_model);
 
 #ifdef BROAD_PHASE_CLIPPING
-    // TODO: Needs optimization 
+    // TODO: it is assumed that the window is square, fix it.
+    // TODO: it is better to use lazy_from_homogeneous if view_model is guaranteed to have w = 1.0f.
     const vec3f center = from_homogeneous(mul_mat4f_vec4f(view_model, to_homogeneous(mesh->bounding_volume.center)));
-    const plane_t left   = {{ cosf(pgl.fov * 0.5f),                  0.0f, -sinf(pgl.fov * 0.5f)}, 0.0f};
-    const plane_t right  = {{-cosf(pgl.fov * 0.5f),                  0.0f, -sinf(pgl.fov * 0.5f)}, 0.0f};
-    const plane_t bottom = {{                 0.0f,  cosf(pgl.fov * 0.5f), -sinf(pgl.fov * 0.5f)}, 0.0f};
-    const plane_t top    = {{                 0.0f, -cosf(pgl.fov * 0.5f), -sinf(pgl.fov * 0.5f)}, 0.0f};
+    const float minus_s = -sinf(pgl.fov * 0.5f);
+    const float c       =  cosf(pgl.fov * 0.5f);
 
-    if (plane_signed_distance(left, center)   < -mesh->bounding_volume.radius ||
-        plane_signed_distance(right, center)  < -mesh->bounding_volume.radius ||
+    const plane_t left   = {{   c, 0.0f, minus_s}, 0.0f};
+    const plane_t right  = {{  -c, 0.0f, minus_s}, 0.0f};
+    const plane_t bottom = {{0.0f,    c, minus_s}, 0.0f};
+    const plane_t top    = {{0.0f,   -c, minus_s}, 0.0f};
+
+    if (plane_signed_distance(left,   center) < -mesh->bounding_volume.radius ||
+        plane_signed_distance(right,  center) < -mesh->bounding_volume.radius ||
         plane_signed_distance(bottom, center) < -mesh->bounding_volume.radius ||
-        plane_signed_distance(top, center)    < -mesh->bounding_volume.radius) {
+        plane_signed_distance(top,    center) < -mesh->bounding_volume.radius) {
         return;
     }
 #endif

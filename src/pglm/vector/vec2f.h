@@ -73,7 +73,7 @@ inline float mag_vec2f(const vec2f v) {
 }
 
 inline vec2f normalize_vec2f(const vec2f v) {
-    const float inverse_mag = 1.0f / sqrtf(mag2_vec2f(v));
+    const float inverse_mag = 1.0f / mag_vec2f(v);
     return scale_vec2f(v, inverse_mag);
 }
 

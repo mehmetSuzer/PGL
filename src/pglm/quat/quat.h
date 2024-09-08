@@ -18,6 +18,7 @@ inline void swap_quat(quat* q1, quat* q2) {
     *q2 = temp;
 }
 
+// Returns a unit quaternion equivalent to the rotation corresponding to the (x,y,z) euler angles
 inline quat quat_euler_angle(const vec3f angles) {
     const vec3f half_angles = scale_vec3f(angles, 0.5f);
     const vec3f c = {
@@ -40,6 +41,8 @@ inline quat quat_euler_angle(const vec3f angles) {
     return (quat){v, w};
 }
 
+// v must be a unit vector
+// Returns a unit quaternion
 inline quat quat_angle_axis(const vec3f v, float radian) {
     const float half_radian = radian * 0.5f;
     const float c = cosf(half_radian);
@@ -101,7 +104,8 @@ inline float norm_quat(const quat q) {
 }
 
 inline quat normalize_quat(const quat q) {
-    return scale_quat(q, norm_quat(q));
+    const float inverse_norm = 1.0f / norm_quat(q);
+    return scale_quat(q, inverse_norm);
 }
 
 inline quat inv_quat(const quat q) {
@@ -114,7 +118,7 @@ inline quat mul_quat_quat(const quat q1, const quat q2) {
     const vec3f w1v2 = scale_vec3f(q2.v, q1.w);
     const vec3f w2v1 = scale_vec3f(q1.v, q2.w);
     const vec3f v1v2 = cross_vec3f(q1.v, q2.v);
-    const vec3f v = add_vec3f(w1v2, add_vec3f(w2v1, v1v2));
+    const vec3f v = add_vec3f(add_vec3f(w1v2, w2v1), v1v2);
 
     return (quat){v, w};
 }
@@ -137,7 +141,8 @@ inline quat mul_vec3f_quat(const vec3f v, const quat q) {
     return (quat){xyz, w};
 }
 
-inline vec3f rotate_vec3f(const quat q, const vec3f v) {
+// q must be unit quaternion
+inline vec3f rotate_quat(const quat q, const vec3f v) {
     const vec3f uv  = cross_vec3f(q.v, v);
     const vec3f uuv = cross_vec3f(q.v, uv);
     const vec3f wuv = scale_vec3f(uv, q.w);

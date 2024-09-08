@@ -14,6 +14,18 @@ inline vec4f to_homogeneous(const vec3f v) {
     };
 }
 
+// Use this function if you are sure that v.w is 1.0f.
+// Otherwise, use from_homogeneous.
+inline vec3f lazy_from_homogeneous(const vec4f v) {
+    return (vec3f){
+        v.x,
+        v.y,
+        v.z,
+    };
+}
+
+// Use this function if you are not sure that v.w is 1.0f.
+// Otherwise, use lazy_from_homogeneous.
 inline vec3f from_homogeneous(const vec4f v) {
     return (vec3f){
         v.x / v.w, 

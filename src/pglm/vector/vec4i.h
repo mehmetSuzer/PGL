@@ -62,12 +62,12 @@ inline vec4i div_vec4i(const vec4i v1, const vec4i v2) {
     };
 }
 
-inline vec4i scale_vec4i(const vec4i v, float scale) {
+inline vec4i scale_vec4i(const vec4i v, int scale) {
     return (vec4i){
-        (int)(v.x * scale), 
-        (int)(v.y * scale), 
-        (int)(v.z * scale),
-        (int)(v.w * scale),
+        v.x * scale, 
+        v.y * scale, 
+        v.z * scale,
+        v.w * scale,
     };
 }
 

@@ -49,10 +49,10 @@ void camera_update(float dt) {
     camera.position = add_vec3f(camera.position, displacement);
 
     if (camera.rotate_y_change != NONE) {
-        // TODO: a more efficient way can be implemented such as quaternions
         const float theta = camera.rotate_y_change * CAMERA_ROTATION_SPEED * dt;
-        camera.forward = mul_mat3f_vec3f(rotate3D_y_mat3f(theta), camera.forward);
-        camera.right = mul_mat3f_vec3f(rotate3D_y_mat3f(theta), camera.right);
+        quat rotation = quat_angle_axis(camera.up, theta);
+        camera.forward = rotate_quat(rotation, camera.forward);
+        camera.right = rotate_quat(rotation, camera.right);
     }
 
     pgl_view(camera.position, camera.right, camera.up, camera.forward);

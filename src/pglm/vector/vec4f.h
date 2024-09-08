@@ -87,7 +87,7 @@ inline float mag_vec4f(const vec4f v) {
 }
 
 inline vec4f normalize_vec4f(const vec4f v) {
-    const float inverse_mag = 1.0f / sqrtf(mag2_vec4f(v));
+    const float inverse_mag = 1.0f / mag_vec4f(v);
     return scale_vec4f(v, inverse_mag);
 }
 

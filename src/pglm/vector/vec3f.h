@@ -80,14 +80,14 @@ inline float mag_vec3f(const vec3f v) {
 }
 
 inline vec3f normalize_vec3f(const vec3f v) {
-    const float inverse_mag = 1.0f / sqrtf(mag2_vec3f(v));
+    const float inverse_mag = 1.0f / mag_vec3f(v);
     return scale_vec3f(v, inverse_mag);
 }
 
 inline vec3f cross_vec3f(const vec3f v1, const vec3f v2) {
-    const float x = v1.y*v2.z - v1.z*v2.y;
-    const float y = v1.z*v2.x - v1.x-v2.z;
-    const float z = v1.x*v2.y - v1.y*v2.x;
+    const float x = v1.y * v2.z - v1.z * v2.y;
+    const float y = v1.z * v2.x - v1.x * v2.z;
+    const float z = v1.x * v2.y - v1.y * v2.x;
     return (vec3f){x, y, z};
 }
 

@@ -50,10 +50,10 @@ inline vec2i div_vec2i(const vec2i v1, const vec2i v2) {
     };
 }
 
-inline vec2i scale_vec2i(const vec2i v, float scale) {
+inline vec2i scale_vec2i(const vec2i v, int scale) {
     return (vec2i){
-        (int)(v.x * scale), 
-        (int)(v.y * scale), 
+        v.x * scale, 
+        v.y * scale, 
     };
 }
 

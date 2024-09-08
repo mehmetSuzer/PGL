@@ -2,10 +2,18 @@
 #ifndef __VEC3I_H__
 #define __VEC3I_H__
 
-typedef struct {
-    int x;
-    int y;
-    int z;
+typedef union {
+    struct {
+        int x;
+        int y;
+        int z;
+    };
+
+    struct {
+        int r;
+        int g;
+        int b;
+    };
 } vec3i;
 
 #define zero_vec3i ((vec3i){0, 0, 0})

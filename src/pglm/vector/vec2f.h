@@ -4,9 +4,26 @@
 
 #include "core/epsilon.h"
 
-typedef struct {
-    float x;
-    float y;
+typedef union {
+    struct {
+        float x;
+        float y;
+    };
+
+    struct {
+        float r;
+        float i;
+    };
+
+    struct {
+        float u;
+        float v;
+    };
+
+    struct {
+        float s;
+        float t;
+    };
 } vec2f;
 
 #define zero_vec2f ((vec2f){0.0f, 0.0f})

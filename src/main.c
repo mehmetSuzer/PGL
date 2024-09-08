@@ -91,7 +91,7 @@ int main() {
     meshes[2].model = translate3D_mat4f((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.5f});
 
     uint32_t last_time = time_us_32();
-    uint32_t current_time;
+    uint32_t current_time; 
 
     while (true) {
         current_time = time_us_32();

@@ -137,7 +137,7 @@ inline mat3f inv_mat3f(const mat3f m) {
     };
 }
 
-inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
+static inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
     const float factor0 = m.yy * m.zz - m.yz * m.zy;
     const float factor1 = m.yx * m.zz - m.yz * m.zx;
     const float factor2 = m.yx * m.zy - m.yy * m.zx;

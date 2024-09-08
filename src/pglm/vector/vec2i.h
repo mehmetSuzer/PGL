@@ -2,9 +2,26 @@
 #ifndef __VEC2I_H__
 #define __VEC2I_H__
 
-typedef struct {
-    int x;
-    int y;
+typedef union {
+    struct {
+        int x;
+        int y;
+    };
+
+    struct {
+        int r;
+        int i;
+    };
+
+    struct {
+        int u;
+        int v;
+    };
+
+    struct {
+        int s;
+        int t;
+    };
 } vec2i;
 
 #define zero_vec2i ((vec2i){0, 0})

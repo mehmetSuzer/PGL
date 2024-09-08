@@ -2,11 +2,20 @@
 #ifndef __VEC4I_H__
 #define __VEC4I_H__
 
-typedef struct {
-    int x;
-    int y;
-    int z;
-    int w;
+typedef union {
+    struct {
+        int x;
+        int y;
+        int z;
+        int w;
+    };
+
+    struct {
+        int r;
+        int g;
+        int b;
+        int a;
+    };
 } vec4i;
 
 #define zero_vec4i ((vec4i){0, 0, 0, 0})

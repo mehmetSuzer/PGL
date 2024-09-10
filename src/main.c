@@ -1,4 +1,4 @@
-// 0.016580 s
+// 0.016420 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
@@ -72,7 +72,7 @@ int main() {
         (vec3f){0.0f,  1.0f,  0.0f}    // up
     );
     
-    set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL|GPIO_IRQ_EDGE_RISE, true);
+    set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true);
 
     pgl_viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     pgl_projection(0.1f, 30.0f, PGLM_PI_4f);

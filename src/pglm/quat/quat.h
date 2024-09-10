@@ -19,7 +19,7 @@ inline void swap_quat(quat* q1, quat* q2) {
 }
 
 // Returns a unit quaternion equivalent to the rotation corresponding to the (x,y,z) euler angles
-inline quat quat_euler_angle(const vec3f angles) {
+inline quat quat_euler_angles(const vec3f angles) {
     const vec3f half_angles = scale_vec3f(angles, 0.5f);
     const vec3f c = {
         cosf(half_angles.x),

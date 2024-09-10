@@ -13,24 +13,21 @@ mesh_t meshes[] = {
         .indices = cube_indices,
         .vertex_number = sizeof(cube_vertices) / sizeof(vertex_t),
         .index_number = sizeof(cube_indices) / sizeof(uint32_t),
-        .mesh_type = MESH_TRIANGLE,
-        .render_type = RENDER_WIRED,
+        .mesh_enum = MESH_TRIANGLE | RENDER_WIRED,
     }, 
     {
         .vertices = triangle_vertices,
         .indices = triangle_indices,
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
         .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
-        .mesh_type = MESH_TRIANGLE,
-        .render_type = RENDER_WIRED,
+        .mesh_enum = MESH_TRIANGLE | RENDER_WIRED,
     },
     {
         .vertices = triangle_vertices,
         .indices = triangle_indices,
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
         .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
-        .mesh_type = MESH_TRIANGLE,
-        .render_type = RENDER_WIRED,
+        .mesh_enum = MESH_TRIANGLE | RENDER_WIRED,
     },
 };
 const uint32_t mesh_number = sizeof(meshes) / sizeof(mesh_t);

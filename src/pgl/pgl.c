@@ -5,8 +5,8 @@
 #define BROAD_PHASE_CLIPPING
 
 #define PGL_DEFAULT_CLEAR_COLOR 0x0000u
-#define PGL_DEFAULT_NEAR    0.1f
-#define PGL_DEFAULT_FAR     30.0f
+#define PGL_DEFAULT_NEAR        0.1f
+#define PGL_DEFAULT_FAR         30.0f
 
 typedef struct {
     uint16_t color_buffer[SCREEN_HEIGHT][SCREEN_HEIGHT];
@@ -507,10 +507,10 @@ void pgl_draw(const mesh_t* mesh) {
             vec3i v2 = {(int)sc2.x, (int)sc2.y, (int)(pgl.depth_coef * (subt->c2.w - pgl.near))};
         
             // Rasterize
-            if (mesh->render_type == RENDER_WIRED) {
+            if ((mesh->mesh_enum ^ RENDER_WIRED) == 0) {
                 pgl_wired_triangle(&v0, &v1, &v2, vec3f_to_rgb565(mesh->vertices[0].color));
             }
-            else if (mesh->render_type == RENDER_FILLED) {
+            else if ((mesh->mesh_enum ^ RENDER_FILLED) == 0) {
                 pgl_filled_triangle(&v0, &v1, &v2, vec3f_to_rgb565(mesh->vertices[0].color));
             }
         }

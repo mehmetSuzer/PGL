@@ -19,6 +19,7 @@ pico_sdk_init()
 
 add_subdirectory(src/device)
 add_subdirectory(src/pglm)
+add_subdirectory(src/transform)
 add_subdirectory(src/pgl)
 add_subdirectory(src/light_source)
 add_subdirectory(src/camera)
@@ -35,11 +36,10 @@ pico_add_extra_outputs(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME}
     device
     pglm
+    transform
     pgl
     light_source
     camera
 
-    pico_stdlib
     pico_multicore
-    hardware_spi
 )

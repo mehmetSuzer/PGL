@@ -4,17 +4,14 @@
 
 #include "vertex.h"
 
-// TODO: these enums can be collected under one uint32_t
 typedef enum {
-    MESH_TRIANGLE,
-    MESH_TRIANGLE_FAN,
-    MESH_TRIANGLE_STRIP,
-} mesh_type_t;
+    MESH_TRIANGLE = 0,
+    MESH_TRIANGLE_FAN = 1,
+    MESH_TRIANGLE_STRIP = 2,
 
-typedef enum {
-    RENDER_WIRED,
-    RENDER_FILLED,
-} render_type_t;
+    RENDER_WIRED = 0,
+    RENDER_FILLED = 4,
+} mesh_enum_t;
 
 typedef struct {
     mat4f model;
@@ -23,8 +20,7 @@ typedef struct {
     const uint32_t* indices;
     uint32_t vertex_number;
     uint32_t index_number;
-    mesh_type_t mesh_type;
-    render_type_t render_type;
+    mesh_enum_t mesh_enum;
 } mesh_t;
 
 extern const vertex_t triangle_vertices[3];

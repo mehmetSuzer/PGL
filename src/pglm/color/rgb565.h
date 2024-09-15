@@ -4,40 +4,158 @@
 
 #include "../vector/vec3f.h"
 
-                                                   //   rrrr rggg gggb bbbb
-#define PGLM_RGB565_RED         ((uint16_t)0xF800) // 0b1111 1000 0000 0000
-#define PGLM_RGB565_GREEN       ((uint16_t)0x07E0) // 0b0000 0111 1110 0000
-#define PGLM_RGB565_BLUE        ((uint16_t)0x001F) // 0b0000 0000 0001 1111
-
-#define PGLM_RGB565_YELLOW      (PGLM_RGB565_RED   | PGLM_RGB565_GREEN) // 0b1111 1111 1110 0000
-#define PGLM_RGB565_MAGENTA     (PGLM_RGB565_RED   | PGLM_RGB565_BLUE)  // 0b1111 1000 0001 1111
-#define PGLM_RGB565_CYAN        (PGLM_RGB565_GREEN | PGLM_RGB565_BLUE)  // 0b0000 0111 1111 1111
-
-#define PGLM_RGB565_BLACK       ((uint16_t)0x0000) // 0b0000 0000 0000 0000
-#define PGLM_RGB565_WHITE       (PGLM_RGB565_RED | PGLM_RGB565_GREEN | PGLM_RGB565_BLUE) // 0b1111 1111 1111 1111
-
-#define PGLM_RGB565_DRED        ((uint16_t)0x8000) // 0b1000 0000 0000 0000
-#define PGLM_RGB565_DGREEN      ((uint16_t)0x0400) // 0b0000 0100 0000 0000
-#define PGLM_RGB565_DBLUE       ((uint16_t)0x0010) // 0b0000 0000 0001 0000
-
-#define PGLM_RGB565_DYELLOW     (PGLM_RGB565_DRED   | PGLM_RGB565_DGREEN) // 0b1000 0100 0000 0000
-#define PGLM_RGB565_DMAGENTA    (PGLM_RGB565_DRED   | PGLM_RGB565_DBLUE)  // 0b1000 0000 0001 0000
-#define PGLM_RGB565_DCYAN       (PGLM_RGB565_DGREEN | PGLM_RGB565_DBLUE)  // 0b0000 0100 0001 0000
-
-#define PGLM_RGB565_GRAY        (PGLM_RGB565_DRED | PGLM_RGB565_DGREEN | PGLM_RGB565_DBLUE) // 0b1000 0100 0001 0000
-
-#define PGLM_RGB565_BROWN       ((uint16_t)0xA145) // 0b1010 0001 0100 0101
-#define PGLM_RGB565_ORANGE      ((uint16_t)0xFC07) // 0b1111 1100 0000 0111
-
-
-#define PGLM_RGB565_RED_MAX     ((uint8_t)0x1F)
-#define PGLM_RGB565_GREEN_MAX   ((uint8_t)0x3F)
-#define PGLM_RGB565_BLUE_MAX    ((uint8_t)0x1F)
+#define PGLM_RGB565_ALICEBLUE            ((uint16_t)0xEFBF)
+#define PGLM_RGB565_ANTIQUEWHITE         ((uint16_t)0xF75A)
+#define PGLM_RGB565_AQUA                 ((uint16_t)0x07FF)
+#define PGLM_RGB565_AQUAMARINE           ((uint16_t)0x7FFA)
+#define PGLM_RGB565_AZURE                ((uint16_t)0xEFFF)
+#define PGLM_RGB565_BEIGE                ((uint16_t)0xF7BB)
+#define PGLM_RGB565_BISQUE               ((uint16_t)0xFF18)
+#define PGLM_RGB565_BLACK                ((uint16_t)0x0000)
+#define PGLM_RGB565_BLANCHEDALMOND       ((uint16_t)0xFF59)
+#define PGLM_RGB565_BLUE                 ((uint16_t)0x001F)
+#define PGLM_RGB565_BLUEVIOLET           ((uint16_t)0x897B)
+#define PGLM_RGB565_BROWN                ((uint16_t)0xA145)
+#define PGLM_RGB565_BURLYWOOD            ((uint16_t)0xDDB0)
+#define PGLM_RGB565_CADETBLUE            ((uint16_t)0x64F3)
+#define PGLM_RGB565_CHARTREUSE           ((uint16_t)0x7FE0)
+#define PGLM_RGB565_CHOCOLATE            ((uint16_t)0xD344)
+#define PGLM_RGB565_CORAL                ((uint16_t)0xFBEA)
+#define PGLM_RGB565_CORNFLOWERBLUE       ((uint16_t)0x64BD)
+#define PGLM_RGB565_CORNSILK             ((uint16_t)0xFFBB)
+#define PGLM_RGB565_CRIMSON              ((uint16_t)0xD8A7)
+#define PGLM_RGB565_CYAN                 ((uint16_t)0x07FF)
+#define PGLM_RGB565_DARKBLUE             ((uint16_t)0x0011)
+#define PGLM_RGB565_DARKCYAN             ((uint16_t)0x0451)
+#define PGLM_RGB565_DARKGOLDENROD        ((uint16_t)0xB421)
+#define PGLM_RGB565_DARKGRAY             ((uint16_t)0xAD55)
+#define PGLM_RGB565_DARKGREEN            ((uint16_t)0x0320)
+#define PGLM_RGB565_DARKGREY             ((uint16_t)0xAD55)
+#define PGLM_RGB565_DARKKHAKI            ((uint16_t)0xBDAD)
+#define PGLM_RGB565_DARKMAGENTA          ((uint16_t)0x8811)
+#define PGLM_RGB565_DARKOLIVEGREEN       ((uint16_t)0x5346)
+#define PGLM_RGB565_DARKORANGE           ((uint16_t)0xFC60)
+#define PGLM_RGB565_DARKORCHID           ((uint16_t)0x9999)
+#define PGLM_RGB565_DARKRED              ((uint16_t)0x8800)
+#define PGLM_RGB565_DARKSALMON           ((uint16_t)0xE4AF)
+#define PGLM_RGB565_DARKSEAGREEN         ((uint16_t)0x8DD1)
+#define PGLM_RGB565_DARKSLATEBLUE        ((uint16_t)0x49F1)
+#define PGLM_RGB565_DARKSLATEGRAY        ((uint16_t)0x328A)
+#define PGLM_RGB565_DARKSLATEGREY        ((uint16_t)0x328A)
+#define PGLM_RGB565_DARKTURQUOISE        ((uint16_t)0x0679)
+#define PGLM_RGB565_DARKVIOLET           ((uint16_t)0x901A)
+#define PGLM_RGB565_DEEPPINK             ((uint16_t)0xF8B2)
+#define PGLM_RGB565_DEEPSKYBLUE          ((uint16_t)0x05FF)
+#define PGLM_RGB565_DIMGRAY              ((uint16_t)0x6B4D)
+#define PGLM_RGB565_DIMGREY              ((uint16_t)0x6B4D)
+#define PGLM_RGB565_DODGERBLUE           ((uint16_t)0x249F)
+#define PGLM_RGB565_FIREBRICK            ((uint16_t)0xB104)
+#define PGLM_RGB565_FLORALWHITE          ((uint16_t)0xFFDD)
+#define PGLM_RGB565_FORESTGREEN          ((uint16_t)0x2444)
+#define PGLM_RGB565_FUCHSIA              ((uint16_t)0xF81F)
+#define PGLM_RGB565_GAINSBORO            ((uint16_t)0xDEDB)
+#define PGLM_RGB565_GHOSTWHITE           ((uint16_t)0xF7BF)
+#define PGLM_RGB565_GOLD                 ((uint16_t)0xFEA0)
+#define PGLM_RGB565_GOLDENROD            ((uint16_t)0xDD24)
+#define PGLM_RGB565_GRAY                 ((uint16_t)0x8410)
+#define PGLM_RGB565_GREEN                ((uint16_t)0x0400)
+#define PGLM_RGB565_GREENYELLOW          ((uint16_t)0xAFE6)
+#define PGLM_RGB565_GREY                 ((uint16_t)0x8410)
+#define PGLM_RGB565_HONEYDEW             ((uint16_t)0xEFFD)
+#define PGLM_RGB565_HOTPINK              ((uint16_t)0xFB56)
+#define PGLM_RGB565_INDIANRED            ((uint16_t)0xCAEB)
+#define PGLM_RGB565_INDIGO               ((uint16_t)0x4810)
+#define PGLM_RGB565_IVORY                ((uint16_t)0xFFFD)
+#define PGLM_RGB565_KHAKI                ((uint16_t)0xEF31)
+#define PGLM_RGB565_LAVENDER             ((uint16_t)0xE73E)
+#define PGLM_RGB565_LAVENDERBLUSH        ((uint16_t)0xFF7E)
+#define PGLM_RGB565_LAWNGREEN            ((uint16_t)0x7FC0)
+#define PGLM_RGB565_LEMONCHIFFON         ((uint16_t)0xFFD9)
+#define PGLM_RGB565_LIGHTBLUE            ((uint16_t)0xAEBC)
+#define PGLM_RGB565_LIGHTCORAL           ((uint16_t)0xEC10)
+#define PGLM_RGB565_LIGHTCYAN            ((uint16_t)0xDFFF)
+#define PGLM_RGB565_LIGHTGOLDENRODYELLOW ((uint16_t)0xF7DA)
+#define PGLM_RGB565_LIGHTGRAY            ((uint16_t)0xD69A)
+#define PGLM_RGB565_LIGHTGREEN           ((uint16_t)0x9772)
+#define PGLM_RGB565_LIGHTGREY            ((uint16_t)0xD69A)
+#define PGLM_RGB565_LIGHTPINK            ((uint16_t)0xFDB7)
+#define PGLM_RGB565_LIGHTSALMON          ((uint16_t)0xFD0F)
+#define PGLM_RGB565_LIGHTSEAGREEN        ((uint16_t)0x2595)
+#define PGLM_RGB565_LIGHTSKYBLUE         ((uint16_t)0x867E)
+#define PGLM_RGB565_LIGHTSLATEGRAY       ((uint16_t)0x7453)
+#define PGLM_RGB565_LIGHTSLATEGREY       ((uint16_t)0x7453)
+#define PGLM_RGB565_LIGHTSTEELBLUE       ((uint16_t)0xAE1B)
+#define PGLM_RGB565_LIGHTYELLOW          ((uint16_t)0xFFFB)
+#define PGLM_RGB565_LIME                 ((uint16_t)0x07E0)
+#define PGLM_RGB565_LIMEGREEN            ((uint16_t)0x3666)
+#define PGLM_RGB565_LINEN                ((uint16_t)0xF77C)
+#define PGLM_RGB565_MAGENTA              ((uint16_t)0xF81F)
+#define PGLM_RGB565_MAROON               ((uint16_t)0x8000)
+#define PGLM_RGB565_MEDIUMAQUAMARINE     ((uint16_t)0x6675)
+#define PGLM_RGB565_MEDIUMBLUE           ((uint16_t)0x0019)
+#define PGLM_RGB565_MEDIUMORCHID         ((uint16_t)0xBABA)
+#define PGLM_RGB565_MEDIUMPURPLE         ((uint16_t)0x939B)
+#define PGLM_RGB565_MEDIUMSEAGREEN       ((uint16_t)0x3D8E)
+#define PGLM_RGB565_MEDIUMSLATEBLUE      ((uint16_t)0x7B5D)
+#define PGLM_RGB565_MEDIUMSPRINGGREEN    ((uint16_t)0x07D3)
+#define PGLM_RGB565_MEDIUMTURQUOISE      ((uint16_t)0x4E99)
+#define PGLM_RGB565_MEDIUMVIOLETRED      ((uint16_t)0xC0B0)
+#define PGLM_RGB565_MIDNIGHTBLUE         ((uint16_t)0x18CE)
+#define PGLM_RGB565_MINTCREAM            ((uint16_t)0xF7FE)
+#define PGLM_RGB565_MISTYROSE            ((uint16_t)0xFF1B)
+#define PGLM_RGB565_MOCCASIN             ((uint16_t)0xFF16)
+#define PGLM_RGB565_NAVAJOWHITE          ((uint16_t)0xFEF5)
+#define PGLM_RGB565_NAVY                 ((uint16_t)0x0010)
+#define PGLM_RGB565_OLDLACE              ((uint16_t)0xFFBC)
+#define PGLM_RGB565_OLIVE                ((uint16_t)0x8400)
+#define PGLM_RGB565_OLIVEDRAB            ((uint16_t)0x6C64)
+#define PGLM_RGB565_ORANGE               ((uint16_t)0xFD20)
+#define PGLM_RGB565_ORANGERED            ((uint16_t)0xFA20)
+#define PGLM_RGB565_ORCHID               ((uint16_t)0xDB9A)
+#define PGLM_RGB565_PALEGOLDENROD        ((uint16_t)0xEF35)
+#define PGLM_RGB565_PALEGREEN            ((uint16_t)0x97D2)
+#define PGLM_RGB565_PALETURQUOISE        ((uint16_t)0xAF7D)
+#define PGLM_RGB565_PALEVIOLETRED        ((uint16_t)0xDB92)
+#define PGLM_RGB565_PAPAYAWHIP           ((uint16_t)0xFF7A)
+#define PGLM_RGB565_PEACHPUFF            ((uint16_t)0xFED6)
+#define PGLM_RGB565_PERU                 ((uint16_t)0xCC28)
+#define PGLM_RGB565_PINK                 ((uint16_t)0xFDF9)
+#define PGLM_RGB565_PLUM                 ((uint16_t)0xDD1B)
+#define PGLM_RGB565_POWDERBLUE           ((uint16_t)0xAEFC)
+#define PGLM_RGB565_PURPLE               ((uint16_t)0x8010)
+#define PGLM_RGB565_RED                  ((uint16_t)0xF800)
+#define PGLM_RGB565_ROSYBROWN            ((uint16_t)0xBC71)
+#define PGLM_RGB565_ROYALBLUE            ((uint16_t)0x435B)
+#define PGLM_RGB565_SADDLEBROWN          ((uint16_t)0x8A22)
+#define PGLM_RGB565_SALMON               ((uint16_t)0xF40E)
+#define PGLM_RGB565_SANDYBROWN           ((uint16_t)0xF52C)
+#define PGLM_RGB565_SEAGREEN             ((uint16_t)0x344B)
+#define PGLM_RGB565_SEASHELL             ((uint16_t)0xFFBD)
+#define PGLM_RGB565_SIENNA               ((uint16_t)0x9A85)
+#define PGLM_RGB565_SILVER               ((uint16_t)0xBDF7)
+#define PGLM_RGB565_SKYBLUE              ((uint16_t)0x867D)
+#define PGLM_RGB565_SLATEBLUE            ((uint16_t)0x6AD9)
+#define PGLM_RGB565_SLATEGRAY            ((uint16_t)0x7412)
+#define PGLM_RGB565_SLATEGREY            ((uint16_t)0x7412)
+#define PGLM_RGB565_SNOW                 ((uint16_t)0xFFDE)
+#define PGLM_RGB565_SPRINGGREEN          ((uint16_t)0x07EF)
+#define PGLM_RGB565_STEELBLUE            ((uint16_t)0x4C16)
+#define PGLM_RGB565_TAN                  ((uint16_t)0xD591)
+#define PGLM_RGB565_TEAL                 ((uint16_t)0x0410)
+#define PGLM_RGB565_THISTLE              ((uint16_t)0xD5FA)
+#define PGLM_RGB565_TOMATO               ((uint16_t)0xFB09)
+#define PGLM_RGB565_TURQUOISE            ((uint16_t)0x46F9)
+#define PGLM_RGB565_VIOLET               ((uint16_t)0xEC1D)
+#define PGLM_RGB565_WHEAT                ((uint16_t)0xF6F6)
+#define PGLM_RGB565_WHITE                ((uint16_t)0xFFFF)
+#define PGLM_RGB565_WHITESMOKE           ((uint16_t)0xF7BE)
+#define PGLM_RGB565_YELLOW               ((uint16_t)0xFFE0)
+#define PGLM_RGB565_YELLOWGREEN          ((uint16_t)0x9E66)
 
 inline uint16_t vec3f_to_rgb565(const vec3f color) {
-    const uint8_t red   = (color.x < 1.0f) ? (uint8_t)(color.x * PGLM_RGB565_RED_MAX)   : PGLM_RGB565_RED_MAX; 
-    const uint8_t green = (color.y < 1.0f) ? (uint8_t)(color.y * PGLM_RGB565_GREEN_MAX) : PGLM_RGB565_GREEN_MAX; 
-    const uint8_t blue  = (color.z < 1.0f) ? (uint8_t)(color.z * PGLM_RGB565_BLUE_MAX)  : PGLM_RGB565_BLUE_MAX; 
+    const uint8_t red   = (color.x < 1.0f) ? (uint8_t)(color.x * 0x1Fu) : 0x1Fu; 
+    const uint8_t green = (color.y < 1.0f) ? (uint8_t)(color.y * 0x3Fu) : 0x3Fu; 
+    const uint8_t blue  = (color.z < 1.0f) ? (uint8_t)(color.z * 0x1Fu) : 0x1Fu; 
     const uint16_t rgb565 = (red << 11) | (green << 5) | blue;
     return rgb565;
 }
@@ -47,7 +165,6 @@ inline uint16_t average_rgb565(uint16_t c1, uint16_t c2) {
     c1 >>= 1;
     c2 &= 0xF7DFu;
     c2 >>= 1;
-
     return c1 + c2;
 }
 

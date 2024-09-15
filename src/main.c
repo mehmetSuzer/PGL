@@ -1,4 +1,4 @@
-// 0.016420 s
+// 0.016580 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
@@ -13,21 +13,21 @@ mesh_t meshes[] = {
         .indices = cube_indices,
         .vertex_number = sizeof(cube_vertices) / sizeof(vertex_t),
         .index_number = sizeof(cube_indices) / sizeof(uint32_t),
-        .mesh_enum = MESH_TRIANGLE | RENDER_WIRED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
     }, 
     {
         .vertices = triangle_vertices,
         .indices = triangle_indices,
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
         .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
-        .mesh_enum = MESH_TRIANGLE | RENDER_WIRED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
     },
     {
         .vertices = triangle_vertices,
         .indices = triangle_indices,
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
         .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
-        .mesh_enum = MESH_TRIANGLE | RENDER_WIRED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
     },
 };
 const uint32_t mesh_number = sizeof(meshes) / sizeof(mesh_t);
@@ -77,7 +77,9 @@ int main() {
     pgl_viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     pgl_projection(0.1f, 30.0f, PGLM_PI_4f);
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
-    pgl_clear_color(0x0000u);
+
+    pgl_enable(PGL_DEPTH_TEST);
+    pgl_clear_color(PGLM_RGB565_BLACK);
 
     for (uint32_t i = 0; i < mesh_number; i++) {
         find_mesh_bounding_volume(meshes+i);
@@ -96,7 +98,7 @@ int main() {
         last_time = current_time;
         camera_update(dt);
 
-        pgl_clear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
+        pgl_clear(PGL_COLOR_BUFFER_BIT | PGL_DEPTH_BUFFER_BIT);
         for (uint32_t i = 0; i < mesh_number; i++) {
             pgl_draw(meshes+i);
         }

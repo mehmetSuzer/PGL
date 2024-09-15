@@ -4,7 +4,16 @@
 #define CAMERA_MOVE_SPEED       2.0f
 #define CAMERA_ROTATION_SPEED   1.0f
 
-camera_t camera;
+camera_t camera = {
+    .position = { 0.0f,  0.0f,  0.0f},
+    .forward =  { 0.0f,  0.0f, -1.0f},
+    .up =       { 0.0f,  1.0f,  0.0f},
+    .right =    { 1.0f,  0.0f,  0.0f},
+    .forward_change = NONE,
+    .right_change = NONE,
+    .up_change = NONE,
+    .rotate_y_change = NONE,
+};
 
 void camera_init(const vec3f position, const vec3f forward, const vec3f up) {
     camera.position = position;

@@ -8,7 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_BUILD_TYPE Release)
 set(PICO_PLATFORM rp2040)
-set(PICO_COMPILER pico_arm_gcc)
+set(PICO_COMPILER pico_arm_cortex_m0plus_gcc)
+set(PICO_GCC_TRIPLE arm-none-eabi)
 set(PICO_BOARD pico)
 
 include(pico_sdk_import.cmake)

@@ -9,8 +9,8 @@ typedef enum {
     MESH_TRIANGLE_FAN = 1,
     MESH_TRIANGLE_STRIP = 2,
 
-    RENDER_WIRED = 0,
-    RENDER_FILLED = 4,
+    MESH_RENDER_WIRED = 0,
+    MESH_RENDER_FILLED = 4,
 } mesh_enum_t;
 
 typedef struct {

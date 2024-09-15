@@ -2,13 +2,33 @@
 #include "pgl.h"
 #include "pgl_queue.h"
 
-#define PGL_DEFAULT_CLEAR_COLOR 0x0000u
-#define PGL_DEFAULT_NEAR        0.1f
-#define PGL_DEFAULT_FAR         30.0f
+// Stencil test is disabled.
+// Stencil write mask is enabled. 
+// Stencil function is PGL_NEVER.
+// Stencil op sfail is PGL_KEEP.
+// Stencil op dpfail is PGL_KEEP.
+// Stencil op dppass is PGL_KEEP.
+// Depth test disabled.
+// Depth write mask is enabled.
+// Depth test function is PGL_LESS.
+// Cull face is PGL_CULL_NO.
+// Cull winding order is PGL_CCW.
+#define PGL_DEFAULT_STATE (0 << 0) |            \
+                          (1 << 1) |            \
+                          (PGL_NEVER << 2) |    \
+                          (PGL_KEEP << 5) |     \
+                          (PGL_KEEP << 6) |     \
+                          (PGL_KEEP << 7) |     \
+                          (0 << 8) |            \
+                          (1 << 9) |            \
+                          (PGL_LESS << 10) |    \
+                          (PGL_CULL_NO << 13) | \
+                          (PGL_CCW << 15)
 
 typedef struct {
     uint16_t color_buffer[SCREEN_HEIGHT][SCREEN_HEIGHT];
     uint8_t depth_buffer[SCREEN_HEIGHT][SCREEN_WIDTH];
+    uint8_t stencil_buffer[SCREEN_HEIGHT][SCREEN_WIDTH/8];
     mat4f view;
     mat4f projection;
     mat4f viewport;
@@ -16,16 +36,16 @@ typedef struct {
     float far;
     float fov;
     float depth_coef;
+    pgl_enum_t state;
     uint16_t clear_color;
 } pgl_t;
 
 pgl_t pgl = {
     .color_buffer = {{0x0000u}},
     .depth_buffer = {{0x00u}},
-    .clear_color = PGL_DEFAULT_CLEAR_COLOR,
-    .near = PGL_DEFAULT_NEAR,
-    .far = PGL_DEFAULT_FAR,
-    .depth_coef = 255.0f / (PGL_DEFAULT_FAR - PGL_DEFAULT_NEAR)
+    .stencil_buffer = {{0x00u}},
+    .state = PGL_DEFAULT_STATE,
+    .clear_color = PGLM_RGB565_BLACK,
 };
 
 // --------------------------------------------------- RASTERIZATION ----------------------------------------------------------- // 
@@ -174,7 +194,7 @@ static void pgl_filled_triangle(vec3i* v0, vec3i* v1, vec3i* v2, uint16_t color)
     }
 }
 
-// -------------------------------------------- TRANSFORMATION MATRICES --------------------------------------------------------- // 
+// -------------------------------------------- TRANSFORMATION MATRICES -------------------------------------------------------- // 
 
 void pgl_view(const vec3f position, const vec3f right, const vec3f up, const vec3f forward) {
     pgl.view = view(position, right, up, forward);
@@ -192,27 +212,78 @@ void pgl_viewport(int x, int y, uint32_t width, uint32_t height) {
     pgl.viewport = viewport(x, y, width, height);
 }
 
+// ------------------------------------------------- INTERNAL STATE ------------------------------------------------------------- // 
+
+void pgl_enable(pgl_enum_t test) {
+    pgl.state |= test;
+}
+
+void pgl_disable(pgl_enum_t test) {
+    pgl.state &= ~test;
+}
+
 void pgl_clear_color(uint16_t color) {
     pgl.clear_color = color;
 }
 
-void pgl_clear(pgl_buffer_bit_t buffer_bits) {
+void pgl_clear(pgl_enum_t buffer_bits) {
     const uint32_t double_color = (pgl.clear_color << 16) | pgl.clear_color;
-    if (buffer_bits & COLOR_BUFFER_BIT) {
+    if (buffer_bits & PGL_COLOR_BUFFER_BIT) {
         uint32_t* ptr = (uint32_t*)pgl.color_buffer;
         for (uint32_t i = 0; i < (SCREEN_HEIGHT*SCREEN_WIDTH/2); i++) {
             ptr[i] = double_color;
         }
     }
-    if (buffer_bits & DEPTH_BUFFER_BIT) {
+    if (buffer_bits & PGL_DEPTH_BUFFER_BIT) {
         uint32_t* ptr = (uint32_t*)pgl.depth_buffer;
         for (uint32_t i = 0; i < (SCREEN_HEIGHT*SCREEN_WIDTH/4); i++) {
             ptr[i] = 0xFFFFFFFFu; // reset to far = 0xFF
         }
     }
+    if (buffer_bits & PGL_STENCIL_BUFFER_BIT) {
+        uint32_t* ptr = (uint32_t*)pgl.stencil_buffer;
+        for (uint32_t i = 0; i < (SCREEN_HEIGHT*SCREEN_WIDTH/32); i++) {
+            ptr[i] = 0xFFFFFFFFu;
+        }
+    }
 }
 
-// ----------------------------------------------- DRAW ------------------------------------------------------------ // 
+void pgl_depth_mask(bool enable_write) {
+    pgl.state &= ~(0b1 << 9);
+    pgl.state |= (enable_write << 9);
+}
+
+void pgl_depth_func(pgl_enum_t test_func) {
+    pgl.state &= ~(0b111 << 10);
+    pgl.state |= (test_func << 10);
+}
+
+void pgl_stencil_mask(bool enable_write) {
+    pgl.state &= ~(0b1 << 1);
+    pgl.state |= (enable_write << 1);
+}
+
+void pgl_stencil_func(pgl_enum_t test_func) {
+    pgl.state &= ~(0b111 << 2);
+    pgl.state |= (test_func << 2);
+}
+
+void pgl_stencil_op(pgl_enum_t sfail, pgl_enum_t dpfail, pgl_enum_t dppass) {
+    pgl.state &= ~(0b111 << 5);
+    pgl.state |= ((sfail << 5) | (dpfail << 6) | (dppass << 7));
+}
+
+void pgl_cull_face(pgl_enum_t face) {
+    pgl.state &= ~(0b11 << 13);
+    pgl.state |= face;
+}
+
+void pgl_front_face(pgl_enum_t winding_order) {
+    pgl.state &= ~(0b1 << 15);
+    pgl.state |= winding_order;
+}
+
+// ---------------------------------------------------------- DRAW -------------------------------------------------------------- // 
 
 static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, const vec4f clip_plane_vector, vec4f* c10, vec4f* c20) {
     const float d0 = dot_vec4f(t->c0, clip_plane_vector);
@@ -513,10 +584,10 @@ void pgl_draw(const mesh_t* mesh) {
             vec3i v2 = {(int)sc2.x, (int)sc2.y, (int)(pgl.depth_coef * (subt->c2.w - pgl.near))};
         
             // Rasterize
-            if ((mesh->mesh_enum ^ RENDER_WIRED) == 0) {
+            if ((mesh->mesh_enum ^ MESH_RENDER_WIRED) == 0) {
                 pgl_wired_triangle(&v0, &v1, &v2, vec3f_to_rgb565(mesh->vertices[0].color));
             }
-            else if ((mesh->mesh_enum ^ RENDER_FILLED) == 0) {
+            else if ((mesh->mesh_enum ^ MESH_RENDER_FILLED) == 0) {
                 pgl_filled_triangle(&v0, &v1, &v2, vec3f_to_rgb565(mesh->vertices[0].color));
             }
         }

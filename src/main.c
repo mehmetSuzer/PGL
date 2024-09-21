@@ -1,4 +1,4 @@
-// 0.016580 s
+// 0.016568 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
@@ -12,21 +12,21 @@ mesh_t meshes[] = {
         .vertices = cube_vertices,
         .indices = cube_indices,
         .vertex_number = sizeof(cube_vertices) / sizeof(vertex_t),
-        .index_number = sizeof(cube_indices) / sizeof(uint32_t),
+        .index_number = sizeof(cube_indices) / sizeof(uint16_t),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
     }, 
     {
         .vertices = triangle_vertices,
         .indices = triangle_indices,
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
-        .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
+        .index_number = sizeof(triangle_indices) / sizeof(uint16_t),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
     },
     {
         .vertices = triangle_vertices,
         .indices = triangle_indices,
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
-        .index_number = sizeof(triangle_indices) / sizeof(uint32_t),
+        .index_number = sizeof(triangle_indices) / sizeof(uint16_t),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
     },
 };
@@ -81,13 +81,13 @@ int main() {
     pgl_enable(PGL_DEPTH_TEST);
     pgl_clear_color(PGLM_RGB565_BLACK);
 
+    meshes[0].transform = transform_init((vec3f){0.0f, 0.0f, -2.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[1].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[2].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.5f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
+
     for (uint32_t i = 0; i < mesh_number; i++) {
         find_mesh_bounding_volume(meshes+i);
     }
-
-    meshes[0].model = mul_mat4f_mat4f(translate3D_mat4f((vec3f){0.0f, 0.0f, -2.0f}), rotate3D_y_mat4f(PGLM_PI_4f));
-    meshes[1].model = translate3D_mat4f((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f});
-    meshes[2].model = translate3D_mat4f((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.5f});
 
     uint32_t last_time = time_us_32();
     uint32_t current_time; 

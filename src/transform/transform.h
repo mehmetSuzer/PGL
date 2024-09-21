@@ -4,11 +4,13 @@
 
 #include "pglm.h"
 
+// Use function with transform_ prefix.
+// Manual changes are not guarenteed to be consistent.
 typedef struct {
-    vec3f position;
-    quat rotation;
-    vec3f scalar;
-    mat4f model;
+    vec3f position; // internal field, not recommended to use directly
+    quat rotation;  // internal field, not recommended to use directly
+    vec3f scalar;   // internal field, not recommended to use directly
+    mat4f model;    // matrix that combines Translation * Rotation * Scalar
 } transform_t;
 
 transform_t transform_init(const vec3f position, const quat rotation, const vec3f scalar);

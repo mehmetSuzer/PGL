@@ -259,7 +259,7 @@ void pgl_clear(pgl_enum_t buffer_bits) {
     if (buffer_bits & PGL_STENCIL_BUFFER_BIT) {
         uint32_t* ptr = (uint32_t*)pgl.stencil_buffer;
         for (uint32_t i = 0; i < (SCREEN_HEIGHT*SCREEN_WIDTH/32); i++) {
-            ptr[i] = 0xFFFFFFFFu;
+            ptr[i] = 0x00000000u;
         }
     }
 }
@@ -316,8 +316,7 @@ static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, 
 // Returns true if the mesh may be visible.
 // Returns false if there is no chance that the mesh is visible. 
 static bool pgl_broad_phase_clipping(const mesh_t* mesh, const mat4f view_model) {
-    // TODO: it is better to use lazy_from_homogeneous if view_model is guaranteed to have w = 1.0f.
-    const vec3f center = from_homogeneous(mul_mat4f_vec4f(view_model, to_homogeneous(mesh->bounding_volume.center)));
+    const vec3f center = lazy_from_homogeneous(mul_mat4f_vec4f(view_model, to_homogeneous(mesh->bounding_volume.center)));
     const float minus_sin_half_fovw = -pgl.sin_half_fovw;
     const float cos_half_fovw       =  pgl.cos_half_fovw;
     const float minus_sin_half_fovh = -pgl.sin_half_fovh;
@@ -335,7 +334,7 @@ static bool pgl_broad_phase_clipping(const mesh_t* mesh, const mat4f view_model)
 }
 
 // Clips the triangle with respect to near, far, left, right, bottom, and top planes.
-static int pgl_triangle_clipping(pgl_queue_triangle_t* triangle, pgl_queue_triangle_t* subtriangles) {
+static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_triangle_t* subtriangles) {
     pgl_queue_t queue;
     triangle_queue_init(&queue);
     triangle_queue_push(&queue, triangle);
@@ -565,7 +564,7 @@ static int pgl_triangle_clipping(pgl_queue_triangle_t* triangle, pgl_queue_trian
 }
 
 void pgl_draw(const mesh_t* mesh) {
-    const mat4f view_model = mul_mat4f_mat4f(pgl.view, mesh->model);
+    const mat4f view_model = mul_mat4f_mat4f(pgl.view, mesh->transform.model);
     const mat4f projection_view_model = mul_mat4f_mat4f(pgl.projection, view_model);
 
     if (!pgl_broad_phase_clipping(mesh, view_model)) { return; }
@@ -584,7 +583,7 @@ void pgl_draw(const mesh_t* mesh) {
         };
 
         pgl_queue_triangle_t subtriangles[16];
-        int subtriangle_index = pgl_triangle_clipping(&triangle, subtriangles);
+        int subtriangle_index = pgl_narrow_phase_clipping(&triangle, subtriangles);
 
         while (subtriangle_index >= 0) {
             pgl_queue_triangle_t* subt = subtriangles + subtriangle_index;

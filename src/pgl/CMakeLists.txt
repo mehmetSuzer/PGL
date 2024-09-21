@@ -4,7 +4,7 @@ add_library(pgl ${FILES})
 
 target_link_libraries(pgl PUBLIC 
     device
-    pglm
+    transform
 )
 
 target_include_directories(pgl PUBLIC .)

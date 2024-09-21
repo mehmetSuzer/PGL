@@ -55,7 +55,7 @@ typedef enum {
 } pgl_enum_t;
 
 void pgl_view(const vec3f position, const vec3f right, const vec3f up, const vec3f forward);
-void pgl_projection(float near, float far, float fov);
+void pgl_projection(float near, float far, float fovw);
 void pgl_viewport(int x, int y, uint32_t width, uint32_t height);
 
 void pgl_enable(pgl_enum_t test);

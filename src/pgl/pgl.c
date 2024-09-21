@@ -26,16 +26,23 @@
                           (PGL_CCW << 15)
 
 typedef struct {
+    // Buffers
     uint16_t color_buffer[SCREEN_HEIGHT][SCREEN_HEIGHT];
     uint8_t depth_buffer[SCREEN_HEIGHT][SCREEN_WIDTH];
     uint8_t stencil_buffer[SCREEN_HEIGHT][SCREEN_WIDTH/8];
+    // Transformation matrices
     mat4f view;
     mat4f projection;
     mat4f viewport;
+    // Cache values for fast execution
     float near;
     float far;
-    float fov;
+    float sin_half_fovw;
+    float cos_half_fovw;
+    float sin_half_fovh;
+    float cos_half_fovh;
     float depth_coef;
+    // Internal state 
     pgl_enum_t state;
     uint16_t clear_color;
 } pgl_t;
@@ -200,12 +207,21 @@ void pgl_view(const vec3f position, const vec3f right, const vec3f up, const vec
     pgl.view = view(position, right, up, forward);
 }
 
-void pgl_projection(float near, float far, float fov) {
+void pgl_projection(float near, float far, float fovw) {
+    const float sin_half_fovw = sinf(fovw * 0.5f);
+    const float cos_half_fovw = cosf(fovw * 0.5f);
+    const float tan_half_fovh = sin_half_fovw / (cos_half_fovw * ASPECT_RATIO);
+    const float cos_half_fovh = 1.0f / sqrtf(tan_half_fovh * tan_half_fovh + 1.0f); 
+    const float sin_half_fovh = tan_half_fovh * cos_half_fovh;
+
+    pgl.sin_half_fovw = sin_half_fovw;
+    pgl.cos_half_fovw = cos_half_fovw;
+    pgl.sin_half_fovh = sin_half_fovh;
+    pgl.cos_half_fovh = cos_half_fovh;
+    pgl.depth_coef = 255.0f / (far - near);
+    pgl.projection = perspective(fovw, ASPECT_RATIO, near, far);
     pgl.near = near;
     pgl.far = far;
-    pgl.fov = fov;
-    pgl.depth_coef = 255.0f / (far - near);
-    pgl.projection = perspective(fov, ASPECT_RATIO, near, far);
 }
 
 void pgl_viewport(int x, int y, uint32_t width, uint32_t height) {
@@ -300,16 +316,17 @@ static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, 
 // Returns true if the mesh may be visible.
 // Returns false if there is no chance that the mesh is visible. 
 static bool pgl_broad_phase_clipping(const mesh_t* mesh, const mat4f view_model) {
-    // TODO: it is assumed that the window is square, fix it.
     // TODO: it is better to use lazy_from_homogeneous if view_model is guaranteed to have w = 1.0f.
     const vec3f center = from_homogeneous(mul_mat4f_vec4f(view_model, to_homogeneous(mesh->bounding_volume.center)));
-    const float minus_s = -sinf(pgl.fov * 0.5f);
-    const float c       =  cosf(pgl.fov * 0.5f);
+    const float minus_sin_half_fovw = -pgl.sin_half_fovw;
+    const float cos_half_fovw       =  pgl.cos_half_fovw;
+    const float minus_sin_half_fovh = -pgl.sin_half_fovh;
+    const float cos_half_fovh       =  pgl.cos_half_fovh;
 
-    const plane_t left   = {{   c, 0.0f, minus_s}, 0.0f};
-    const plane_t right  = {{  -c, 0.0f, minus_s}, 0.0f};
-    const plane_t bottom = {{0.0f,    c, minus_s}, 0.0f};
-    const plane_t top    = {{0.0f,   -c, minus_s}, 0.0f};
+    const plane_t left   = {{ cos_half_fovw,           0.0f, minus_sin_half_fovw}, 0.0f};
+    const plane_t right  = {{-cos_half_fovw,           0.0f, minus_sin_half_fovw}, 0.0f};
+    const plane_t bottom = {{          0.0f,  cos_half_fovh, minus_sin_half_fovh}, 0.0f};
+    const plane_t top    = {{          0.0f, -cos_half_fovh, minus_sin_half_fovh}, 0.0f};
 
     return (plane_signed_distance(left,   center) >= -mesh->bounding_volume.radius &&
             plane_signed_distance(right,  center) >= -mesh->bounding_volume.radius &&
@@ -551,9 +568,7 @@ void pgl_draw(const mesh_t* mesh) {
     const mat4f view_model = mul_mat4f_mat4f(pgl.view, mesh->model);
     const mat4f projection_view_model = mul_mat4f_mat4f(pgl.projection, view_model);
 
-    // if (!pgl_broad_phase_clipping(mesh, view_model)) { return; }
-    
-    pgl_queue_triangle_t subtriangles[16];
+    if (!pgl_broad_phase_clipping(mesh, view_model)) { return; }
 
     for (uint32_t i = 0; i < mesh->index_number; i += 3) {
         // Homogeneous local space coordinates
@@ -568,6 +583,7 @@ void pgl_draw(const mesh_t* mesh) {
             .c2 = mul_mat4f_vec4f(projection_view_model, p2),
         };
 
+        pgl_queue_triangle_t subtriangles[16];
         int subtriangle_index = pgl_triangle_clipping(&triangle, subtriangles);
 
         while (subtriangle_index >= 0) {

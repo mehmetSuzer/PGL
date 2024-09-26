@@ -85,7 +85,6 @@ static void pgl_vertical_line(const vec3i* v0, const vec3i* v1, uint16_t color) 
     }
 }
 
-// TODO: may not be working, check and fix.
 static void pgl_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
     int dx = abs(v1->x - v0->x);
     int sx = (v0->x < v1->x) ? 1 : -1;
@@ -113,23 +112,23 @@ static void pgl_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
             break;
         }
 
-        int ey2 = 2 * ey;
-        if (ey2 >= dy) {
+        int two_ey = 2 * ey;
+        if (two_ey >= dy) {
             ey += dy;
             x += sx;
+
+            int two_ez = 2 * ez;
+            if (two_ez >= dz) {
+                ez += dz;
+            }
+            if (two_ez <= dx) {
+                ez += dx;
+                z += sz;
+            }
         }
-        if (ey2 <= dx) {
+        if (two_ey <= dx) {
             ey += dx;
             y += sy;
-        }
-
-        int ez2 = 2 * ez;
-        if (ez2 >= dz) {
-            ez += dz;
-        }
-        if (ez2 <= dx) {
-            ez += dx;
-            z += sz;
         }
     }
 }

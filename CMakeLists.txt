@@ -24,6 +24,7 @@ add_subdirectory(src/transform)
 add_subdirectory(src/pgl)
 add_subdirectory(src/light_source)
 add_subdirectory(src/camera)
+add_subdirectory(src/texture)
 
 add_executable(${PROJECT_NAME} src/main.c)
 
@@ -41,6 +42,7 @@ target_link_libraries(${PROJECT_NAME}
     pgl
     light_source
     camera
+    texture
 
     pico_multicore
 )

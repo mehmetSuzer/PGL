@@ -57,13 +57,13 @@ pgl_t pgl = {
 
 // --------------------------------------------------- RASTERIZATION ----------------------------------------------------------- // 
 
-static void pgl_horizontal_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
-    const int dx = v1->x - v0->x;
-    const int dz = v1->z - v0->z;
-    const int y = v0->y;
+static void pgl_horizontal_line(vec3i p0, vec3i p1, uint16_t color) {
+    const int dx = p1.x - p0.x;
+    const int dz = p1.z - p0.z;
+    const int y = p0.y;
 
-    for (int x = v0->x; x <= v1->x; x++) {
-        int z = dz * (x - v0->x) / dx + v0->z;
+    for (int x = p0.x; x <= p1.x; x++) {
+        int z = dz * (x - p0.x) / dx + p0.z;
         if (z < pgl.depth_buffer[y][x]) {
             pgl.color_buffer[y][x] = color;
             pgl.depth_buffer[y][x] = z;
@@ -71,13 +71,13 @@ static void pgl_horizontal_line(const vec3i* v0, const vec3i* v1, uint16_t color
     }
 }
 
-static void pgl_vertical_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
-    const int dy = v1->y - v0->y;
-    const int dz = v1->z - v0->z;
-    const int x = v0->x;
+static void pgl_vertical_line(vec3i p0, vec3i p1, uint16_t color) {
+    const int dy = p1.y - p0.y;
+    const int dz = p1.z - p0.z;
+    const int x = p0.x;
 
-    for (int y = v0->y; y <= v1->y; y++) {
-        int z = dz * (y - v0->y) / dy + v0->z;
+    for (int y = p0.y; y <= p1.y; y++) {
+        int z = dz * (y - p0.y) / dy + p0.z;
         if (z < pgl.depth_buffer[y][x]) {
             pgl.color_buffer[y][x] = color;
             pgl.depth_buffer[y][x] = z;
@@ -85,22 +85,20 @@ static void pgl_vertical_line(const vec3i* v0, const vec3i* v1, uint16_t color) 
     }
 }
 
-static void pgl_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
-    int dx = abs(v1->x - v0->x);
-    int sx = (v0->x < v1->x) ? 1 : -1;
-
-    int dy = -abs(v1->y - v0->y);
-    int sy = (v0->y < v1->y) ? 1 : -1;
-
-    int dz = -abs(v1->z - v0->z);
-    int sz = (v0->z < v1->z) ? 1 : -1;
+static void pgl_line(vec3i p0, vec3i p1, uint16_t color) {
+    int dx = abs(p1.x - p0.x);
+    int sx = (p0.x < p1.x) ? 1 : -1;
+    int dy = -abs(p1.y - p0.y);
+    int sy = (p0.y < p1.y) ? 1 : -1;
+    int dz = -abs(p1.z - p0.z);
+    int sz = (p0.z < p1.z) ? 1 : -1;
 
     int ey = dx + dy;
     int ez = dx + dz;
 
-    int x = v0->x;
-    int y = v0->y;
-    int z = v0->z;
+    int x = p0.x;
+    int y = p0.y;
+    int z = p0.z;
 
     while (true) {
         if (z < pgl.depth_buffer[y][x]) {
@@ -108,7 +106,7 @@ static void pgl_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
             pgl.depth_buffer[y][x] = z;
         }
 
-        if (x == v1->x && y == v1->y) {
+        if (x == p1.x && y == p1.y) {
             break;
         }
 
@@ -136,67 +134,62 @@ static void pgl_line(const vec3i* v0, const vec3i* v1, uint16_t color) {
 static void pgl_clamp_coordinates(vec3i* v0, vec3i* v1, vec3i* v2) {
     v0->x = clamp(v0->x, 0, SCREEN_WIDTH-1);
     v0->y = clamp(v0->y, 0, SCREEN_HEIGHT-1);
-    
     v1->x = clamp(v1->x, 0, SCREEN_WIDTH-1);
     v1->y = clamp(v1->y, 0, SCREEN_HEIGHT-1);
-    
     v2->x = clamp(v2->x, 0, SCREEN_WIDTH-1);
     v2->y = clamp(v2->y, 0, SCREEN_HEIGHT-1);
 }
 
-static void pgl_wired_triangle(vec3i* v0, vec3i* v1, vec3i* v2, uint16_t color) {
-    pgl_clamp_coordinates(v0, v1, v2);
-
+static void pgl_wired_triangle(vec3i v0, vec3i v1, vec3i v2, uint16_t color) {
+    pgl_clamp_coordinates(&v0, &v1, &v2);
     pgl_line(v0, v1, color);
     pgl_line(v0, v2, color);
     pgl_line(v1, v2, color);
 }
 
-static void pgl_filled_triangle(vec3i* v0, vec3i* v1, vec3i* v2, uint16_t color) {
-    pgl_clamp_coordinates(v0, v1, v2);
+static void pgl_filled_triangle(vec3i v0, vec3i v1, vec3i v2, uint16_t color) {
+    pgl_clamp_coordinates(&v0, &v1, &v2);
+    if (v1.y < v0.y) {
+        swap_vec3i(&v0, &v1);
+    }
+    if (v2.y < v1.y) {
+        swap_vec3i(&v1, &v2);
+    }
+    if (v1.y < v0.y) {
+        swap_vec3i(&v0, &v1);
+    }
 
-    if (v1->y < v0->y) {
-        swap_vec3i(v0, v1);
-    }
-    if (v2->y < v1->y) {
-        swap_vec3i(v1, v2);
-    }
-    if (v1->y < v0->y) {
-        swap_vec3i(v0, v1);
-    }
-
-    for (int y = v0->y; y <= v2->y; y++) {
+    for (int y = v0.y; y <= v2.y; y++) {
         vec3i left  = {.y = y};
         vec3i right = {.y = y};
                               
-        if (y >= v1->y) {
-            const int dxl = (v2->y != v1->y) ? (y - v1->y) * (v2->x - v1->x) / (v2->y - v1->y) : 0;
-            const int dxr = (v2->y != v0->y) ? (y - v0->y) * (v2->x - v0->x) / (v2->y - v0->y) : 0;
-            left.x  = v1->x + dxl;
-            right.x = v0->x + dxr;
+        if (y >= v1.y) {
+            const int dxl = (v2.y != v1.y) ? (y - v1.y) * (v2.x - v1.x) / (v2.y - v1.y) : 0;
+            const int dxr = (v2.y != v0.y) ? (y - v0.y) * (v2.x - v0.x) / (v2.y - v0.y) : 0;
+            left.x  = v1.x + dxl;
+            right.x = v0.x + dxr;
 
-            const int dzl = (v2->y != v1->y) ? (y - v1->y) * (v2->z - v1->z) / (v2->y - v1->y) : 0;
-            const int dzr = (v2->y != v0->y) ? (y - v0->y) * (v2->z - v0->z) / (v2->y - v0->y) : 0;
-            left.z = v1->z + dzl;
-            right.z = v0->z + dzr;
+            const int dzl = (v2.y != v1.y) ? (y - v1.y) * (v2.z - v1.z) / (v2.y - v1.y) : 0;
+            const int dzr = (v2.y != v0.y) ? (y - v0.y) * (v2.z - v0.z) / (v2.y - v0.y) : 0;
+            left.z  = v1.z + dzl;
+            right.z = v0.z + dzr;
         } 
         else {
-            const int dxl = (v1->y != v0->y) ? (y - v0->y) * (v1->x - v0->x) / (v1->y - v0->y) : 0;
-            const int dxr = (v2->y != v0->y) ? (y - v0->y) * (v2->x - v0->x) / (v2->y - v0->y) : 0;
-            left.x  = v0->x + dxl;
-            right.x = v0->x + dxr;
+            const int dxl = (v1.y != v0.y) ? (y - v0.y) * (v1.x - v0.x) / (v1.y - v0.y) : 0;
+            const int dxr = (v2.y != v0.y) ? (y - v0.y) * (v2.x - v0.x) / (v2.y - v0.y) : 0;
+            left.x  = v0.x + dxl;
+            right.x = v0.x + dxr;
 
-            const int dzl = (v1->y != v0->y) ? (y - v0->y) * (v1->z - v0->z) / (v1->y - v0->y) : 0;
-            const int dzr = (v2->y != v0->y) ? (y - v0->y) * (v2->z - v0->z) / (v2->y - v0->y) : 0;
-            left.z  = v0->z + dzl;
-            right.z = v0->z + dzr;
+            const int dzl = (v1.y != v0.y) ? (y - v0.y) * (v1.z - v0.z) / (v1.y - v0.y) : 0;
+            const int dzr = (v2.y != v0.y) ? (y - v0.y) * (v2.z - v0.z) / (v2.y - v0.y) : 0;
+            left.z  = v0.z + dzl;
+            right.z = v0.z + dzr;
         }
 
         if (left.x > right.x) {
             swap_vec3i(&left, &right);
         }
-
-        pgl_horizontal_line(&left, &right, color);
+        pgl_horizontal_line(left, right, color);
     }
 }
 
@@ -338,7 +331,7 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
     triangle_queue_init(&queue);
     triangle_queue_push(&queue, triangle);
 
-    int subtriangle_index = -1;
+    int index = -1;
     vec4f c10;
     vec4f c20;
     
@@ -351,7 +344,7 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         const int in_number = in0 + in1 + in2;
 
         if (in_number == 3) {
-            subtriangles[++subtriangle_index] = *t;
+            subtriangles[++index] = *t;
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
@@ -360,8 +353,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
@@ -370,13 +363,13 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){t->c0, c10, c20};
+            subtriangles[++index] = (pgl_queue_triangle_t){t->c0, c10, c20};
         }
     }
 
-    while (subtriangle_index >= 0) {
-        triangle_queue_push(&queue, subtriangles + subtriangle_index);
-        subtriangle_index--;
+    while (index >= 0) {
+        triangle_queue_push(&queue, subtriangles + index);
+        index--;
     }
 
     // Far Clip: Z - W < 0
@@ -388,7 +381,7 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         const int in_number = in0 + in1 + in2;
 
         if (in_number == 3) {
-            subtriangles[++subtriangle_index] = *t;
+            subtriangles[++index] = *t;
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
@@ -397,8 +390,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
@@ -407,13 +400,13 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){t->c0, c10, c20};
+            subtriangles[++index] = (pgl_queue_triangle_t){t->c0, c10, c20};
         }
     }
 
-    while (subtriangle_index >= 0) {
-        triangle_queue_push(&queue, subtriangles + subtriangle_index);
-        subtriangle_index--;
+    while (index >= 0) {
+        triangle_queue_push(&queue, subtriangles + index);
+        index--;
     }
 
     // Left Clip: X + W > 0
@@ -425,7 +418,7 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         const int in_number = in0 + in1 + in2;
 
         if (in_number == 3) {
-            subtriangles[++subtriangle_index] = *t;
+            subtriangles[++index] = *t;
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
@@ -434,8 +427,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
@@ -444,13 +437,13 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){t->c0, c10, c20};
+            subtriangles[++index] = (pgl_queue_triangle_t){t->c0, c10, c20};
         }
     }
 
-    while (subtriangle_index >= 0) {
-        triangle_queue_push(&queue, subtriangles + subtriangle_index);
-        subtriangle_index--;
+    while (index >= 0) {
+        triangle_queue_push(&queue, subtriangles + index);
+        index--;
     }
 
     // Right Clip: X - W < 0
@@ -462,7 +455,7 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         const int in_number = in0 + in1 + in2;
 
         if (in_number == 3) {
-            subtriangles[++subtriangle_index] = *t;
+            subtriangles[++index] = *t;
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
@@ -471,8 +464,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
@@ -481,13 +474,13 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){t->c0, c10, c20};
+            subtriangles[++index] = (pgl_queue_triangle_t){t->c0, c10, c20};
         }
     }
 
-    while (subtriangle_index >= 0) {
-        triangle_queue_push(&queue, subtriangles + subtriangle_index);
-        subtriangle_index--;
+    while (index >= 0) {
+        triangle_queue_push(&queue, subtriangles + index);
+        index--;
     }
 
     // Bottom Clip: Y + W > 0
@@ -499,7 +492,7 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         const int in_number = in0 + in1 + in2;
 
         if (in_number == 3) {
-            subtriangles[++subtriangle_index] = *t;
+            subtriangles[++index] = *t;
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
@@ -508,8 +501,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
@@ -518,13 +511,13 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){t->c0, c10, c20};
+            subtriangles[++index] = (pgl_queue_triangle_t){t->c0, c10, c20};
         }
     }
 
-    while (subtriangle_index >= 0) {
-        triangle_queue_push(&queue, subtriangles + subtriangle_index);
-        subtriangle_index--;
+    while (index >= 0) {
+        triangle_queue_push(&queue, subtriangles + index);
+        index--;
     }
 
     // Top Clip: Y - W < 0
@@ -536,7 +529,7 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         const int in_number = in0 + in1 + in2;
 
         if (in_number == 3) {
-            subtriangles[++subtriangle_index] = *t;
+            subtriangles[++index] = *t;
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
@@ -545,8 +538,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10, t->c1, t->c2};
+            subtriangles[++index] = (pgl_queue_triangle_t){c10,   c20, t->c2};
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
@@ -555,11 +548,11 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &c10, &c20);
-            subtriangles[++subtriangle_index] = (pgl_queue_triangle_t){t->c0, c10, c20};
+            subtriangles[++index] = (pgl_queue_triangle_t){t->c0, c10, c20};
         }
     }
-    
-    return subtriangle_index;
+
+    return index;
 }
 
 void pgl_draw(const mesh_t* mesh) {
@@ -585,7 +578,7 @@ void pgl_draw(const mesh_t* mesh) {
         int subtriangle_index = pgl_narrow_phase_clipping(&triangle, subtriangles);
 
         while (subtriangle_index >= 0) {
-            pgl_queue_triangle_t* subt = subtriangles + subtriangle_index;
+            const pgl_queue_triangle_t* subt = subtriangles + subtriangle_index;
             subtriangle_index--;
 
             // Screen coordinates
@@ -593,17 +586,17 @@ void pgl_draw(const mesh_t* mesh) {
             const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->c1));
             const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->c2));
 
-            vec3i v0 = {(int)sc0.x, (int)sc0.y, (int)(pgl.depth_coef * (subt->c0.w - pgl.near))};
-            vec3i v1 = {(int)sc1.x, (int)sc1.y, (int)(pgl.depth_coef * (subt->c1.w - pgl.near))};
-            vec3i v2 = {(int)sc2.x, (int)sc2.y, (int)(pgl.depth_coef * (subt->c2.w - pgl.near))};
+            const vec3i v0 = {sc0.x, sc0.y, (pgl.depth_coef * (subt->c0.w - pgl.near))};
+            const vec3i v1 = {sc1.x, sc1.y, (pgl.depth_coef * (subt->c1.w - pgl.near))};
+            const vec3i v2 = {sc2.x, sc2.y, (pgl.depth_coef * (subt->c2.w - pgl.near))};
         
             // Rasterize
             const uint16_t color = textures[mesh->tex_index][0][0];
             if ((mesh->mesh_enum ^ MESH_RENDER_WIRED) == 0) {
-                pgl_wired_triangle(&v0, &v1, &v2, color);
+                pgl_wired_triangle(v0, v1, v2, color);
             }
             else if ((mesh->mesh_enum ^ MESH_RENDER_FILLED) == 0) {
-                pgl_filled_triangle(&v0, &v1, &v2, color);
+                pgl_filled_triangle(v0, v1, v2, color);
             }
         }
     }

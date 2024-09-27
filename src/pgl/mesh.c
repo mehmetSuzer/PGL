@@ -101,7 +101,7 @@ const vertex_t square_pyramid_vertices[7] = {
 	{{ 0.6f, 0.0f, -0.6f}, {0.0f, 0.0f}},
 };
 
-const uint16_t square_pyramid_vertex_indices[18] = {
+const uint16_t square_pyramid_indices[18] = {
 	0, 1, 2, // Bottom
 	0, 2, 3, // Bottom
 	0, 5, 4, // Left

@@ -12,7 +12,7 @@ mesh_t meshes[] = {
         .indices = cube_indices,
         .vertex_number = sizeof(cube_vertices) / sizeof(vertex_t),
         .index_number = sizeof(cube_indices) / sizeof(uint16_t),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
         .tex_index = 0,
     }, 
     {
@@ -20,7 +20,7 @@ mesh_t meshes[] = {
         .indices = triangle_indices,
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
         .index_number = sizeof(triangle_indices) / sizeof(uint16_t),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
         .tex_index = 1,
     },
     {
@@ -28,8 +28,16 @@ mesh_t meshes[] = {
         .indices = triangle_indices,
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
         .index_number = sizeof(triangle_indices) / sizeof(uint16_t),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
         .tex_index = 2,
+    },
+    {
+        .vertices = square_pyramid_vertices,
+        .indices = square_pyramid_indices,
+        .vertex_number = sizeof(square_pyramid_vertices) / sizeof(vertex_t),
+        .index_number = sizeof(square_pyramid_indices) / sizeof(uint16_t),
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
+        .tex_index = 3,
     },
 };
 const uint32_t mesh_number = sizeof(meshes) / sizeof(mesh_t);
@@ -86,6 +94,7 @@ int main() {
     meshes[0].transform = transform_init((vec3f){0.0f, 0.0f, -2.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
     meshes[1].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
     meshes[2].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.5f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[3].transform = transform_init((vec3f){-2.5f, 0.0f, -3.5f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
 
     for (uint32_t i = 0; i < mesh_number; i++) {
         find_mesh_bounding_volume(meshes+i);

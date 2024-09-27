@@ -28,12 +28,6 @@ typedef union {
 
 #define zero_vec2f ((vec2f){0.0f, 0.0f})
 
-inline void swap_vec2f(vec2f* v1, vec2f* v2) {
-    vec2f temp = *v1;
-    *v1 = *v2;
-    *v2 = temp;
-}
-
 inline vec2f neg_vec2f(vec2f v) {
     return (vec2f){
         -v.x,

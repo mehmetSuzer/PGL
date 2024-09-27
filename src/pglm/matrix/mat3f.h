@@ -19,12 +19,6 @@ typedef struct {
 #define zero_mat3f     ((mat3f){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
 #define identity_mat3f ((mat3f){1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f})
 
-inline void swap_mat3f(mat3f* m1, mat3f* m2) {
-    mat3f temp = *m1;
-    *m1 = *m2;
-    *m2 = temp;
-}
-
 inline mat3f diagonal_mat3f(vec3f v) {
     return (mat3f){
          v.x, 0.0f, 0.0f,

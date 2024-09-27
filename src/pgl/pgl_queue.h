@@ -9,12 +9,6 @@ typedef struct {
     vec2f tex_coord;
 } pgl_vertex_t;
 
-inline void swap_pgl_vertex(pgl_vertex_t* v1, pgl_vertex_t* v2) {
-    const pgl_vertex_t temp = *v1;
-    *v1 = *v2;
-    *v2 = temp;
-}
-
 typedef struct {
     pgl_vertex_t v0;
     pgl_vertex_t v1;
@@ -23,8 +17,8 @@ typedef struct {
 
 typedef struct {
     pgl_queue_triangle_t triangles[16];
-    uint32_t front; // next slot for pop
-    uint32_t back;  // next slot for push
+    uint8_t front; // next slot for pop
+    uint8_t back;  // next slot for push
     bool empty;
 } pgl_queue_t;
 
@@ -64,7 +58,7 @@ inline void triangle_queue_push(pgl_queue_t* queue, pgl_queue_triangle_t* triang
     }
     
     queue->triangles[queue->back] = *triangle;
-    queue->back = (queue->back + 1) & 0xF; // rolls back to 0 when it reaches 16
+    queue->back = (queue->back + 1) & 0x0Fu; // rolls back to 0 when it reaches 16
     queue->empty = false;
 }
 
@@ -74,7 +68,7 @@ inline pgl_queue_triangle_t* triangle_queue_pop(pgl_queue_t* queue) {
     }
 
     pgl_queue_triangle_t* triangle = queue->triangles + queue->front;
-    queue->front = (queue->front + 1) & 0xF; // rolls back to 0 when it reaches 16
+    queue->front = (queue->front + 1) & 0x0Fu; // rolls back to 0 when it reaches 16
     queue->empty = queue->front == queue->back;
     return triangle;
 }

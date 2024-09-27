@@ -149,15 +149,9 @@ static void pgl_wired_triangle(vec3i v0, vec3i v1, vec3i v2, uint16_t color) {
 
 static void pgl_filled_triangle(vec3i v0, vec3i v1, vec3i v2, uint16_t color) {
     pgl_clamp_coordinates(&v0, &v1, &v2);
-    if (v1.y < v0.y) {
-        swap_vec3i(&v0, &v1);
-    }
-    if (v2.y < v1.y) {
-        swap_vec3i(&v1, &v2);
-    }
-    if (v1.y < v0.y) {
-        swap_vec3i(&v0, &v1);
-    }
+    if (v1.y < v0.y) { swap(&v0, &v1); }
+    if (v2.y < v1.y) { swap(&v1, &v2); }
+    if (v1.y < v0.y) { swap(&v0, &v1); }
 
     for (int y = v0.y; y <= v2.y; y++) {
         vec3i left  = {.y = y};
@@ -187,7 +181,7 @@ static void pgl_filled_triangle(vec3i v0, vec3i v1, vec3i v2, uint16_t color) {
         }
 
         if (left.x > right.x) {
-            swap_vec3i(&left, &right);
+            swap(&left, &right);
         }
         pgl_horizontal_line(left, right, color);
     }
@@ -350,8 +344,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (!in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (!in1) { swap(&t->v0, &t->v1); }
+            else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -360,8 +354,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
-            if      (in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (in1) { swap(&t->v0, &t->v1); }
+            else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -387,8 +381,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (!in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (!in1) { swap(&t->v0, &t->v1); }
+            else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -397,8 +391,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
-            if      (in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (in1) { swap(&t->v0, &t->v1); }
+            else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -424,8 +418,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (!in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (!in1) { swap(&t->v0, &t->v1); }
+            else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -434,8 +428,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
-            if      (in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (in1) { swap(&t->v0, &t->v1); }
+            else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -461,8 +455,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (!in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (!in1) { swap(&t->v0, &t->v1); }
+            else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -471,8 +465,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
-            if      (in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (in1) { swap(&t->v0, &t->v1); }
+            else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -498,8 +492,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (!in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (!in1) { swap(&t->v0, &t->v1); }
+            else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -508,8 +502,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
-            if      (in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (in1) { swap(&t->v0, &t->v1); }
+            else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -535,8 +529,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 2) {
             // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (!in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (!in1) { swap(&t->v0, &t->v1); }
+            else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -545,8 +539,8 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
         }
         else if (in_number == 1) {
             // Ensure that c0 is the vertex that is in
-            if      (in1) { swap_pgl_vertex(&t->v0, &t->v1); }
-            else if (in2) { swap_pgl_vertex(&t->v0, &t->v2); }
+            if      (in1) { swap(&t->v0, &t->v1); }
+            else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);

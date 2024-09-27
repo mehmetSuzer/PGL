@@ -21,12 +21,6 @@ typedef struct {
 #define zero_mat4f     ((mat4f){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
 #define identity_mat4f ((mat4f){1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f})
 
-inline void swap_mat4f(mat4f* m1, mat4f* m2) {
-    mat4f temp = *m1;
-    *m1 = *m2;
-    *m2 = temp;
-}
-
 inline mat4f diagonal_mat4f(vec4f v) {
     return (mat4f){
          v.x, 0.0f, 0.0f, 0.0f,

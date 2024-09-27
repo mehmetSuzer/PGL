@@ -12,12 +12,6 @@ typedef struct {
 
 #define identity_quat ((quat){(vec3f){0.0f, 0.0f, 0.0f}, 1.0f})
 
-inline void swap_quat(quat* q1, quat* q2) {
-    quat temp = *q1;
-    *q1 = *q2;
-    *q2 = temp;
-}
-
 // Returns a unit quaternion equivalent to the rotation corresponding to the (x,y,z) euler angles
 inline quat quat_euler_angles(vec3f angles) {
     const vec3f half_angles = scale_vec3f(angles, 0.5f);

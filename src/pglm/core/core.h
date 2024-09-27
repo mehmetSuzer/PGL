@@ -60,4 +60,6 @@
 #define clamp(x, min, max)  ((x < min) ? (min) : (x > max) ? (max) : (x))
 #define interp(x, y, a)     ((x) * a + (y) * (1.0f - a))
 
+#define swap(ptr1, ptr2)    const typeof(*(ptr1)) temp = *ptr1; *ptr1 = *ptr2; *ptr2 = temp;
+
 #endif // __CORE_H__

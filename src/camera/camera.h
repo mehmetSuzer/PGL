@@ -23,7 +23,7 @@ typedef struct {
 extern camera_t camera;
 
 // forward and up must be unit perpendicular vectors
-void camera_init(const vec3f position, const vec3f forward, const vec3f up);
+void camera_init(vec3f position, vec3f forward, vec3f up);
 
 void camera_update(float dt);
 

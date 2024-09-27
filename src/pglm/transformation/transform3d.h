@@ -5,7 +5,7 @@
 #include "../vector/vec3f.h"
 #include "../matrix/mat4f.h"
 
-inline mat4f translate3D_mat4f(const vec3f v) {
+inline mat4f translate3D_mat4f(vec3f v) {
     return (mat4f){
         1.0f, 0.0f, 0.0f,  v.x,
         0.0f, 1.0f, 0.0f,  v.y,
@@ -14,11 +14,11 @@ inline mat4f translate3D_mat4f(const vec3f v) {
     };
 }
 
-inline mat3f scale3D_mat3f(const vec3f v) {
+inline mat3f scale3D_mat3f(vec3f v) {
     return diagonal_mat3f(v);
 }
 
-inline mat4f scale3D_mat4f(const vec3f v) {
+inline mat4f scale3D_mat4f(vec3f v) {
     return cast_mat3f_to_mat4f(scale3D_mat3f(v));
 }
 

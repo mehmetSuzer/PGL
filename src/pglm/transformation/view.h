@@ -5,7 +5,7 @@
 #include "../vector/vec3f.h"
 #include "../matrix/mat4f.h"
 
-inline mat4f view(const vec3f position, const vec3f right, const vec3f up, const vec3f forward) {
+inline mat4f view(vec3f position, vec3f right, vec3f up, vec3f forward) {
     const float dotr = dot_vec3f(right, position);
     const float dotu = dot_vec3f(up, position);
     const float dotf = dot_vec3f(forward, position);

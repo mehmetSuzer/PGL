@@ -19,7 +19,7 @@ inline void swap_quat(quat* q1, quat* q2) {
 }
 
 // Returns a unit quaternion equivalent to the rotation corresponding to the (x,y,z) euler angles
-inline quat quat_euler_angles(const vec3f angles) {
+inline quat quat_euler_angles(vec3f angles) {
     const vec3f half_angles = scale_vec3f(angles, 0.5f);
     const vec3f c = {
         cosf(half_angles.x),
@@ -43,7 +43,7 @@ inline quat quat_euler_angles(const vec3f angles) {
 
 // v must be a unit vector
 // Returns a unit quaternion
-inline quat quat_angle_axis(const vec3f v, float radian) {
+inline quat quat_angle_axis(vec3f v, float radian) {
     const float half_radian = radian * 0.5f;
     const float c = cosf(half_radian);
     const float s = sinf(half_radian);
@@ -51,11 +51,11 @@ inline quat quat_angle_axis(const vec3f v, float radian) {
     return (quat){scale_vec3f(v, s), c};
 }
 
-inline quat neg_quat(const quat q) {
+inline quat neg_quat(quat q) {
     return (quat){neg_vec3f(q.v), -q.w};
 }
 
-inline quat add_quat(const quat q1, const quat q2) {
+inline quat add_quat(quat q1, quat q2) {
     const float w = q1.w + q2.w;
     const vec3f v = {
         q1.v.x + q2.v.x, 
@@ -66,7 +66,7 @@ inline quat add_quat(const quat q1, const quat q2) {
     return (quat){v, w};
 }
 
-inline quat sub_quat(const quat q1, const quat q2) {
+inline quat sub_quat(quat q1, quat q2) {
     const float w = q1.w - q2.w;
     const vec3f v = {
         q1.v.x - q2.v.x, 
@@ -77,7 +77,7 @@ inline quat sub_quat(const quat q1, const quat q2) {
     return (quat){v, w};
 }
 
-inline quat scale_quat(const quat q1, float scale) {
+inline quat scale_quat(quat q1, float scale) {
     const float w = q1.w * scale;
     const vec3f v = {
         q1.v.x * scale, 
@@ -88,32 +88,32 @@ inline quat scale_quat(const quat q1, float scale) {
     return (quat){v, w};
 }
 
-inline quat conjugate_quat(const quat q) {
+inline quat conjugate_quat(quat q) {
     return (quat){neg_vec3f(q.v), q.w};
 }
 
-inline float norm2_quat(const quat q) {
+inline float norm2_quat(quat q) {
     return q.v.x * q.v.x +
            q.v.y * q.v.y +
            q.v.z * q.v.z +
            q.w   * q.w;
 }
 
-inline float norm_quat(const quat q) {
+inline float norm_quat(quat q) {
     return sqrtf(norm2_quat(q));
 }
 
-inline quat normalize_quat(const quat q) {
+inline quat normalize_quat(quat q) {
     const float inverse_norm = 1.0f / norm_quat(q);
     return scale_quat(q, inverse_norm);
 }
 
-inline quat inv_quat(const quat q) {
+inline quat inv_quat(quat q) {
     const float inverse_norm2 = 1.0f / norm2_quat(q);
     return scale_quat(conjugate_quat(q), inverse_norm2);
 }
 
-inline quat mul_quat_quat(const quat q1, const quat q2) {
+inline quat mul_quat_quat(quat q1, quat q2) {
     const float w = q1.w * q2.w - dot_vec3f(q1.v, q2.v);
     const vec3f w1v2 = scale_vec3f(q2.v, q1.w);
     const vec3f w2v1 = scale_vec3f(q1.v, q2.w);
@@ -123,7 +123,7 @@ inline quat mul_quat_quat(const quat q1, const quat q2) {
     return (quat){v, w};
 }
 
-inline quat mul_quat_vec3f(const quat q, const vec3f v) {
+inline quat mul_quat_vec3f(quat q, vec3f v) {
     const float w = -dot_vec3f(q.v, v);
     const vec3f xyz1 = scale_vec3f(v, q.w);
     const vec3f xyz2 = cross_vec3f(q.v, v);
@@ -132,7 +132,7 @@ inline quat mul_quat_vec3f(const quat q, const vec3f v) {
     return (quat){xyz, w};
 }
 
-inline quat mul_vec3f_quat(const vec3f v, const quat q) {
+inline quat mul_vec3f_quat(vec3f v, quat q) {
     const float w = -dot_vec3f(v, q.v);
     const vec3f xyz1 = scale_vec3f(v, q.w);
     const vec3f xyz2 = cross_vec3f(v, q.v);
@@ -142,7 +142,7 @@ inline quat mul_vec3f_quat(const vec3f v, const quat q) {
 }
 
 // q must be unit quaternion
-inline vec3f rotate_quat(const quat q, const vec3f v) {
+inline vec3f rotate_quat(quat q, vec3f v) {
     const vec3f uv  = cross_vec3f(q.v, v);
     const vec3f uuv = cross_vec3f(q.v, uv);
     const vec3f wuv = scale_vec3f(uv, q.w);
@@ -150,7 +150,7 @@ inline vec3f rotate_quat(const quat q, const vec3f v) {
     return add_vec3f(v, scale_vec3f(add_vec3f(wuv, uuv), 2.0f));
 }
 
-inline mat3f cast_quat_to_mat3f(const quat q) {
+inline mat3f cast_quat_to_mat3f(quat q) {
     const float xx = q.v.x * q.v.x;
     const float yy = q.v.y * q.v.y;
     const float zz = q.v.z * q.v.z;
@@ -168,18 +168,18 @@ inline mat3f cast_quat_to_mat3f(const quat q) {
     };
 }
 
-inline mat4f cast_quat_to_mat4f(const quat q) {
+inline mat4f cast_quat_to_mat4f(quat q) {
     return cast_mat3f_to_mat4f(cast_quat_to_mat3f(q));
 }
 
-inline bool epsilon_equal_quat(const quat q1, const quat q2, float epsilon) {
+inline bool epsilon_equal_quat(quat q1, quat q2, float epsilon) {
     return epsilon_equal(q1.w,   q2.w,   epsilon) && 
            epsilon_equal(q1.v.x, q2.v.x, epsilon) && 
            epsilon_equal(q1.v.y, q2.v.y, epsilon) && 
            epsilon_equal(q1.v.z, q2.v.z, epsilon);
 }
 
-inline bool epsilon_not_equal_quat(const quat q1, const quat q2, float epsilon) {
+inline bool epsilon_not_equal_quat(quat q1, quat q2, float epsilon) {
     return epsilon_not_equal(q1.w,   q2.w,   epsilon) ||
            epsilon_not_equal(q1.v.x, q2.v.x, epsilon) || 
            epsilon_not_equal(q1.v.y, q2.v.y, epsilon) || 

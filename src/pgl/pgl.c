@@ -202,7 +202,7 @@ static void pgl_filled_triangle(vec3i* v0, vec3i* v1, vec3i* v2, uint16_t color)
 
 // -------------------------------------------- TRANSFORMATION MATRICES -------------------------------------------------------- // 
 
-void pgl_view(const vec3f position, const vec3f right, const vec3f up, const vec3f forward) {
+void pgl_view(vec3f position, vec3f right, vec3f up, vec3f forward) {
     pgl.view = view(position, right, up, forward);
 }
 
@@ -300,7 +300,7 @@ void pgl_front_face(pgl_enum_t winding_order) {
 
 // ---------------------------------------------------------- DRAW -------------------------------------------------------------- // 
 
-static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, const vec4f clip_plane_vector, vec4f* c10, vec4f* c20) {
+static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, vec4f clip_plane_vector, vec4f* c10, vec4f* c20) {
     const float d0 = dot_vec4f(t->c0, clip_plane_vector);
     const float d1 = dot_vec4f(t->c1, clip_plane_vector);
     const float d2 = dot_vec4f(t->c2, clip_plane_vector);
@@ -314,7 +314,7 @@ static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, 
 
 // Returns true if the mesh may be visible.
 // Returns false if there is no chance that the mesh is visible. 
-static bool pgl_broad_phase_clipping(const mesh_t* mesh, const mat4f view_model) {
+static bool pgl_broad_phase_clipping(const mesh_t* mesh, mat4f view_model) {
     const vec3f center = lazy_from_homogeneous(mul_mat4f_vec4f(view_model, to_homogeneous(mesh->bounding_volume.center)));
     const float minus_sin_half_fovw = -pgl.sin_half_fovw;
     const float cos_half_fovw       =  pgl.cos_half_fovw;

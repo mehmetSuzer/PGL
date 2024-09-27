@@ -15,7 +15,7 @@ camera_t camera = {
     .rotate_y_change = NONE,
 };
 
-void camera_init(const vec3f position, const vec3f forward, const vec3f up) {
+void camera_init(vec3f position, vec3f forward, vec3f up) {
     camera.position = position;
     camera.forward = forward;
     camera.up = up;

@@ -25,7 +25,7 @@ inline void swap_mat3f(mat3f* m1, mat3f* m2) {
     *m2 = temp;
 }
 
-inline mat3f diagonal_mat3f(const vec3f v) {
+inline mat3f diagonal_mat3f(vec3f v) {
     return (mat3f){
          v.x, 0.0f, 0.0f,
         0.0f,  v.y, 0.0f,
@@ -33,7 +33,7 @@ inline mat3f diagonal_mat3f(const vec3f v) {
     };
 }
 
-inline mat3f neg_mat3f(const mat3f m) {
+inline mat3f neg_mat3f(mat3f m) {
     return (mat3f){
         -m.xx, -m.xy, -m.xz,
         -m.yx, -m.yy, -m.yz,
@@ -41,7 +41,7 @@ inline mat3f neg_mat3f(const mat3f m) {
     };
 }
 
-inline mat3f mat3f_from_rows(const vec3f row0, const vec3f row1, const vec3f row2) {
+inline mat3f mat3f_from_rows(vec3f row0, vec3f row1, vec3f row2) {
     return (mat3f){
         row0.x, row0.y, row0.z,
         row1.x, row1.y, row1.z,
@@ -49,7 +49,7 @@ inline mat3f mat3f_from_rows(const vec3f row0, const vec3f row1, const vec3f row
     };
 }
 
-inline mat3f mat3f_from_cols(const vec3f col0, const vec3f col1, const vec3f col2) {
+inline mat3f mat3f_from_cols(vec3f col0, vec3f col1, vec3f col2) {
     return (mat3f){
         col0.x, col1.x, col2.x,
         col0.y, col1.y, col2.y,
@@ -57,7 +57,7 @@ inline mat3f mat3f_from_cols(const vec3f col0, const vec3f col1, const vec3f col
     };
 }
 
-inline mat3f add_mat3f(const mat3f m1, const mat3f m2) {
+inline mat3f add_mat3f(mat3f m1, mat3f m2) {
     return (mat3f){
         m1.xx + m2.xx, m1.xy + m2.xy, m1.xz + m2.xz,
         m1.yx + m2.yx, m1.yy + m2.yy, m1.yz + m2.yz,
@@ -65,7 +65,7 @@ inline mat3f add_mat3f(const mat3f m1, const mat3f m2) {
     };
 }
 
-inline mat3f sub_mat3f(const mat3f m1, const mat3f m2) {
+inline mat3f sub_mat3f(mat3f m1, mat3f m2) {
     return (mat3f){
         m1.xx - m2.xx, m1.xy - m2.xy, m1.xz - m2.xz,
         m1.yx - m2.yx, m1.yy - m2.yy, m1.yz - m2.yz,
@@ -73,7 +73,7 @@ inline mat3f sub_mat3f(const mat3f m1, const mat3f m2) {
     };
 }
 
-inline mat3f scale_mat3f(const mat3f m, float scale) {
+inline mat3f scale_mat3f(mat3f m, float scale) {
     return (mat3f){
         m.xx * scale, m.xy * scale, m.xz * scale,
         m.yx * scale, m.yy * scale, m.yz * scale,
@@ -81,7 +81,7 @@ inline mat3f scale_mat3f(const mat3f m, float scale) {
     };
 }
 
-inline vec3f mul_mat3f_vec3f(const mat3f m, const vec3f v) {
+inline vec3f mul_mat3f_vec3f(mat3f m, vec3f v) {
     return (vec3f){
         m.xx * v.x + m.xy * v.y + m.xz * v.z, // x
         m.yx * v.x + m.yy * v.y + m.yz * v.z, // y
@@ -89,7 +89,7 @@ inline vec3f mul_mat3f_vec3f(const mat3f m, const vec3f v) {
     };
 }
 
-inline mat3f mul_mat3f_mat3f(const mat3f m1, const mat3f m2) {
+inline mat3f mul_mat3f_mat3f(mat3f m1, mat3f m2) {
     return (mat3f){
         m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx,
         m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy,
@@ -105,7 +105,7 @@ inline mat3f mul_mat3f_mat3f(const mat3f m1, const mat3f m2) {
     };
 }
 
-inline mat3f tr_mat3f(const mat3f m) {
+inline mat3f tr_mat3f(mat3f m) {
     return (mat3f){
         m.xx, m.yx, m.zx,
         m.xy, m.yy, m.zy,
@@ -113,13 +113,13 @@ inline mat3f tr_mat3f(const mat3f m) {
     };
 }
 
-inline float det_mat3f(const mat3f m) {
+inline float det_mat3f(mat3f m) {
     return + m.xx * (m.yy * m.zz - m.yz * m.zy)
            - m.xy * (m.yx * m.zz - m.yz * m.zx)
            + m.xz * (m.yx * m.zy - m.yy * m.zx);
 }
 
-inline mat3f inv_mat3f(const mat3f m) {
+inline mat3f inv_mat3f(mat3f m) {
     const float inverse_determinant = 1.0f / det_mat3f(m);
 
     return (mat3f){
@@ -137,7 +137,7 @@ inline mat3f inv_mat3f(const mat3f m) {
     };
 }
 
-static inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
+static inline vec3f solve_cramers_mat3f(mat3f m, vec3f v) {
     const float factor0 = m.yy * m.zz - m.yz * m.zy;
     const float factor1 = m.yx * m.zz - m.yz * m.zx;
     const float factor2 = m.yx * m.zy - m.yy * m.zx;
@@ -159,7 +159,7 @@ static inline vec3f solve_cramers_mat3f(const mat3f m, const vec3f v) {
     };
 }
 
-inline mat3f cast_mat2f_to_mat3f(const mat2f m) {
+inline mat3f cast_mat2f_to_mat3f(mat2f m) {
     return (mat3f){
         m.xx, m.xy, 0.0f,
         m.yx, m.yy, 0.0f,
@@ -167,7 +167,7 @@ inline mat3f cast_mat2f_to_mat3f(const mat2f m) {
     };
 }
 
-inline bool epsilon_equal_mat3f(const mat3f m1, const mat3f m2, float epsilon) {
+inline bool epsilon_equal_mat3f(mat3f m1, mat3f m2, float epsilon) {
     return epsilon_equal(m1.xx, m2.xx, epsilon) && 
            epsilon_equal(m1.xy, m2.xy, epsilon) && 
            epsilon_equal(m1.xz, m2.xz, epsilon) && 
@@ -181,7 +181,7 @@ inline bool epsilon_equal_mat3f(const mat3f m1, const mat3f m2, float epsilon) {
            epsilon_equal(m1.zz, m2.zz, epsilon);
 }
 
-inline bool epsilon_not_equal_mat3f(const mat3f m1, const mat3f m2, float epsilon) {
+inline bool epsilon_not_equal_mat3f(mat3f m1, mat3f m2, float epsilon) {
     return epsilon_not_equal(m1.xx, m2.xx, epsilon) || 
            epsilon_not_equal(m1.xy, m2.xy, epsilon) || 
            epsilon_not_equal(m1.xz, m2.xz, epsilon) || 

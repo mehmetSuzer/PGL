@@ -6,7 +6,7 @@
 #include "primitive.h"
 #include "../matrix/mat3f.h"
 
-static inline bool intersect_sphere(const ray_t ray, const sphere_t sphere, float near, float far, float* t) {
+static inline bool intersect_sphere(ray_t ray, sphere_t sphere, float near, float far, float* t) {
     const vec3f center_to_source = sub_vec3f(ray.source, sphere.center);
     const float dist2 = mag2_vec3f(center_to_source);
     const float dot = dot_vec3f(center_to_source, ray.dir);
@@ -26,7 +26,7 @@ static inline bool intersect_sphere(const ray_t ray, const sphere_t sphere, floa
     return false;
 }
 
-static inline bool intersect_triangle(const ray_t ray, const triangle_t triangle, float near, float far, float* t) {
+static inline bool intersect_triangle(ray_t ray, triangle_t triangle, float near, float far, float* t) {
     const vec3f col0 = sub_vec3f(triangle.a, triangle.b);
     const vec3f col1 = sub_vec3f(triangle.a, triangle.c);
     const vec3f col2 = ray.dir;
@@ -44,7 +44,7 @@ static inline bool intersect_triangle(const ray_t ray, const triangle_t triangle
     return false;
 }
 
-static inline bool intersect_plane(const ray_t ray, const plane_t plane, float near, float far, float* t) {
+static inline bool intersect_plane(ray_t ray, plane_t plane, float near, float far, float* t) {
     if (dot_vec3f(ray.dir, plane.normal) < 1E-6f) {
         return false;
     }

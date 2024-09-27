@@ -5,7 +5,7 @@
 #include "../vector/vec2f.h"
 #include "../matrix/mat3f.h"
 
-inline mat3f translate2D_mat3f(const vec2f v) {
+inline mat3f translate2D_mat3f(vec2f v) {
     return (mat3f){
         1.0f, 0.0f,  v.x,
         0.0f, 1.0f,  v.y,
@@ -13,11 +13,11 @@ inline mat3f translate2D_mat3f(const vec2f v) {
     };
 }
 
-inline mat2f scale2D_mat2f(const vec2f v) {
+inline mat2f scale2D_mat2f(vec2f v) {
     return diagonal_mat2f(v);
 }
 
-inline mat3f scale2D_mat3f(const vec2f v) {
+inline mat3f scale2D_mat3f(vec2f v) {
     return cast_mat2f_to_mat3f(scale2D_mat2f(v));
 }
 

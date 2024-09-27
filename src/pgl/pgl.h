@@ -55,7 +55,7 @@ typedef enum {
     PGL_REPLACE             = 0b1, // The currently stored stencil value is replaced with the one that is compared 
 } pgl_enum_t;
 
-void pgl_view(const vec3f position, const vec3f right, const vec3f up, const vec3f forward);
+void pgl_view(vec3f position, vec3f right, vec3f up, vec3f forward);
 void pgl_projection(float near, float far, float fovw);
 void pgl_viewport(int x, int y, uint32_t width, uint32_t height);
 

@@ -152,7 +152,7 @@
 #define PGLM_RGB565_YELLOW               ((uint16_t)0xFFE0)
 #define PGLM_RGB565_YELLOWGREEN          ((uint16_t)0x9E66)
 
-inline uint16_t vec3f_to_rgb565(const vec3f color) {
+inline uint16_t vec3f_to_rgb565(vec3f color) {
     const uint8_t red   = (color.x < 1.0f) ? (uint8_t)(color.x * 0x1Fu) : 0x1Fu; 
     const uint8_t green = (color.y < 1.0f) ? (uint8_t)(color.y * 0x3Fu) : 0x3Fu; 
     const uint8_t blue  = (color.z < 1.0f) ? (uint8_t)(color.z * 0x1Fu) : 0x1Fu; 

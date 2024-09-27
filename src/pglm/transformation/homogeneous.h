@@ -5,7 +5,7 @@
 #include "../vector/vec3f.h"
 #include "../vector/vec4f.h"
 
-inline vec4f to_homogeneous(const vec3f v) {
+inline vec4f to_homogeneous(vec3f v) {
     return (vec4f){
         v.x, 
         v.y, 
@@ -16,7 +16,7 @@ inline vec4f to_homogeneous(const vec3f v) {
 
 // Use this function if you are sure that v.w is 1.0f.
 // Otherwise, use from_homogeneous.
-inline vec3f lazy_from_homogeneous(const vec4f v) {
+inline vec3f lazy_from_homogeneous(vec4f v) {
     return (vec3f){
         v.x,
         v.y,
@@ -26,7 +26,7 @@ inline vec3f lazy_from_homogeneous(const vec4f v) {
 
 // Use this function if you are not sure that v.w is 1.0f.
 // Otherwise, use lazy_from_homogeneous.
-inline vec3f from_homogeneous(const vec4f v) {
+inline vec3f from_homogeneous(vec4f v) {
     return (vec3f){
         v.x / v.w, 
         v.y / v.w, 
@@ -34,7 +34,7 @@ inline vec3f from_homogeneous(const vec4f v) {
     };
 }
 
-inline vec4f normalize_homogeneous(const vec4f v) {
+inline vec4f normalize_homogeneous(vec4f v) {
     return (vec4f){
         v.x / v.w, 
         v.y / v.w, 

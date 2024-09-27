@@ -5,9 +5,20 @@
 #include "pglm.h"
 
 typedef struct {
-    vec4f c0;
-    vec4f c1;
-    vec4f c2;
+    vec4f position;
+    vec2f tex_coord;
+} pgl_vertex_t;
+
+inline void swap_pgl_vertex(pgl_vertex_t* v1, pgl_vertex_t* v2) {
+    const pgl_vertex_t temp = *v1;
+    *v1 = *v2;
+    *v2 = temp;
+}
+
+typedef struct {
+    pgl_vertex_t v0;
+    pgl_vertex_t v1;
+    pgl_vertex_t v2;
 } pgl_queue_triangle_t;
 
 typedef struct {

@@ -1,10 +1,9 @@
-// 0.016380 s
+// 0.016325 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
 
 #include "camera.h"
-#include "mesh.h"
 #include "pgl.h"
 
 mesh_t meshes[] = {
@@ -14,6 +13,7 @@ mesh_t meshes[] = {
         .vertex_number = sizeof(cube_vertices) / sizeof(vertex_t),
         .index_number = sizeof(cube_indices) / sizeof(uint16_t),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
+        .tex_index = 0,
     }, 
     {
         .vertices = triangle_vertices,
@@ -21,6 +21,7 @@ mesh_t meshes[] = {
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
         .index_number = sizeof(triangle_indices) / sizeof(uint16_t),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
+        .tex_index = 1,
     },
     {
         .vertices = triangle_vertices,
@@ -28,6 +29,7 @@ mesh_t meshes[] = {
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
         .index_number = sizeof(triangle_indices) / sizeof(uint16_t),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
+        .tex_index = 2,
     },
 };
 const uint32_t mesh_number = sizeof(meshes) / sizeof(mesh_t);

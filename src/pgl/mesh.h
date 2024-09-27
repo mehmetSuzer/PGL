@@ -19,9 +19,10 @@ typedef struct {
     sphere_t bounding_volume;
     const vertex_t* vertices;
     const uint16_t* indices;
-    uint16_t vertex_number;
-    uint16_t index_number;
-    mesh_enum_t mesh_enum;
+    const uint16_t vertex_number;
+    const uint16_t index_number;
+    const uint16_t tex_index;
+    const uint16_t mesh_enum;
 } mesh_t;
 
 extern const vertex_t triangle_vertices[3];
@@ -30,13 +31,13 @@ extern const uint16_t triangle_indices[3];
 extern const vertex_t square_vertices[4];
 extern const uint16_t square_indices[6];
 
-extern const vertex_t cube_vertices[8];
+extern const vertex_t cube_vertices[16];
 extern const uint16_t cube_indices[36];
 
-extern const vertex_t triangle_pyramid_vertices[4];
+extern const vertex_t triangle_pyramid_vertices[8];
 extern const uint16_t triangle_pyramid_indices[12];
 
-extern const vertex_t square_pyramid_vertices[5];
+extern const vertex_t square_pyramid_vertices[7];
 extern const uint16_t square_pyramid_indices[18];
 
 void find_mesh_bounding_volume(mesh_t* mesh);

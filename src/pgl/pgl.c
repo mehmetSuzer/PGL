@@ -598,11 +598,12 @@ void pgl_draw(const mesh_t* mesh) {
             vec3i v2 = {(int)sc2.x, (int)sc2.y, (int)(pgl.depth_coef * (subt->c2.w - pgl.near))};
         
             // Rasterize
+            const uint16_t color = textures[mesh->tex_index][0][0];
             if ((mesh->mesh_enum ^ MESH_RENDER_WIRED) == 0) {
-                pgl_wired_triangle(&v0, &v1, &v2, vec3f_to_rgb565(mesh->vertices[0].color));
+                pgl_wired_triangle(&v0, &v1, &v2, color);
             }
             else if ((mesh->mesh_enum ^ MESH_RENDER_FILLED) == 0) {
-                pgl_filled_triangle(&v0, &v1, &v2, vec3f_to_rgb565(mesh->vertices[0].color));
+                pgl_filled_triangle(&v0, &v1, &v2, color);
             }
         }
     }

@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include "device.h"
+#include "texture.h"
 #include "mesh.h"
 
 #define PGL_FALSE   false

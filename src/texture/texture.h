@@ -12,6 +12,6 @@ extern const texture_t textures[64];
 
 // Returns the nearest color at the specified coordinates.
 // Bottom left corner of a texture is (0.0f, 0.0f), while the top left corner is (1.0f, 1.0f).
-uint16_t sample_texture(texture_t tex, vec2f tex_coords);
+uint16_t sample_texture(vec2f tex_coord, uint16_t tex_index);
 
 #endif // __TEXTURE_H__

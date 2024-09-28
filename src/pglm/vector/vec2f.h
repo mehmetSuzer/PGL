@@ -88,6 +88,10 @@ inline vec2f normalize_vec2f(vec2f v) {
     return scale_vec2f(v, inverse_mag);
 }
 
+inline vec2f interp_vec2f(vec2f v1, vec2f v2, float alpha) {
+    return add_vec2f(scale_vec2f(v1, alpha), scale_vec2f(v2, 1.0f - alpha));
+}
+
 inline bool epsilon_equal_vec2f(vec2f v1, vec2f v2, float epsilon) {
     return epsilon_equal(v1.x, v2.x, epsilon) && 
            epsilon_equal(v1.y, v2.y, epsilon);

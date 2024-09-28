@@ -55,9 +55,17 @@ pgl_t pgl = {
     .clear_color = PGLM_RGB565_BLACK,
 };
 
+typedef struct {
+    vec3i position;
+    vec2f tex_coord;
+} fragment_t;
+
 // --------------------------------------------------- RASTERIZATION --------------------------------------------------- // 
 
-static void pgl_horizontal_line(vec3i p0, vec3i p1, uint16_t color) {
+static void pgl_horizontal_line(fragment_t f0, fragment_t f1, uint16_t tex_index) {
+    const vec3i p0 = f0.position;
+    const vec3i p1 = f1.position;
+    
     const int dx = p1.x - p0.x;
     const int dz = p1.z - p0.z;
     const int y = p0.y;
@@ -65,13 +73,18 @@ static void pgl_horizontal_line(vec3i p0, vec3i p1, uint16_t color) {
     for (int x = p0.x; x <= p1.x; x++) {
         const int z = dz * (x - p0.x) / dx + p0.z;
         if (z < pgl.depth_buffer[y][x]) {
-            pgl.color_buffer[y][x] = color;
+            const float alpha = (float)(x - p0.x) / (float)(p1.x - p0.x);
+            const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
+            pgl.color_buffer[y][x] = sample_texture(tex_coord, tex_index);
             pgl.depth_buffer[y][x] = z;
         }
     }
 }
 
-static void pgl_vertical_line(vec3i p0, vec3i p1, uint16_t color) {
+static void pgl_vertical_line(fragment_t f0, fragment_t f1, uint16_t tex_index) {
+    const vec3i p0 = f0.position;
+    const vec3i p1 = f1.position;
+
     const int dy = p1.y - p0.y;
     const int dz = p1.z - p0.z;
     const int x = p0.x;
@@ -79,19 +92,24 @@ static void pgl_vertical_line(vec3i p0, vec3i p1, uint16_t color) {
     for (int y = p0.y; y <= p1.y; y++) {
         const int z = dz * (y - p0.y) / dy + p0.z;
         if (z < pgl.depth_buffer[y][x]) {
-            pgl.color_buffer[y][x] = color;
+            const float alpha = (float)(y - p0.y) / (float)(p1.y - p0.y);
+            const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
+            pgl.color_buffer[y][x] = sample_texture(tex_coord, tex_index);
             pgl.depth_buffer[y][x] = z;
         }
     }
 }
 
-static void pgl_line(vec3i p0, vec3i p1, uint16_t color) {
-    int dx = abs(p1.x - p0.x);
-    int sx = (p0.x < p1.x) ? 1 : -1;
-    int dy = -abs(p1.y - p0.y);
-    int sy = (p0.y < p1.y) ? 1 : -1;
-    int dz = -abs(p1.z - p0.z);
-    int sz = (p0.z < p1.z) ? 1 : -1;
+static void pgl_line(fragment_t f0, fragment_t f1, uint16_t tex_index) {
+    const vec3i p0 = f0.position;
+    const vec3i p1 = f1.position;
+
+    const int dx = abs(p1.x - p0.x);
+    const int sx = (p0.x < p1.x) ? 1 : -1;
+    const int dy = -abs(p1.y - p0.y);
+    const int sy = (p0.y < p1.y) ? 1 : -1;
+    const int dz = -abs(p1.z - p0.z);
+    const int sz = (p0.z < p1.z) ? 1 : -1;
 
     int ey = dx + dy;
     int ez = dx + dz;
@@ -102,7 +120,9 @@ static void pgl_line(vec3i p0, vec3i p1, uint16_t color) {
 
     while (true) {
         if (z < pgl.depth_buffer[y][x]) {
-            pgl.color_buffer[y][x] = color;
+            const float alpha = (float)(x - p0.x) / (float)(p1.x - p0.x);
+            const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
+            pgl.color_buffer[y][x] = sample_texture(tex_coord, tex_index);
             pgl.depth_buffer[y][x] = z;
         }
 
@@ -140,50 +160,64 @@ static void pgl_clamp_coordinates(vec3i* v0, vec3i* v1, vec3i* v2) {
     v2->y = clamp(v2->y, 0, SCREEN_HEIGHT-1);
 }
 
-static void pgl_wired_triangle(vec3i v0, vec3i v1, vec3i v2, uint16_t color) {
-    pgl_clamp_coordinates(&v0, &v1, &v2);
-    pgl_line(v0, v1, color);
-    pgl_line(v0, v2, color);
-    pgl_line(v1, v2, color);
+static void pgl_wired_triangle(fragment_t f0, fragment_t f1, fragment_t f2, uint16_t tex_index) {
+    pgl_clamp_coordinates(&f0.position, &f1.position, &f2.position);
+    pgl_line(f0, f1, tex_index);
+    pgl_line(f0, f2, tex_index);
+    pgl_line(f1, f2, tex_index);
 }
 
-static void pgl_filled_triangle(vec3i v0, vec3i v1, vec3i v2, uint16_t color) {
-    pgl_clamp_coordinates(&v0, &v1, &v2);
-    if (v1.y < v0.y) { swap(&v0, &v1); }
-    if (v2.y < v1.y) { swap(&v1, &v2); }
-    if (v1.y < v0.y) { swap(&v0, &v1); }
+static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2, uint16_t tex_index) {
+    pgl_clamp_coordinates(&f0.position, &f1.position, &f2.position);
+    if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
+    if (f2.position.y < f1.position.y) { swap(&f1, &f2); }
+    if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
 
-    for (int y = v0.y; y <= v2.y; y++) {
-        vec3i left  = {.y = y};
-        vec3i right = {.y = y};
+    const vec3i p0 = f0.position;    
+    const vec3i p1 = f1.position;    
+    const vec3i p2 = f2.position;
+
+    for (int y = p0.y; y <= p2.y; y++) {
+        fragment_t fleft  = {.position = {.y = y}};
+        fragment_t fright = {.position = {.y = y}};
                               
-        if (y >= v1.y) {
-            const int dxl = (v2.y != v1.y) ? (y - v1.y) * (v2.x - v1.x) / (v2.y - v1.y) : 0;
-            const int dxr = (v2.y != v0.y) ? (y - v0.y) * (v2.x - v0.x) / (v2.y - v0.y) : 0;
-            left.x  = v1.x + dxl;
-            right.x = v0.x + dxr;
+        if (y >= p1.y) {
+            const int dxl = (p2.y != p1.y) ? (y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) : 0;
+            const int dxr = (p2.y != p0.y) ? (y - p0.y) * (p2.x - p0.x) / (p2.y - p0.y) : 0;
+            fleft.position.x  = p1.x + dxl;
+            fright.position.x = p0.x + dxr;
 
-            const int dzl = (v2.y != v1.y) ? (y - v1.y) * (v2.z - v1.z) / (v2.y - v1.y) : 0;
-            const int dzr = (v2.y != v0.y) ? (y - v0.y) * (v2.z - v0.z) / (v2.y - v0.y) : 0;
-            left.z  = v1.z + dzl;
-            right.z = v0.z + dzr;
+            const int dzl = (p2.y != p1.y) ? (y - p1.y) * (p2.z - p1.z) / (p2.y - p1.y) : 0;
+            const int dzr = (p2.y != p0.y) ? (y - p0.y) * (p2.z - p0.z) / (p2.y - p0.y) : 0;
+            fleft.position.z  = p1.z + dzl;
+            fright.position.z = p0.z + dzr;
+
+            const float alpha_left  = (float)(y - p1.y) / (float)(p2.y - p1.y);
+            const float alpha_right = (float)(y - p0.y) / (float)(p2.y - p0.y);
+            fleft.tex_coord  = interp_vec2f(f2.tex_coord, f1.tex_coord, alpha_left);
+            fright.tex_coord = interp_vec2f(f2.tex_coord, f0.tex_coord, alpha_right);
         } 
         else {
-            const int dxl = (v1.y != v0.y) ? (y - v0.y) * (v1.x - v0.x) / (v1.y - v0.y) : 0;
-            const int dxr = (v2.y != v0.y) ? (y - v0.y) * (v2.x - v0.x) / (v2.y - v0.y) : 0;
-            left.x  = v0.x + dxl;
-            right.x = v0.x + dxr;
+            const int dxl = (p1.y != p0.y) ? (y - p0.y) * (p1.x - p0.x) / (p1.y - p0.y) : 0;
+            const int dxr = (p2.y != p0.y) ? (y - p0.y) * (p2.x - p0.x) / (p2.y - p0.y) : 0;
+            fleft.position.x  = p0.x + dxl;
+            fright.position.x = p0.x + dxr;
 
-            const int dzl = (v1.y != v0.y) ? (y - v0.y) * (v1.z - v0.z) / (v1.y - v0.y) : 0;
-            const int dzr = (v2.y != v0.y) ? (y - v0.y) * (v2.z - v0.z) / (v2.y - v0.y) : 0;
-            left.z  = v0.z + dzl;
-            right.z = v0.z + dzr;
+            const int dzl = (p1.y != p0.y) ? (y - p0.y) * (p1.z - p0.z) / (p1.y - p0.y) : 0;
+            const int dzr = (p2.y != p0.y) ? (y - p0.y) * (p2.z - p0.z) / (p2.y - p0.y) : 0;
+            fleft.position.z  = p0.z + dzl;
+            fright.position.z = p0.z + dzr;
+
+            const float alpha_left  = (float)(y - p0.y) / (float)(p1.y - p0.y);
+            const float alpha_right = (float)(y - p0.y) / (float)(p2.y - p0.y);
+            fleft.tex_coord  = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha_left);
+            fright.tex_coord = interp_vec2f(f2.tex_coord, f0.tex_coord, alpha_right);
         }
 
-        if (left.x > right.x) {
-            swap(&left, &right);
+        if (fleft.position.x > fright.position.x) {
+            swap(&fleft, &fright);
         }
-        pgl_horizontal_line(left, right, color);
+        pgl_horizontal_line(fleft, fright, tex_index);
     }
 }
 
@@ -292,13 +326,13 @@ static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, 
     const float d1 = dot_vec4f(t->v1.position, clip_plane_vector);
     const float d2 = dot_vec4f(t->v2.position, clip_plane_vector);
 
-    const float a = d0 / (d0 - d1);
-    const float b = d0 / (d0 - d2);
+    const float alpha10 = d0 / (d0 - d1);
+    const float alpha20 = d0 / (d0 - d2);
 
-    v10->position  = add_vec4f(scale_vec4f(t->v0.position,  1.0f - a), scale_vec4f(t->v1.position,  a));
-    v20->position  = add_vec4f(scale_vec4f(t->v0.position,  1.0f - b), scale_vec4f(t->v2.position,  b));
-    v10->tex_coord = add_vec2f(scale_vec2f(t->v0.tex_coord, 1.0f - a), scale_vec2f(t->v1.tex_coord, a));
-    v20->tex_coord = add_vec2f(scale_vec2f(t->v0.tex_coord, 1.0f - b), scale_vec2f(t->v2.tex_coord, a));
+    v10->position  = interp_vec4f(t->v1.position,  t->v0.position,  alpha10);
+    v10->tex_coord = interp_vec2f(t->v1.tex_coord, t->v0.tex_coord, alpha10);
+    v20->position  = interp_vec4f(t->v2.position,  t->v0.position,  alpha20);
+    v20->tex_coord = interp_vec2f(t->v2.tex_coord, t->v0.tex_coord, alpha20);
 }
 
 // Returns true if the mesh may be visible.
@@ -576,22 +610,21 @@ void pgl_draw(const mesh_t* mesh) {
             const pgl_queue_triangle_t* subt = subtriangles + subtriangle_index;
             subtriangle_index--;
 
-            // Screen coordinates
+            // Screen space coordinates
             const vec4f sc0 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->v0.position));
             const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->v1.position));
             const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->v2.position));
 
-            const vec3i v0 = {sc0.x, sc0.y, (pgl.depth_coef * (subt->v0.position.w - pgl.near))};
-            const vec3i v1 = {sc1.x, sc1.y, (pgl.depth_coef * (subt->v1.position.w - pgl.near))};
-            const vec3i v2 = {sc2.x, sc2.y, (pgl.depth_coef * (subt->v2.position.w - pgl.near))};
+            const fragment_t f0 = {{sc0.x, sc0.y, (pgl.depth_coef * (subt->v0.position.w - pgl.near))}, subt->v0.tex_coord};
+            const fragment_t f1 = {{sc1.x, sc1.y, (pgl.depth_coef * (subt->v1.position.w - pgl.near))}, subt->v1.tex_coord};
+            const fragment_t f2 = {{sc2.x, sc2.y, (pgl.depth_coef * (subt->v2.position.w - pgl.near))}, subt->v2.tex_coord};
         
             // Rasterize
-            const uint16_t color = textures[mesh->tex_index][0][0];
             if ((mesh->mesh_enum ^ MESH_RENDER_WIRED) == 0) {
-                pgl_wired_triangle(v0, v1, v2, color);
+                pgl_wired_triangle(f0, f1, f2, mesh->tex_index);
             }
             else if ((mesh->mesh_enum ^ MESH_RENDER_FILLED) == 0) {
-                pgl_filled_triangle(v0, v1, v2, color);
+                pgl_filled_triangle(f0, f1, f2, mesh->tex_index);
             }
         }
     }

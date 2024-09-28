@@ -94,6 +94,10 @@ inline vec4f normalize_vec4f(vec4f v) {
     return scale_vec4f(v, inverse_mag);
 }
 
+inline vec4f interp_vec4f(vec4f v1, vec4f v2, float alpha) {
+    return add_vec4f(scale_vec4f(v1, alpha), scale_vec4f(v2, 1.0f - alpha));
+}
+
 inline bool epsilon_equal_vec4f(vec4f v1, vec4f v2, float epsilon) {
     return epsilon_equal(v1.x, v2.x, epsilon) && 
            epsilon_equal(v1.y, v2.y, epsilon) && 

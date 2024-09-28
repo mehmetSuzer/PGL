@@ -1,4 +1,5 @@
-// 0.016325 s
+// wired:  0.027182 s | target = 0.016325 s
+// filled: 0.255958 s | target = 0.033333 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
@@ -12,15 +13,15 @@ mesh_t meshes[] = {
         .indices = cube_indices,
         .vertex_number = sizeof(cube_vertices) / sizeof(vertex_t),
         .index_number = sizeof(cube_indices) / sizeof(uint16_t),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
-        .tex_index = 0,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
+        .tex_index = 9,
     }, 
     {
         .vertices = triangle_vertices,
         .indices = triangle_indices,
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
         .index_number = sizeof(triangle_indices) / sizeof(uint16_t),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
         .tex_index = 1,
     },
     {
@@ -28,7 +29,7 @@ mesh_t meshes[] = {
         .indices = triangle_indices,
         .vertex_number = sizeof(triangle_vertices) / sizeof(vertex_t),
         .index_number = sizeof(triangle_indices) / sizeof(uint16_t),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
         .tex_index = 2,
     },
     {
@@ -36,7 +37,7 @@ mesh_t meshes[] = {
         .indices = square_pyramid_indices,
         .vertex_number = sizeof(square_pyramid_vertices) / sizeof(vertex_t),
         .index_number = sizeof(square_pyramid_indices) / sizeof(uint16_t),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
         .tex_index = 3,
     },
 };

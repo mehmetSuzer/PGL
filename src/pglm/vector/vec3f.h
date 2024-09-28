@@ -103,6 +103,10 @@ inline vec3f bisector_vec3f(vec3f u1, vec3f u2) {
     return normalize_vec3f(add_vec3f(u1, u2));
 }
 
+inline vec3f interp_vec3f(vec3f v1, vec3f v2, float alpha) {
+    return add_vec3f(scale_vec3f(v1, alpha), scale_vec3f(v2, 1.0f - alpha));
+}
+
 inline bool epsilon_equal_vec3f(vec3f v1, vec3f v2, float epsilon) {
     return epsilon_equal(v1.x, v2.x, epsilon) && 
            epsilon_equal(v1.y, v2.y, epsilon) && 

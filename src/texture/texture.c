@@ -93,18 +93,28 @@ const texture_t textures[64] = {
      {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF},
      {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF},
      {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}},
+
+    // Red background, blue rectangle and diagonals
+    {{0x001F, 0x001F, 0x001F, 0x001F, 0x001F, 0x001F, 0x001F, 0x001F},
+     {0x001F, 0x001F, 0xF800, 0xF800, 0xF800, 0xF800, 0x001F, 0x001F},
+     {0x001F, 0xF800, 0x001F, 0xF800, 0xF800, 0x001F, 0xF800, 0x001F},
+     {0x001F, 0xF800, 0xF800, 0x001F, 0x001F, 0xF800, 0xF800, 0x001F},
+     {0x001F, 0xF800, 0xF800, 0x001F, 0x001F, 0xF800, 0xF800, 0x001F},
+     {0x001F, 0xF800, 0x001F, 0xF800, 0xF800, 0x001F, 0xF800, 0x001F},
+     {0x001F, 0x001F, 0xF800, 0xF800, 0xF800, 0xF800, 0x001F, 0x001F},
+     {0x001F, 0x001F, 0x001F, 0x001F, 0x001F, 0x001F, 0x001F, 0x001F}},
 };
 
-uint16_t sample_texture(texture_t tex, vec2f tex_coords) {
-    if (tex_coords.s < 0.0f || tex_coords.s > 1.0f) {
-        tex_coords.s = tex_coords.s - floorf(tex_coords.s);
+uint16_t sample_texture(vec2f tex_coord, uint16_t tex_index) {
+    if (tex_coord.s < 0.0f || tex_coord.s > 1.0f) {
+        tex_coord.s = tex_coord.s - floorf(tex_coord.s);
     }
-    if (tex_coords.t < 0.0f || tex_coords.t > 1.0f) {
-        tex_coords.t = tex_coords.t - floorf(tex_coords.t);
+    if (tex_coord.t < 0.0f || tex_coord.t > 1.0f) {
+        tex_coord.t = tex_coord.t - floorf(tex_coord.t);
     }
 
-    const int x = (int)(tex_coords.s / TEXTURE_SAMPLING_PERIOD);
-    const int y = (int)(tex_coords.t / TEXTURE_SAMPLING_PERIOD);
+    const int x = (int)(tex_coord.s / TEXTURE_SAMPLING_PERIOD);
+    const int y = (int)(tex_coord.t / TEXTURE_SAMPLING_PERIOD);
 
-    return tex[7-y][x];
+    return textures[tex_index][7-y][x];
 }

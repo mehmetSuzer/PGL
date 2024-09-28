@@ -75,7 +75,7 @@ static void pgl_horizontal_line(fragment_t f0, fragment_t f1, uint16_t tex_index
         if (z < pgl.depth_buffer[y][x]) {
             const float alpha = (float)(x - p0.x) / (float)(p1.x - p0.x);
             const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
-            pgl.color_buffer[y][x] = sample_texture(tex_coord, tex_index);
+            pgl.color_buffer[y][x] = sample_texture_vec2f(tex_coord, tex_index);
             pgl.depth_buffer[y][x] = z;
         }
     }
@@ -94,7 +94,7 @@ static void pgl_vertical_line(fragment_t f0, fragment_t f1, uint16_t tex_index) 
         if (z < pgl.depth_buffer[y][x]) {
             const float alpha = (float)(y - p0.y) / (float)(p1.y - p0.y);
             const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
-            pgl.color_buffer[y][x] = sample_texture(tex_coord, tex_index);
+            pgl.color_buffer[y][x] = sample_texture_vec2f(tex_coord, tex_index);
             pgl.depth_buffer[y][x] = z;
         }
     }
@@ -122,7 +122,7 @@ static void pgl_line(fragment_t f0, fragment_t f1, uint16_t tex_index) {
         if (z < pgl.depth_buffer[y][x]) {
             const float alpha = (float)(x - p0.x) / (float)(p1.x - p0.x);
             const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
-            pgl.color_buffer[y][x] = sample_texture(tex_coord, tex_index);
+            pgl.color_buffer[y][x] = sample_texture_vec2f(tex_coord, tex_index);
             pgl.depth_buffer[y][x] = z;
         }
 

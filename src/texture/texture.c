@@ -1,6 +1,9 @@
 
 #include "texture.h"
 
+// Choose a power of 2
+#define TEXTURE_RESOLUTION  256u
+
 #define TEXTURE_SAMPLING_PERIOD ((1.0f / (float)TEXTURE_SIZE) + 1E-6f)
 
 const texture_t textures[64] = {
@@ -105,12 +108,33 @@ const texture_t textures[64] = {
      {0x001F, 0x001F, 0x001F, 0x001F, 0x001F, 0x001F, 0x001F, 0x001F}},
 };
 
-uint16_t sample_texture(vec2f tex_coord, uint16_t tex_index) {
+vec2i tex_coord_vec2f_to_vec2i(vec2f tex_coord) {
+    return (vec2i) {
+        TEXTURE_RESOLUTION * tex_coord.s,
+        TEXTURE_RESOLUTION * tex_coord.t,
+    };
+}
+
+uint16_t sample_texture_vec2i(vec2i tex_coord, uint16_t tex_index) {
+    if (tex_coord.s < 0 || tex_coord.s > TEXTURE_RESOLUTION) {
+        tex_coord.s -= (tex_coord.s & ~(TEXTURE_RESOLUTION-1));
+    }
+    if (tex_coord.t < 0 || tex_coord.t > TEXTURE_RESOLUTION) {
+        tex_coord.t -= (tex_coord.t & ~(TEXTURE_RESOLUTION-1));
+    }
+
+    const int x = tex_coord.s / (TEXTURE_RESOLUTION / TEXTURE_SIZE + 1);
+    const int y = tex_coord.t / (TEXTURE_RESOLUTION / TEXTURE_SIZE + 1);
+
+    return textures[tex_index][7-y][x];
+}
+
+uint16_t sample_texture_vec2f(vec2f tex_coord, uint16_t tex_index) {
     if (tex_coord.s < 0.0f || tex_coord.s > 1.0f) {
-        tex_coord.s = tex_coord.s - floorf(tex_coord.s);
+        tex_coord.s -= floorf(tex_coord.s);
     }
     if (tex_coord.t < 0.0f || tex_coord.t > 1.0f) {
-        tex_coord.t = tex_coord.t - floorf(tex_coord.t);
+        tex_coord.t -= floorf(tex_coord.t);
     }
 
     const int x = (int)(tex_coord.s / TEXTURE_SAMPLING_PERIOD);

@@ -8,10 +8,13 @@
 
 typedef uint16_t texture_t[TEXTURE_SIZE][TEXTURE_SIZE];
 
-extern const texture_t textures[64];
+vec2i tex_coord_vec2f_to_vec2i(vec2f tex_coord);
+
+// Returns the nearest color at the specified coordinates.
+uint16_t sample_texture_vec2i(vec2i tex_coord, uint16_t tex_index);
 
 // Returns the nearest color at the specified coordinates.
 // Bottom left corner of a texture is (0.0f, 0.0f), while the top left corner is (1.0f, 1.0f).
-uint16_t sample_texture(vec2f tex_coord, uint16_t tex_index);
+uint16_t sample_texture_vec2f(vec2f tex_coord, uint16_t tex_index);
 
 #endif // __TEXTURE_H__

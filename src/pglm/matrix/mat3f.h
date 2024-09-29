@@ -19,6 +19,21 @@ typedef struct {
 #define zero_mat3f     ((mat3f){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
 #define identity_mat3f ((mat3f){1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f})
 
+inline mat3f cast_mat2f_to_mat3f(mat2f m) {
+    return (mat3f){
+        m.xx, m.xy, 0.0f,
+        m.yx, m.yy, 0.0f,
+        0.0f, 0.0f, 1.0f,
+    };
+}
+
+inline mat2f cast_mat3f_to_mat2f(mat3f m) {
+    return (mat2f){
+        m.xx, m.xy,
+        m.yx, m.yy,
+    };
+}
+
 inline mat3f diagonal_mat3f(vec3f v) {
     return (mat3f){
          v.x, 0.0f, 0.0f,
@@ -150,14 +165,6 @@ static inline vec3f solve_cramers_mat3f(mat3f m, vec3f v) {
         detx * inverse_determinant, // x
         dety * inverse_determinant, // y
         detz * inverse_determinant, // z
-    };
-}
-
-inline mat3f cast_mat2f_to_mat3f(mat2f m) {
-    return (mat3f){
-        m.xx, m.xy, 0.0f,
-        m.yx, m.yy, 0.0f,
-        0.0f, 0.0f, 1.0f,
     };
 }
 

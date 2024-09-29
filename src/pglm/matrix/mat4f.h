@@ -21,6 +21,23 @@ typedef struct {
 #define zero_mat4f     ((mat4f){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
 #define identity_mat4f ((mat4f){1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f})
 
+inline mat4f cast_mat3f_to_mat4f(mat3f m) {
+    return (mat4f){
+        m.xx, m.xy, m.xz, 0.0f,
+        m.yx, m.yy, m.yz, 0.0f,
+        m.zx, m.zy, m.zz, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+    };
+}
+
+inline mat3f cast_mat4f_to_mat3f(mat4f m) {
+    return (mat3f){
+        m.xx, m.xy, m.xz,
+        m.yx, m.yy, m.yz,
+        m.zx, m.zy, m.zz,
+    };
+}
+
 inline mat4f diagonal_mat4f(vec4f v) {
     return (mat4f){
          v.x, 0.0f, 0.0f, 0.0f,
@@ -205,15 +222,6 @@ static inline vec4f solve_cramers_mat4f(mat4f m, vec4f v) {
     const float w = det3 * inverse_determinant;
 
     return (vec4f){x, y, z, w};
-}
-
-inline mat4f cast_mat3f_to_mat4f(mat3f m) {
-    return (mat4f){
-        m.xx, m.xy, m.xz, 0.0f,
-        m.yx, m.yy, m.yz, 0.0f,
-        m.zx, m.zy, m.zz, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f,
-    };
 }
 
 inline bool epsilon_equal_mat4f(mat4f m1, mat4f m2, float epsilon) {

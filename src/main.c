@@ -1,11 +1,16 @@
 // wired:  0.021550 s | target = 0.016666 s
-// filled: 0.178165 s | target = 0.033333 s
+// filled: 0.182330 s | target = 0.033333 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
 
 #include "camera.h"
 #include "pgl.h"
+
+const directional_light_t dl = {
+    .direction = {0.6f, -0.8f, 0.0f},
+    .intensity = 1.0f,
+};
 
 mesh_t meshes[] = {
     {
@@ -110,11 +115,11 @@ int main() {
         last_time = current_time;
         camera_update(dt);
         
-        // transform_rotate_quat(&meshes[0].transform, quat_angle_axis((vec3f){0.6f, 0.0f, 0.8f}, dt));
+        transform_rotate_quat(&meshes[0].transform, quat_angle_axis((vec3f){0.8f, 0.6f, 0.0f}, dt));
 
         pgl_clear(PGL_COLOR_BUFFER_BIT | PGL_DEPTH_BUFFER_BIT);
         for (uint32_t i = 0; i < mesh_number; i++) {
-            pgl_draw(meshes+i);
+            pgl_draw(meshes+i, &dl);
         }
         printf("dt: %f\n", dt);
         pgl_display();

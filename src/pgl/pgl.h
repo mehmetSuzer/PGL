@@ -2,7 +2,6 @@
 #ifndef __PGL_H__
 #define __PGL_H__
 
-#include <stdio.h>
 #include "device.h"
 #include "texture.h"
 #include "mesh.h"
@@ -75,7 +74,7 @@ void pgl_stencil_op(pgl_enum_t sfail, pgl_enum_t dpfail, pgl_enum_t dppass);
 void pgl_cull_face(pgl_enum_t face);
 void pgl_front_face(pgl_enum_t winding_order);
 
-void pgl_draw(const mesh_t* mesh);
+void pgl_draw(const mesh_t* mesh, const directional_light_t* dl);
 void pgl_display();
 
 #endif // __PGL_H__

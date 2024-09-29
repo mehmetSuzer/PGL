@@ -5,18 +5,35 @@
 #include "../vector/vec3f.h"
 #include "../vector/vec4f.h"
 
-inline vec4f to_homogeneous(vec3f v) {
+inline vec4f to_homogeneous_point(vec3f p) {
     return (vec4f){
-        v.x, 
-        v.y, 
-        v.z, 
+        p.x, 
+        p.y, 
+        p.z, 
         1.0f,
     };
 }
 
-// Use this function if you are sure that v.w is 1.0f.
-// Otherwise, use from_homogeneous.
-inline vec3f lazy_from_homogeneous(vec4f v) {
+inline vec4f to_homogeneous_vector(vec3f v) {
+    return (vec4f){
+        v.x, 
+        v.y, 
+        v.z, 
+        0.0f,
+    }; 
+}
+
+inline vec3f from_homogeneous_point(vec4f p) {
+    return (vec3f){
+        p.x / p.w, 
+        p.y / p.w, 
+        p.z / p.w,
+    };
+}
+
+// If it is certain that v.w = 1.0f, 
+// this function can be used to convert a homogeneous point to a vec3f point.
+inline vec3f from_homogeneous_vector(vec4f v) {
     return (vec3f){
         v.x,
         v.y,
@@ -24,21 +41,11 @@ inline vec3f lazy_from_homogeneous(vec4f v) {
     };
 }
 
-// Use this function if you are not sure that v.w is 1.0f.
-// Otherwise, use lazy_from_homogeneous.
-inline vec3f from_homogeneous(vec4f v) {
-    return (vec3f){
-        v.x / v.w, 
-        v.y / v.w, 
-        v.z / v.w,
-    };
-}
-
-inline vec4f normalize_homogeneous(vec4f v) {
+inline vec4f normalize_homogeneous_point(vec4f p) {
     return (vec4f){
-        v.x / v.w, 
-        v.y / v.w, 
-        v.z / v.w,
+        p.x / p.w, 
+        p.y / p.w, 
+        p.z / p.w,
         1.0f,
     };
 }

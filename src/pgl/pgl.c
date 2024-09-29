@@ -2,6 +2,10 @@
 #include "pgl.h"
 #include "pgl_queue.h"
 
+#define AMBIENT_COEF 0.2f
+#define DIFFUSE_COEF 0.8f
+#define SHADE_2_POWER 8u
+
 // Stencil test is disabled.
 // Stencil write mask is enabled. 
 // Stencil function is PGL_NEVER.
@@ -44,7 +48,9 @@ typedef struct {
     float depth_coef;
     // Internal state 
     pgl_enum_t state;
+    uint16_t tex_index;
     uint16_t clear_color;
+    uint32_t shade_multp;
 } pgl_t;
 
 pgl_t pgl = {
@@ -62,7 +68,7 @@ typedef struct {
 
 // --------------------------------------------------- RASTERIZATION --------------------------------------------------- // 
 
-static void pgl_horizontal_line(fragment_t f0, fragment_t f1, uint16_t tex_index) {
+static void pgl_horizontal_line(fragment_t f0, fragment_t f1) {
     const vec3i p0 = f0.position;
     const vec3i p1 = f1.position;
 
@@ -80,7 +86,14 @@ static void pgl_horizontal_line(fragment_t f0, fragment_t f1, uint16_t tex_index
         if (z < pgl.depth_buffer[y][x]) {
             const float alpha = (float)(x - p0.x) / (float)(p1.x - p0.x);
             const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
-            pgl.color_buffer[y][x] = sample_texture_vec2f(tex_coord, tex_index);
+            const uint16_t color = sample_texture_vec2f(tex_coord, pgl.tex_index);
+
+            const uint32_t red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
+            const uint32_t green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
+            const uint32_t blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
+            const uint16_t shaded_color = (uint16_t)((red & (31 << 11)) | (green & (63 << 5)) | blue);
+
+            pgl.color_buffer[y][x] = shaded_color;
             pgl.depth_buffer[y][x] = z;
         }
 
@@ -100,7 +113,7 @@ static void pgl_horizontal_line(fragment_t f0, fragment_t f1, uint16_t tex_index
     }
 }
 
-static void pgl_line(fragment_t f0, fragment_t f1, uint16_t tex_index) {
+static void pgl_line(fragment_t f0, fragment_t f1) {
     const vec3i p0 = f0.position;
     const vec3i p1 = f1.position;
 
@@ -121,7 +134,7 @@ static void pgl_line(fragment_t f0, fragment_t f1, uint16_t tex_index) {
         if (z < pgl.depth_buffer[y][x]) {
             const float alpha = (float)(x - p0.x) / (float)(p1.x - p0.x);
             const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
-            pgl.color_buffer[y][x] = sample_texture_vec2f(tex_coord, tex_index);
+            pgl.color_buffer[y][x] = sample_texture_vec2f(tex_coord, pgl.tex_index);
             pgl.depth_buffer[y][x] = z;
         }
 
@@ -159,14 +172,14 @@ static void pgl_clamp_coordinates(vec3i* v0, vec3i* v1, vec3i* v2) {
     v2->y = clamp(v2->y, 0, SCREEN_HEIGHT-1);
 }
 
-static void pgl_wired_triangle(fragment_t f0, fragment_t f1, fragment_t f2, uint16_t tex_index) {
+static void pgl_wired_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
     pgl_clamp_coordinates(&f0.position, &f1.position, &f2.position);
-    pgl_line(f0, f1, tex_index);
-    pgl_line(f0, f2, tex_index);
-    pgl_line(f1, f2, tex_index);
+    pgl_line(f0, f1);
+    pgl_line(f0, f2);
+    pgl_line(f1, f2);
 }
 
-static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2, uint16_t tex_index) {
+static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
     pgl_clamp_coordinates(&f0.position, &f1.position, &f2.position);
     if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
     if (f2.position.y < f1.position.y) { swap(&f1, &f2); }
@@ -216,7 +229,7 @@ static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2, uin
         if (fleft.position.x > fright.position.x) {
             swap(&fleft, &fright);
         }
-        pgl_horizontal_line(fleft, fright, tex_index);
+        pgl_horizontal_line(fleft, fright);
     }
 }
 
@@ -337,7 +350,7 @@ static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, 
 // Returns true if the mesh may be visible.
 // Returns false if there is no chance that the mesh is visible. 
 static bool pgl_broad_phase_clipping(const mesh_t* mesh, mat4f view_model) {
-    const vec3f center = lazy_from_homogeneous(mul_mat4f_vec4f(view_model, to_homogeneous(mesh->bounding_volume.center)));
+    const vec3f center = mul_mat3f_vec3f(cast_mat4f_to_mat3f(view_model), mesh->bounding_volume.center);
     const float minus_sin_half_fovw = -pgl.sin_half_fovw;
     const float cos_half_fovw       =  pgl.cos_half_fovw;
     const float minus_sin_half_fovh = -pgl.sin_half_fovh;
@@ -586,25 +599,32 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
 
 // --------------------------------------------------- DRAWING --------------------------------------------------- // 
 
-void pgl_draw(const mesh_t* mesh) {
+void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
+    const vec3f light_dir = mul_mat3f_vec3f(cast_mat4f_to_mat3f(pgl.view), dl->direction);
     const mat4f view_model = mul_mat4f_mat4f(pgl.view, mesh->transform.model);
+    pgl.tex_index = mesh->tex_index;
+
     for (uint32_t i = 0; i < mesh->index_number; i += 3) {
         const vertex_t vertex0 = mesh->vertices[mesh->indices[i]];
         const vertex_t vertex1 = mesh->vertices[mesh->indices[i+1]];
         const vertex_t vertex2 = mesh->vertices[mesh->indices[i+2]];
         
         // Camera space coordinates
-        const vec4f c0 = mul_mat4f_vec4f(view_model, to_homogeneous(vertex0.position));
-        const vec4f c1 = mul_mat4f_vec4f(view_model, to_homogeneous(vertex1.position));
-        const vec4f c2 = mul_mat4f_vec4f(view_model, to_homogeneous(vertex2.position));
+        const vec4f c0 = mul_mat4f_vec4f(view_model, to_homogeneous_point(vertex0.position));
+        const vec4f c1 = mul_mat4f_vec4f(view_model, to_homogeneous_point(vertex1.position));
+        const vec4f c2 = mul_mat4f_vec4f(view_model, to_homogeneous_point(vertex2.position));
         
         // Face culling
-        const vec3f v0 = lazy_from_homogeneous(c0);
-        const vec3f v1 = lazy_from_homogeneous(c1);
-        const vec3f v2 = lazy_from_homogeneous(c2);
+        const vec3f v0 = from_homogeneous_vector(c0);
+        const vec3f v1 = from_homogeneous_vector(c1);
+        const vec3f v2 = from_homogeneous_vector(c2);
         const vec3f normal = cross_vec3f(sub_vec3f(v1, v0), sub_vec3f(v2, v0));
 
         if (dot_vec3f(normal, v0) >= 0.0f) { continue; }
+
+        // Flat shading
+        const float shade = dl->intensity * (AMBIENT_COEF + DIFFUSE_COEF * greater(-dot_vec3f(light_dir, normalize_vec3f(normal)), 0.0f));
+        pgl.shade_multp = (uint32_t)(shade * (1 << SHADE_2_POWER));
 
         // Clip space coordinates
         pgl_queue_triangle_t triangle = {
@@ -621,9 +641,9 @@ void pgl_draw(const mesh_t* mesh) {
             subtriangle_index--;
 
             // Screen space coordinates
-            const vec4f sc0 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->v0.position));
-            const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->v1.position));
-            const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous(subt->v2.position));
+            const vec4f sc0 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v0.position));
+            const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v1.position));
+            const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v2.position));
 
             const fragment_t f0 = {{sc0.x, sc0.y, (pgl.depth_coef * (subt->v0.position.w - pgl.near))}, subt->v0.tex_coord};
             const fragment_t f1 = {{sc1.x, sc1.y, (pgl.depth_coef * (subt->v1.position.w - pgl.near))}, subt->v1.tex_coord};
@@ -631,10 +651,10 @@ void pgl_draw(const mesh_t* mesh) {
         
             // Rasterize
             if ((mesh->mesh_enum ^ MESH_RENDER_WIRED) == 0) {
-                pgl_wired_triangle(f0, f1, f2, mesh->tex_index);
+                pgl_wired_triangle(f0, f1, f2);
             }
             else if ((mesh->mesh_enum ^ MESH_RENDER_FILLED) == 0) {
-                pgl_filled_triangle(f0, f1, f2, mesh->tex_index);
+                pgl_filled_triangle(f0, f1, f2);
             }
         }
     }

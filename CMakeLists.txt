@@ -22,7 +22,6 @@ add_subdirectory(src/device)
 add_subdirectory(src/pglm)
 add_subdirectory(src/transform)
 add_subdirectory(src/pgl)
-add_subdirectory(src/light_source)
 add_subdirectory(src/camera)
 add_subdirectory(src/texture)
 
@@ -40,7 +39,6 @@ target_link_libraries(${PROJECT_NAME}
     pglm
     transform
     pgl
-    light_source
     camera
     texture
 

@@ -65,37 +65,37 @@ typedef struct {
 static void pgl_horizontal_line(fragment_t f0, fragment_t f1, uint16_t tex_index) {
     const vec3i p0 = f0.position;
     const vec3i p1 = f1.position;
-    
-    const int dx = p1.x - p0.x;
-    const int dz = p1.z - p0.z;
-    const int y = p0.y;
 
-    for (int x = p0.x; x <= p1.x; x++) {
-        const int z = dz * (x - p0.x) / dx + p0.z;
+    const int dx = abs(p1.x - p0.x);
+    const int sx = (p0.x < p1.x) ? 1 : -1;
+    const int dz = -abs(p1.z - p0.z);
+    const int sz = (p0.z < p1.z) ? 1 : -1;
+    const int y  = p0.y;
+    
+    int ez = dx + dz;
+    int x = p0.x;
+    int z = p0.z;
+
+    while (true) {
         if (z < pgl.depth_buffer[y][x]) {
             const float alpha = (float)(x - p0.x) / (float)(p1.x - p0.x);
             const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
             pgl.color_buffer[y][x] = sample_texture_vec2f(tex_coord, tex_index);
             pgl.depth_buffer[y][x] = z;
         }
-    }
-}
 
-static void pgl_vertical_line(fragment_t f0, fragment_t f1, uint16_t tex_index) {
-    const vec3i p0 = f0.position;
-    const vec3i p1 = f1.position;
+        if (x == p1.x) {
+            break;
+        }
 
-    const int dy = p1.y - p0.y;
-    const int dz = p1.z - p0.z;
-    const int x = p0.x;
-
-    for (int y = p0.y; y <= p1.y; y++) {
-        const int z = dz * (y - p0.y) / dy + p0.z;
-        if (z < pgl.depth_buffer[y][x]) {
-            const float alpha = (float)(y - p0.y) / (float)(p1.y - p0.y);
-            const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
-            pgl.color_buffer[y][x] = sample_texture_vec2f(tex_coord, tex_index);
-            pgl.depth_buffer[y][x] = z;
+        const int two_ez = 2 * ez;
+        if (two_ez >= dz) {
+            ez += dz;
+            x += sx;
+        }
+        if (two_ez <= dx) {
+            ez += dx;
+            z += sz;
         }
     }
 }
@@ -113,7 +113,6 @@ static void pgl_line(fragment_t f0, fragment_t f1, uint16_t tex_index) {
 
     int ey = dx + dy;
     int ez = dx + dz;
-
     int x = p0.x;
     int y = p0.y;
     int z = p0.z;
@@ -221,7 +220,7 @@ static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2, uin
     }
 }
 
-// --------------------------------------------------- TRANSFORMATION MATRICES --------------------------------------------------- // 
+// --------------------------------------------------- TRANSFORMATIONS --------------------------------------------------- // 
 
 void pgl_view(vec3f position, vec3f right, vec3f up, vec3f forward) {
     pgl.view = view(position, right, up, forward);
@@ -319,7 +318,7 @@ void pgl_front_face(pgl_enum_t winding_order) {
     pgl.state |= winding_order;
 }
 
-// --------------------------------------------------- DRAW --------------------------------------------------- // 
+// --------------------------------------------------- CLIPPING --------------------------------------------------- // 
 
 static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, vec4f clip_plane_vector, pgl_vertex_t* v10, pgl_vertex_t* v20) {
     const float d0 = dot_vec4f(t->v0.position, clip_plane_vector);
@@ -585,22 +584,33 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_t
     return index;
 }
 
+// --------------------------------------------------- DRAWING --------------------------------------------------- // 
+
 void pgl_draw(const mesh_t* mesh) {
     const mat4f view_model = mul_mat4f_mat4f(pgl.view, mesh->transform.model);
-    const mat4f projection_view_model = mul_mat4f_mat4f(pgl.projection, view_model);
-
-    if (!pgl_broad_phase_clipping(mesh, view_model)) { return; }
-
     for (uint32_t i = 0; i < mesh->index_number; i += 3) {
         const vertex_t vertex0 = mesh->vertices[mesh->indices[i]];
         const vertex_t vertex1 = mesh->vertices[mesh->indices[i+1]];
         const vertex_t vertex2 = mesh->vertices[mesh->indices[i+2]];
+        
+        // Camera space coordinates
+        const vec4f c0 = mul_mat4f_vec4f(view_model, to_homogeneous(vertex0.position));
+        const vec4f c1 = mul_mat4f_vec4f(view_model, to_homogeneous(vertex1.position));
+        const vec4f c2 = mul_mat4f_vec4f(view_model, to_homogeneous(vertex2.position));
+        
+        // Face culling
+        const vec3f v0 = lazy_from_homogeneous(c0);
+        const vec3f v1 = lazy_from_homogeneous(c1);
+        const vec3f v2 = lazy_from_homogeneous(c2);
+        const vec3f normal = cross_vec3f(sub_vec3f(v1, v0), sub_vec3f(v2, v0));
+
+        if (dot_vec3f(normal, v0) >= 0.0f) { continue; }
 
         // Clip space coordinates
         pgl_queue_triangle_t triangle = {
-            {mul_mat4f_vec4f(projection_view_model, to_homogeneous(vertex0.position)), vertex0.tex_coord},
-            {mul_mat4f_vec4f(projection_view_model, to_homogeneous(vertex1.position)), vertex1.tex_coord},
-            {mul_mat4f_vec4f(projection_view_model, to_homogeneous(vertex2.position)), vertex2.tex_coord},
+            {mul_mat4f_vec4f(pgl.projection, c0), vertex0.tex_coord},
+            {mul_mat4f_vec4f(pgl.projection, c1), vertex1.tex_coord},
+            {mul_mat4f_vec4f(pgl.projection, c2), vertex2.tex_coord},
         };
 
         pgl_queue_triangle_t subtriangles[16];

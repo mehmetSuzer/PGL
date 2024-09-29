@@ -1,5 +1,5 @@
-// wired:  0.027182 s | target = 0.016325 s
-// filled: 0.255958 s | target = 0.033333 s
+// wired:  0.021550 s | target = 0.016666 s
+// filled: 0.178165 s | target = 0.033333 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
@@ -15,7 +15,7 @@ mesh_t meshes[] = {
         .index_number = sizeof(cube_indices) / sizeof(uint16_t),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
         .tex_index = 9,
-    }, 
+    },
     {
         .vertices = triangle_vertices,
         .indices = triangle_indices,
@@ -94,7 +94,7 @@ int main() {
 
     meshes[0].transform = transform_init((vec3f){0.0f, 0.0f, -2.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
     meshes[1].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
-    meshes[2].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.5f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[2].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_2f), (vec3f){1.0f, 1.0f, 1.0f});
     meshes[3].transform = transform_init((vec3f){-2.5f, 0.0f, -3.5f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
 
     for (uint32_t i = 0; i < mesh_number; i++) {
@@ -102,13 +102,15 @@ int main() {
     }
 
     uint32_t last_time = time_us_32();
-    uint32_t current_time; 
+    uint32_t current_time;
 
     while (true) {
         current_time = time_us_32();
         float dt = (current_time - last_time) / 1E6f;
         last_time = current_time;
         camera_update(dt);
+        
+        // transform_rotate_quat(&meshes[0].transform, quat_angle_axis((vec3f){0.6f, 0.0f, 0.8f}, dt));
 
         pgl_clear(PGL_COLOR_BUFFER_BIT | PGL_DEPTH_BUFFER_BIT);
         for (uint32_t i = 0; i < mesh_number; i++) {

@@ -60,6 +60,6 @@ void transform_scale_vec3f(transform_t* transform, vec3f scalar) {
 }
 
 void transform_scale(transform_t* transform, float scale) {
-    transform->scalar = mul_vec3f(transform->scalar, (vec3f){scale, scale, scale});
+    transform->scalar = scale_vec3f(transform->scalar, scale);
     transform_update_model(transform);
 }

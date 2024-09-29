@@ -110,35 +110,35 @@ const texture_t textures[64] = {
 
 vec2i tex_coord_vec2f_to_vec2i(vec2f tex_coord) {
     return (vec2i) {
-        TEXTURE_RESOLUTION * tex_coord.s,
-        TEXTURE_RESOLUTION * tex_coord.t,
+        TEXTURE_RESOLUTION * tex_coord.u,
+        TEXTURE_RESOLUTION * tex_coord.v,
     };
 }
 
 uint16_t sample_texture_vec2i(vec2i tex_coord, uint16_t tex_index) {
-    if (tex_coord.s < 0 || tex_coord.s > TEXTURE_RESOLUTION) {
-        tex_coord.s -= (tex_coord.s & ~(TEXTURE_RESOLUTION-1));
+    if (tex_coord.u < 0 || tex_coord.u > TEXTURE_RESOLUTION) {
+        tex_coord.u -= (tex_coord.u & ~(TEXTURE_RESOLUTION-1));
     }
-    if (tex_coord.t < 0 || tex_coord.t > TEXTURE_RESOLUTION) {
-        tex_coord.t -= (tex_coord.t & ~(TEXTURE_RESOLUTION-1));
+    if (tex_coord.v < 0 || tex_coord.v > TEXTURE_RESOLUTION) {
+        tex_coord.v -= (tex_coord.v & ~(TEXTURE_RESOLUTION-1));
     }
 
-    const int x = tex_coord.s / (TEXTURE_RESOLUTION / TEXTURE_SIZE + 1);
-    const int y = tex_coord.t / (TEXTURE_RESOLUTION / TEXTURE_SIZE + 1);
+    const int u = tex_coord.u / (TEXTURE_RESOLUTION / TEXTURE_SIZE + 1);
+    const int v = tex_coord.v / (TEXTURE_RESOLUTION / TEXTURE_SIZE + 1);
 
-    return textures[tex_index][7-y][x];
+    return textures[tex_index][7-v][u];
 }
 
 uint16_t sample_texture_vec2f(vec2f tex_coord, uint16_t tex_index) {
-    if (tex_coord.s < 0.0f || tex_coord.s > 1.0f) {
-        tex_coord.s -= floorf(tex_coord.s);
+    if (tex_coord.u < 0.0f || tex_coord.u > 1.0f) {
+        tex_coord.u -= floorf(tex_coord.u);
     }
-    if (tex_coord.t < 0.0f || tex_coord.t > 1.0f) {
-        tex_coord.t -= floorf(tex_coord.t);
+    if (tex_coord.v < 0.0f || tex_coord.v > 1.0f) {
+        tex_coord.v -= floorf(tex_coord.v);
     }
 
-    const int x = (int)(tex_coord.s / TEXTURE_SAMPLING_PERIOD);
-    const int y = (int)(tex_coord.t / TEXTURE_SAMPLING_PERIOD);
+    const int u = (int)(tex_coord.u / TEXTURE_SAMPLING_PERIOD);
+    const int v = (int)(tex_coord.v / TEXTURE_SAMPLING_PERIOD);
 
-    return textures[tex_index][7-y][x];
+    return textures[tex_index][7-v][u];
 }

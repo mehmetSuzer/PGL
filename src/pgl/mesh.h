@@ -37,7 +37,7 @@ extern const uint16_t cube_indices[36];
 extern const vertex_t triangle_pyramid_vertices[8];
 extern const uint16_t triangle_pyramid_indices[12];
 
-extern const vertex_t square_pyramid_vertices[7];
+extern const vertex_t square_pyramid_vertices[11];
 extern const uint16_t square_pyramid_indices[18];
 
 void find_mesh_bounding_volume(mesh_t* mesh);

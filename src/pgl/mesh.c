@@ -52,18 +52,18 @@ const vertex_t cube_vertices[16] = {
 };
 
 const uint16_t cube_indices[36] = {
-	0, 1, 2,	// Back
-	0, 2, 3,	// Back
-	4, 5, 6,	// Front
-	4, 6, 7,	// Front
-	8, 9, 10,	// Left
-	8, 10, 4,	// Left
+	 0,  1,  2,	// Back
+	 0,  2,  3,	// Back
+	 4,  5,  6,	// Front
+	 4,  6,  7,	// Front
+	 8,  9, 10,	// Left
+	 8, 10,  4,	// Left
 	11, 12, 13,	// Right
-	11, 13, 2,	// Right
-	10, 14, 5,	// Bottom
-	10, 5, 4,	// Bottom
-	1, 15, 11,	// Top
-	15, 11, 2,	// Top
+	11, 13,  2,	// Right
+	10,  5,  4,	// Bottom
+	10, 14,  5,	// Bottom
+	 1, 15, 11,	// Top
+	 1, 11,  2,	// Top
 };
 
 // ------------------------------------------------------------------------------------------------------ //
@@ -71,43 +71,46 @@ const uint16_t cube_indices[36] = {
 const vertex_t triangle_pyramid_vertices[8] = {
 	//                    positions                   /     tex_coords      //
 	{{ 0.0f, 					0.0f,  -PGLM_1_SQRT3f}, {0.5f, PGLM_SQRT3_2f}},
+	{{ 0.5f, 					0.0f,  PGLM_1_2SQRT3f}, {1.0f,          0.0f}},
+	{{-0.5f, 					0.0f,  PGLM_1_2SQRT3f}, {0.0f,          0.0f}},
+	{{ 0.0f, PGLM_SQRT2f/PGLM_SQRT3f, 		     0.0f}, {0.5f, PGLM_SQRT3_2f}},
+	{{ 0.0f, 					0.0f,  -PGLM_1_SQRT3f}, {1.0f, 			0.0f}},
+	{{ 0.0f, 					0.0f,  -PGLM_1_SQRT3f}, {0.0f, 			0.0f}},
 	{{ 0.5f, 					0.0f,  PGLM_1_2SQRT3f}, {0.0f,          0.0f}},
 	{{-0.5f, 					0.0f,  PGLM_1_2SQRT3f}, {1.0f,          0.0f}},
-	{{ 0.0f, 					0.0f,  -PGLM_1_SQRT3f}, {1.0f, 			0.0f}},
-	{{ 0.0f, PGLM_SQRT2f/PGLM_SQRT3f, 		     0.0f}, {0.5f, PGLM_SQRT3_2f}},
-	{{-0.5f, 					0.0f,  PGLM_1_2SQRT3f}, {0.0f,          0.0f}},
-	{{ 0.5f, 					0.0f,  PGLM_1_2SQRT3f}, {1.0f,          0.0f}},
-	{{ 0.0f, PGLM_SQRT2f/PGLM_SQRT3f, 		     0.0f}, {0.0f, 			0.0f}},
-
 };
 
 const uint16_t triangle_pyramid_indices[12] = {
 	0, 1, 2, // Bottom
-	1, 3, 4, // Side 1
-	5, 6, 4, // Side 2
-	2, 0, 7, // Side 3
+	2, 3, 4, // Side 1
+	5, 3, 1, // Side 2
+	6, 3, 7, // Side 3
 };
 
 // ------------------------------------------------------------------------------------------------------ //
 
-const vertex_t square_pyramid_vertices[7] = {
+const vertex_t square_pyramid_vertices[11] = {
 	//     positions     / tex_coords //
+	{{-0.6f, 0.0f, -0.6f}, {0.0f, 0.0f}},
+	{{ 0.6f, 0.0f, -0.6f}, {1.0f, 0.0f}},
+	{{ 0.6f, 0.0f,  0.6f}, {1.0f, 1.0f}},
+	{{-0.6f, 0.0f,  0.6f}, {0.0f, 1.0f}},
+	{{ 0.0f, 0.8f,  0.0f}, {0.5f, 1.0f}}, // Top
+	{{-0.6f, 0.0f,  0.6f}, {1.0f, 0.0f}},
 	{{-0.6f, 0.0f,  0.6f}, {0.0f, 0.0f}},
-	{{-0.6f, 0.0f, -0.6f}, {0.0f, 1.0f}},
-	{{ 0.6f, 0.0f, -0.6f}, {1.0f, 1.0f}},
 	{{ 0.6f, 0.0f,  0.6f}, {1.0f, 0.0f}},
-	{{-0.6f, 0.0f, -0.6f}, {1.0f, 0.0f}},
-	{{ 0.0f, 0.8f,  0.0f}, {0.5f, 1.0f}},
+	{{ 0.6f, 0.0f,  0.6f}, {0.0f, 0.0f}},
 	{{ 0.6f, 0.0f, -0.6f}, {0.0f, 0.0f}},
+	{{-0.6f, 0.0f, -0.6f}, {1.0f, 0.0f}},
 };
 
 const uint16_t square_pyramid_indices[18] = {
-	0, 1, 2, // Bottom
-	0, 2, 3, // Bottom
-	0, 5, 4, // Left
-	4, 5, 6, // Back
-	6, 5, 3, // Right
-	3, 5, 0, // Front
+	0,  1, 2, // Bottom
+	0,  2, 3, // Bottom
+	0,  5, 4, // Left
+	6,  7, 4, // Front
+	8,  1, 4, // Right
+	9, 10, 4, // Back
 };
 
 // ------------------------------------------------------------------------------------------------------ //

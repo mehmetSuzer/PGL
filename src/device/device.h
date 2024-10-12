@@ -21,7 +21,7 @@
 #define SCREEN_HEIGHT 240u
 #define SCREEN_WIDTH  240u
 
-#define ASPECT_RATIO  ((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT)
+#define SCREEN_ASPECT_RATIO ((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT)
 
 void device_init();
 void lcd_display(uint16_t* image);

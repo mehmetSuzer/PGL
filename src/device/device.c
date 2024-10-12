@@ -17,9 +17,6 @@
     #define SPI_BAUDRATE_HZ 62500000u
 #endif
 
-#define LOW     false
-#define HIGH    true
-
 #define SPI_PORT spi1
 
 #define LCD_RST_PIN    12u
@@ -175,7 +172,7 @@ static void buttons_init() {
 }
 
 void lcd_display(uint16_t* screen) {
-    for (uint32_t i = 0; i < SCREEN_HEIGHT*SCREEN_WIDTH; i++) {
+    for (uint32_t i = 0; i < SCREEN_HEIGHT * SCREEN_WIDTH; i++) {
         uint16_t color = screen[i];
         screen[i] = (color << 8) | ((color & 0xFF00) >> 8);
     }
@@ -185,20 +182,20 @@ void lcd_display(uint16_t* screen) {
     lcd_write_8bit_data(0x00);
     lcd_write_8bit_data(0); // Xstart
 	lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(SCREEN_WIDTH-1); // Xend
+    lcd_write_8bit_data(SCREEN_WIDTH - 1); // Xend
 
     // Set the Ystart and Yend coordinates of the LCD
     lcd_command(0x2B);
     lcd_write_8bit_data(0x00);
 	lcd_write_8bit_data(0); // Ystart
 	lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(SCREEN_HEIGHT-1); // Yend
+    lcd_write_8bit_data(SCREEN_HEIGHT - 1); // Yend
 
     lcd_command(0x2C);
 
     gpio_put(LCD_DC_PIN, HIGH);
     gpio_put(LCD_CS_PIN, LOW);
-    spi_write_blocking(SPI_PORT, (uint8_t*)screen, 2*SCREEN_HEIGHT*SCREEN_WIDTH);
+    spi_write_blocking(SPI_PORT, (uint8_t*)screen, 2 * SCREEN_HEIGHT * SCREEN_WIDTH);
     gpio_put(LCD_CS_PIN, HIGH);
     lcd_command(0x29);
 }
@@ -236,7 +233,7 @@ void device_init() {
     gpio_set_function(LCD_MOSI_PIN, GPIO_FUNC_SPI);
 
     gpio_set_function(LCD_BL_PIN, GPIO_FUNC_PWM);
-    uint slice_num = pwm_gpio_to_slice_num(LCD_BL_PIN);
+    const uint slice_num = pwm_gpio_to_slice_num(LCD_BL_PIN);
     pwm_set_wrap(slice_num, 100);
     pwm_set_chan_level(slice_num, PWM_CHAN_B, 60);
     pwm_set_clkdiv(slice_num, 50.0f);

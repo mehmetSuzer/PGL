@@ -1,4 +1,4 @@
-// wired:  0.021550 s | target = 0.016666 s
+// wired:  0.021454 s | target = 0.016666 s
 // filled: 0.182330 s | target = 0.033333 s
 
 #include <stdio.h>
@@ -18,7 +18,7 @@ mesh_t meshes[] = {
         .indices = cube_indices,
         .vertex_number = count_of(cube_vertices),
         .index_number = count_of(cube_indices),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
         .tex_index = 9,
     },
     {
@@ -26,7 +26,7 @@ mesh_t meshes[] = {
         .indices = triangle_indices,
         .vertex_number = count_of(triangle_vertices),
         .index_number = count_of(triangle_indices),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
         .tex_index = 1,
     },
     {
@@ -34,14 +34,14 @@ mesh_t meshes[] = {
         .indices = triangle_indices,
         .vertex_number = count_of(triangle_vertices),
         .index_number = count_of(triangle_indices),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
         .tex_index = 2,
     },
     {
-        .vertices = square_pyramid_vertices,
-        .indices = square_pyramid_indices,
-        .vertex_number = count_of(square_pyramid_vertices),
-        .index_number = count_of(square_pyramid_indices),
+        .vertices = spaceship_vertices,
+        .indices = spaceship_indices,
+        .vertex_number = count_of(spaceship_vertices),
+        .index_number = count_of(spaceship_indices),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
         .tex_index = 3,
     },
@@ -89,17 +89,17 @@ int main() {
     
     set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true);
 
-    pgl_viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    pgl_projection(0.1f, 30.0f, PGLM_PI_4f);
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
-
+    pgl_projection(0.1f, 30.0f, PGLM_PI_4f);
+    pgl_viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    
     pgl_enable(PGL_DEPTH_TEST);
     pgl_clear_color(PGLM_RGB565_BLACK);
 
     meshes[0].transform = transform_init((vec3f){0.0f, 0.0f, -2.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
     meshes[1].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
     meshes[2].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_2f), (vec3f){1.0f, 1.0f, 1.0f});
-    meshes[3].transform = transform_init((vec3f){-2.5f, 0.0f, -3.5f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[3].transform = transform_init((vec3f){-2.5f, 0.0f, -8.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
 
     for (uint32_t i = 0; i < count_of(meshes); i++) {
         find_mesh_bounding_volume(meshes+i);

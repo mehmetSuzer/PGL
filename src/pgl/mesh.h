@@ -40,6 +40,9 @@ extern const uint16_t triangle_pyramid_indices[12];
 extern const vertex_t square_pyramid_vertices[11];
 extern const uint16_t square_pyramid_indices[18];
 
+extern const vertex_t spaceship_vertices[55];
+extern const uint16_t spaceship_indices[318];
+
 void find_mesh_bounding_volume(mesh_t* mesh);
 
 #endif // __MESH_H__

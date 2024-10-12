@@ -7,8 +7,8 @@
 // Origin is the top left corner of the window.
 // near plane is mapped to 0.0f, while the far plane is mapped to 1.0f.
 inline mat4f viewport(int x, int y, uint32_t width, uint32_t height) {
-    const float hw =  width * 0.5f;
-    const float hh = height * 0.5f;
+    const int hw = (width  - 1) / 2; // -1 is needed to ensure that x of a screen space coordinate is less than x + width.
+    const int hh = (height - 1) / 2; // -1 is needed to ensure that y of a screen space coordinate is less than y + height.
 
     return (mat4f){
           hw,  0.0f,   0.0f,  x + hw,

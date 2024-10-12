@@ -163,24 +163,14 @@ static void pgl_line(fragment_t f0, fragment_t f1) {
     }
 }
 
-static void pgl_clamp_coordinates(vec3i* v0, vec3i* v1, vec3i* v2) {
-    v0->x = clamp(v0->x, 0, SCREEN_WIDTH-1);
-    v0->y = clamp(v0->y, 0, SCREEN_HEIGHT-1);
-    v1->x = clamp(v1->x, 0, SCREEN_WIDTH-1);
-    v1->y = clamp(v1->y, 0, SCREEN_HEIGHT-1);
-    v2->x = clamp(v2->x, 0, SCREEN_WIDTH-1);
-    v2->y = clamp(v2->y, 0, SCREEN_HEIGHT-1);
-}
-
 static void pgl_wired_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
-    pgl_clamp_coordinates(&f0.position, &f1.position, &f2.position);
     pgl_line(f0, f1);
     pgl_line(f0, f2);
     pgl_line(f1, f2);
 }
 
 static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
-    pgl_clamp_coordinates(&f0.position, &f1.position, &f2.position);
+    // Sort fragments with respect to their y coordinates
     if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
     if (f2.position.y < f1.position.y) { swap(&f1, &f2); }
     if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
@@ -242,7 +232,7 @@ void pgl_view(vec3f position, vec3f right, vec3f up, vec3f forward) {
 void pgl_projection(float near, float far, float fovw) {
     const float sin_half_fovw = sinf(fovw * 0.5f);
     const float cos_half_fovw = cosf(fovw * 0.5f);
-    const float tan_half_fovh = sin_half_fovw / (cos_half_fovw * ASPECT_RATIO);
+    const float tan_half_fovh = sin_half_fovw / (cos_half_fovw * SCREEN_ASPECT_RATIO);
     const float cos_half_fovh = 1.0f / sqrtf(tan_half_fovh * tan_half_fovh + 1.0f); 
     const float sin_half_fovh = tan_half_fovh * cos_half_fovh;
 
@@ -251,7 +241,7 @@ void pgl_projection(float near, float far, float fovw) {
     pgl.sin_half_fovh = sin_half_fovh;
     pgl.cos_half_fovh = cos_half_fovh;
     pgl.depth_coef = 255.0f / (far - near);
-    pgl.projection = perspective(fovw, ASPECT_RATIO, near, far);
+    pgl.projection = perspective(fovw, SCREEN_ASPECT_RATIO, near, far);
     pgl.near = near;
     pgl.far = far;
 }
@@ -278,19 +268,19 @@ void pgl_clear(pgl_enum_t buffer_bits) {
     const uint32_t double_color = (pgl.clear_color << 16) | pgl.clear_color;
     if (buffer_bits & PGL_COLOR_BUFFER_BIT) {
         uint32_t* ptr = (uint32_t*)pgl.color_buffer;
-        for (uint32_t i = 0; i < (SCREEN_HEIGHT*SCREEN_WIDTH/2); i++) {
+        for (uint32_t i = 0; i < (SCREEN_HEIGHT * SCREEN_WIDTH / 2); i++) {
             ptr[i] = double_color;
         }
     }
     if (buffer_bits & PGL_DEPTH_BUFFER_BIT) {
         uint32_t* ptr = (uint32_t*)pgl.depth_buffer;
-        for (uint32_t i = 0; i < (SCREEN_HEIGHT*SCREEN_WIDTH/4); i++) {
+        for (uint32_t i = 0; i < (SCREEN_HEIGHT * SCREEN_WIDTH / 4); i++) {
             ptr[i] = 0xFFFFFFFFu; // reset to far = 0xFF
         }
     }
     if (buffer_bits & PGL_STENCIL_BUFFER_BIT) {
         uint32_t* ptr = (uint32_t*)pgl.stencil_buffer;
-        for (uint32_t i = 0; i < (SCREEN_HEIGHT*SCREEN_WIDTH/32); i++) {
+        for (uint32_t i = 0; i < (SCREEN_HEIGHT * SCREEN_WIDTH / 32); i++) {
             ptr[i] = 0x00000000u;
         }
     }
@@ -333,7 +323,7 @@ void pgl_front_face(pgl_enum_t winding_order) {
 
 // --------------------------------------------------- CLIPPING --------------------------------------------------- // 
 
-static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, vec4f clip_plane_vector, pgl_vertex_t* v10, pgl_vertex_t* v20) {
+static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, vec4f clip_plane_vector, pgl_vertex_t* restrict v10, pgl_vertex_t* restrict v20) {
     const float d0 = dot_vec4f(t->v0.position, clip_plane_vector);
     const float d1 = dot_vec4f(t->v1.position, clip_plane_vector);
     const float d2 = dot_vec4f(t->v2.position, clip_plane_vector);
@@ -368,7 +358,7 @@ static bool pgl_broad_phase_clipping(const mesh_t* mesh, mat4f view_model) {
 }
 
 // Clips the triangle with respect to near, far, left, right, bottom, and top planes.
-static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* triangle, pgl_queue_triangle_t* subtriangles) {
+static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pgl_queue_triangle_t* restrict subtriangles) {
     pgl_queue_t queue;
     triangle_queue_init(&queue);
     triangle_queue_push(&queue, triangle);
@@ -619,7 +609,6 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
         const vec3f v1 = from_homogeneous_vector(c1); // Fast from_homogeneous_point
         const vec3f v2 = from_homogeneous_vector(c2); // Fast from_homogeneous_point
         const vec3f normal = cross_vec3f(sub_vec3f(v1, v0), sub_vec3f(v2, v0));
-
         if (dot_vec3f(normal, v0) >= 0.0f) { continue; }
 
         // Flat shading
@@ -633,7 +622,7 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
             {mul_mat4f_vec4f(pgl.projection, c2), vertex2.tex_coord},
         };
 
-        pgl_queue_triangle_t subtriangles[16];
+        pgl_queue_triangle_t subtriangles[PGL_QUEUE_CAPACITY];
         int subtriangle_index = pgl_narrow_phase_clipping(&triangle, subtriangles);
 
         while (subtriangle_index >= 0) {

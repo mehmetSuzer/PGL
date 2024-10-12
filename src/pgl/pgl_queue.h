@@ -4,6 +4,9 @@
 
 #include "pglm.h"
 
+// Must be a power of 2
+#define PGL_QUEUE_CAPACITY 16u
+
 typedef struct {
     vec4f position;
     vec2f tex_coord;
@@ -16,7 +19,7 @@ typedef struct {
 } pgl_queue_triangle_t;
 
 typedef struct {
-    pgl_queue_triangle_t triangles[16];
+    pgl_queue_triangle_t triangles[PGL_QUEUE_CAPACITY];
     uint8_t front; // next slot for pop
     uint8_t back;  // next slot for push
     bool empty;
@@ -48,7 +51,7 @@ inline uint32_t triangle_queue_length(pgl_queue_t* queue) {
         return queue->back - queue->front;
     }
     else {
-        return (queue->back + 16) - queue->front;
+        return (queue->back + PGL_QUEUE_CAPACITY) - queue->front;
     }
 }
 
@@ -58,7 +61,7 @@ inline void triangle_queue_push(pgl_queue_t* queue, pgl_queue_triangle_t* triang
     }
     
     queue->triangles[queue->back] = *triangle;
-    queue->back = (queue->back + 1) & 0x0Fu; // rolls back to 0 when it reaches 16
+    queue->back = (queue->back + 1) & (PGL_QUEUE_CAPACITY - 1); // rolls back to 0 when it reaches to PGL_QUEUE_CAPACITY
     queue->empty = false;
 }
 
@@ -68,7 +71,7 @@ inline pgl_queue_triangle_t* triangle_queue_pop(pgl_queue_t* queue) {
     }
 
     pgl_queue_triangle_t* triangle = queue->triangles + queue->front;
-    queue->front = (queue->front + 1) & 0x0Fu; // rolls back to 0 when it reaches 16
+    queue->front = (queue->front + 1) & (PGL_QUEUE_CAPACITY - 1); // rolls back to 0 when it reaches to PGL_QUEUE_CAPACITY
     queue->empty = queue->front == queue->back;
     return triangle;
 }

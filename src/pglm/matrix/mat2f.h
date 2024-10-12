@@ -8,13 +8,23 @@
 // Element layout is as follows:
 //  xx, xy
 //  yx, yy
-typedef struct {
-    float xx, xy; // row0
-    float yx, yy; // row1
+typedef union {
+    struct {
+        float xx, xy; // row0
+        float yx, yy; // row1
+    };
+    float n[2][2];
 } mat2f;
 
-#define zero_mat2f     ((mat2f){0.0f, 0.0f, 0.0f, 0.0f})
-#define identity_mat2f ((mat2f){1.0f, 0.0f, 0.0f, 1.0f})
+#define zero_mat2f ((mat2f){        \
+    0.0f, 0.0f,                     \
+    0.0f, 0.0f                      \
+})
+
+#define identity_mat2f ((mat2f){    \
+    1.0f, 0.0f,                     \
+    0.0f, 1.0f                      \
+})
 
 inline mat2f diagonal_mat2f(vec2f v) {
     return (mat2f){

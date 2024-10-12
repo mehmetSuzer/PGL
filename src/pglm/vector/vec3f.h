@@ -16,6 +16,7 @@ typedef union {
         float g;
         float b;
     };
+    float n[3];
 } vec3f;
 
 #define zero_vec3f ((vec3f){0.0f, 0.0f, 0.0f})

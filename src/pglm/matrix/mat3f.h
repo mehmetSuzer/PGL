@@ -10,14 +10,26 @@
 //  xx, xy, xz
 //  yx, yy, yz
 //  zx, zy, zz
-typedef struct {
-    float xx, xy, xz; // row0
-    float yx, yy, yz; // row1
-    float zx, zy, zz; // row2
+typedef union {
+    struct {
+        float xx, xy, xz; // row0
+        float yx, yy, yz; // row1
+        float zx, zy, zz; // row2
+    };
+    float n[3][3];
 } mat3f;
 
-#define zero_mat3f     ((mat3f){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
-#define identity_mat3f ((mat3f){1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f})
+#define zero_mat3f ((mat3f){        \
+    0.0f, 0.0f, 0.0f,               \
+    0.0f, 0.0f, 0.0f,               \
+    0.0f, 0.0f, 0.0f                \
+})
+
+#define identity_mat3f ((mat3f){    \
+    1.0f, 0.0f, 0.0f,               \
+    0.0f, 1.0f, 0.0f,               \
+    0.0f, 0.0f, 1.0f                \
+})
 
 inline mat3f cast_mat2f_to_mat3f(mat2f m) {
     return (mat3f){

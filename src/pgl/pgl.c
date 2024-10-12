@@ -615,9 +615,9 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
         const vec4f c2 = mul_mat4f_vec4f(view_model, to_homogeneous_point(vertex2.position));
         
         // Face culling
-        const vec3f v0 = from_homogeneous_vector(c0);
-        const vec3f v1 = from_homogeneous_vector(c1);
-        const vec3f v2 = from_homogeneous_vector(c2);
+        const vec3f v0 = from_homogeneous_vector(c0); // Fast from_homogeneous_point
+        const vec3f v1 = from_homogeneous_vector(c1); // Fast from_homogeneous_point
+        const vec3f v2 = from_homogeneous_vector(c2); // Fast from_homogeneous_point
         const vec3f normal = cross_vec3f(sub_vec3f(v1, v0), sub_vec3f(v2, v0));
 
         if (dot_vec3f(normal, v0) >= 0.0f) { continue; }

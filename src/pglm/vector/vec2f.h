@@ -24,6 +24,7 @@ typedef union {
         float s;
         float t;
     };
+    float n[2];
 } vec2f;
 
 #define zero_vec2f ((vec2f){0.0f, 0.0f})

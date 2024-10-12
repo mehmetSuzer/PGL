@@ -11,15 +11,29 @@
 //  yx, yy, yz, yw
 //  zx, zy, zz, zw
 //  wx, wy, wz, ww
-typedef struct {
-    float xx, xy, xz, xw; // row0
-    float yx, yy, yz, yw; // row1
-    float zx, zy, zz, zw; // row2
-    float wx, wy, wz, ww; // row3
+typedef union {
+    struct {
+        float xx, xy, xz, xw; // row0
+        float yx, yy, yz, yw; // row1
+        float zx, zy, zz, zw; // row2
+        float wx, wy, wz, ww; // row3
+    };
+    float n[4][4];
 } mat4f;
 
-#define zero_mat4f     ((mat4f){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f})
-#define identity_mat4f ((mat4f){1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f})
+#define zero_mat4f ((mat4f){        \
+    0.0f, 0.0f, 0.0f, 0.0f,         \
+    0.0f, 0.0f, 0.0f, 0.0f,         \
+    0.0f, 0.0f, 0.0f, 0.0f,         \
+    0.0f, 0.0f, 0.0f, 0.0f          \
+})
+
+#define identity_mat4f ((mat4f){    \
+    1.0f, 0.0f, 0.0f, 0.0f,         \
+    0.0f, 1.0f, 0.0f, 0.0f,         \
+    0.0f, 0.0f, 1.0f, 0.0f,         \
+    0.0f, 0.0f, 0.0f, 1.0f          \
+})
 
 inline mat4f cast_mat3f_to_mat4f(mat3f m) {
     return (mat4f){

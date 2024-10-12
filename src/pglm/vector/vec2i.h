@@ -22,6 +22,7 @@ typedef union {
         int s;
         int t;
     };
+    int n[2];
 } vec2i;
 
 #define zero_vec2i ((vec2i){0, 0})

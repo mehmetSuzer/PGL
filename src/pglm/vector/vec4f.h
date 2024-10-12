@@ -18,6 +18,7 @@ typedef union {
         float b;
         float a;
     };
+    float n[4];
 } vec4f;
 
 #define zero_vec4f ((vec4f){0.0f, 0.0f, 0.0f, 0.0f})

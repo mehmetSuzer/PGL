@@ -14,6 +14,7 @@ typedef union {
         int g;
         int b;
     };
+    int n[3];
 } vec3i;
 
 #define zero_vec3i ((vec3i){0, 0, 0})

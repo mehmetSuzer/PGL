@@ -57,9 +57,9 @@
 #define smaller(x, y)       (((x) < (y)) ? (x) : (y))
 #define greater(x, y)       (((x) > (y)) ? (x) : (y))
 #define abs(x)              (((x) >= 0) ? (x) : -(x))
-#define clamp(x, min, max)  ((x < min) ? (min) : (x > max) ? (max) : (x))
-#define interp(x, y, a)     ((x) * a + (y) * (1.0f - a))
+#define clamp(x, min, max)  (((x) < (min)) ? (min) : ((x) > (max)) ? (max) : (x))
+#define interp(x, y, a)     ((x) * (a) + (y) * (1.0f - (a)))
 
-#define swap(ptr1, ptr2)    const typeof(*(ptr1)) temp = *ptr1; *ptr1 = *ptr2; *ptr2 = temp;
+#define swap(ptr1, ptr2)    const typeof(*(ptr1)) temp = *(ptr1); *(ptr1) = *(ptr2); *(ptr2) = temp;
 
 #endif // __CORE_H__

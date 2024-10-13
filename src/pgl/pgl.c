@@ -728,22 +728,18 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
     const mat4f view_model = mul_mat4f_mat4f(pgl.view, mesh->transform.model);
     pgl.tex_index = mesh->tex_index;
 
-    for (uint32_t i = 0; i < mesh->index_number; i += 3) {
-        const vertex_t vertex0 = mesh->vertices[mesh->indices[i]];
-        const vertex_t vertex1 = mesh->vertices[mesh->indices[i+1]];
-        const vertex_t vertex2 = mesh->vertices[mesh->indices[i+2]];
-        
+    for (uint32_t i = 0; i < mesh->index_number; i += 6) {
         // Camera space coordinates
-        const vec4f c0 = mul_mat4f_vec4f(view_model, to_homogeneous_point(vertex0.position));
-        const vec4f c1 = mul_mat4f_vec4f(view_model, to_homogeneous_point(vertex1.position));
-        const vec4f c2 = mul_mat4f_vec4f(view_model, to_homogeneous_point(vertex2.position));
+        const vec4f c0 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i+0]]));
+        const vec4f c1 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i+2]]));
+        const vec4f c2 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i+4]]));
         
         // Face culling
-        const vec3f v0 = from_homogeneous_vector(c0); // Fast from_homogeneous_point
-        const vec3f v1 = from_homogeneous_vector(c1); // Fast from_homogeneous_point
-        const vec3f v2 = from_homogeneous_vector(c2); // Fast from_homogeneous_point
-        const vec3f normal = cross_vec3f(sub_vec3f(v1, v0), sub_vec3f(v2, v0));
-        if (dot_vec3f(normal, v0) >= 0.0f) { continue; }
+        const vec3f normal = cross_vec3f(
+            (vec3f){c1.x - c0.x, c1.y - c0.y, c1.z - c0.z}, 
+            (vec3f){c2.x - c0.x, c2.y - c0.y, c2.z - c0.z}
+        );
+        if (dot_vec3f(normal, (vec3f){c0.x, c0.y, c0.z}) >= 0.0f) { continue; }
 
         // Flat shading
         const float shade = dl->intensity * (AMBIENT_COEF + DIFFUSE_COEF * greater(-dot_vec3f(light_dir, normalize_vec3f(normal)), 0.0f));
@@ -751,9 +747,9 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
 
         // Clip space coordinates
         pgl_queue_triangle_t triangle = {
-            {mul_mat4f_vec4f(pgl.projection, c0), vertex0.tex_coord},
-            {mul_mat4f_vec4f(pgl.projection, c1), vertex1.tex_coord},
-            {mul_mat4f_vec4f(pgl.projection, c2), vertex2.tex_coord},
+            {mul_mat4f_vec4f(pgl.projection, c0), tex_coords[mesh->indices[i+1]]},
+            {mul_mat4f_vec4f(pgl.projection, c1), tex_coords[mesh->indices[i+3]]},
+            {mul_mat4f_vec4f(pgl.projection, c2), tex_coords[mesh->indices[i+5]]},
         };
 
         pgl_queue_triangle_t subtriangles[PGL_QUEUE_CAPACITY];

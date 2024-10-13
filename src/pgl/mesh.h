@@ -2,7 +2,6 @@
 #ifndef __MESH_H__
 #define __MESH_H__
 
-#include "vertex.h"
 #include "transform.h"
 
 typedef enum {
@@ -17,7 +16,7 @@ typedef enum {
 typedef struct {
     transform_t transform;
     sphere_t bounding_volume;
-    const vertex_t* vertices;
+    const vec3f* vertices;
     const uint16_t* indices;
     const uint16_t vertex_number;
     const uint16_t index_number;
@@ -28,23 +27,25 @@ typedef struct {
     };
 } mesh_t;
 
-extern const vertex_t triangle_vertices[3];
-extern const uint16_t triangle_indices[3];
+extern const vec2f tex_coords[5];
 
-extern const vertex_t square_vertices[4];
-extern const uint16_t square_indices[6];
+extern const vec3f equilateral_triangle_vertices[3];
+extern const uint16_t equilateral_triangle_indices[6];
 
-extern const vertex_t cube_vertices[16];
-extern const uint16_t cube_indices[36];
+extern const vec3f square_vertices[4];
+extern const uint16_t square_indices[12];
 
-extern const vertex_t triangle_pyramid_vertices[8];
-extern const uint16_t triangle_pyramid_indices[12];
+extern const vec3f cube_vertices[8];
+extern const uint16_t cube_indices[72];
 
-extern const vertex_t square_pyramid_vertices[11];
-extern const uint16_t square_pyramid_indices[18];
+extern const vec3f triangle_pyramid_vertices[4];
+extern const uint16_t triangle_pyramid_indices[24];
 
-extern const vertex_t spaceship_vertices[55];
-extern const uint16_t spaceship_indices[318];
+extern const vec3f square_pyramid_vertices[5];
+extern const uint16_t square_pyramid_indices[36];
+
+extern const vec3f spaceship_vertices[55];
+extern const uint16_t spaceship_indices[636];
 
 void find_mesh_bounding_volume(mesh_t* mesh);
 

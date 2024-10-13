@@ -6,6 +6,18 @@
 
 #define TEXTURE_SIZE 8u
 
+#define TEXTURE_RED         0u
+#define TEXTURE_GREEN       1u
+#define TEXTURE_BLUE        2u
+#define TEXTURE_YELLOW      3u
+#define TEXTURE_MAGENTA     4u
+#define TEXTURE_CYAN        5u
+#define TEXTURE_BLACK       6u
+#define TEXTURE_GRAY        7u
+#define TEXTURE_WHITE       8u
+#define TEXTURE_DIAGONAL    9u
+#define TEXTURE_HEART       10u
+
 typedef uint16_t texture_t[TEXTURE_SIZE][TEXTURE_SIZE];
 
 vec2i tex_coord_vec2f_to_vec2i(vec2f tex_coord);

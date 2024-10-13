@@ -27,7 +27,7 @@ mesh_t meshes[] = {
         .vertex_number = count_of(triangle_vertices),
         .index_number = count_of(triangle_indices),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
-        .tex_index = 1,
+        .color = PGLM_RGB565_LIMEGREEN,
     },
     {
         .vertices = triangle_vertices,
@@ -35,7 +35,7 @@ mesh_t meshes[] = {
         .vertex_number = count_of(triangle_vertices),
         .index_number = count_of(triangle_indices),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
-        .tex_index = 2,
+        .color = PGLM_RGB565_CRIMSON,
     },
     {
         .vertices = spaceship_vertices,
@@ -43,7 +43,7 @@ mesh_t meshes[] = {
         .vertex_number = count_of(spaceship_vertices),
         .index_number = count_of(spaceship_indices),
         .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
-        .tex_index = 3,
+        .color = PGLM_RGB565_FUCHSIA,
     },
 };
 

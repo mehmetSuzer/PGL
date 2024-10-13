@@ -48,7 +48,10 @@ typedef struct {
     float depth_coef;
     // Internal state 
     pgl_enum_t state;
-    uint16_t tex_index;
+    union {
+        uint16_t color;     // used for wired rendering 
+        uint16_t tex_index; // used for filled rendering
+    };
     uint16_t clear_color;
     uint32_t shade_multp;
 } pgl_t;
@@ -62,83 +65,83 @@ pgl_t pgl = {
 };
 
 typedef struct {
-    vec3i position;
+    vec2i position;
     vec2f tex_coord;
+    float depth_inv;
 } fragment_t;
 
 // --------------------------------------------------- RASTERIZATION --------------------------------------------------- // 
 
-static void pgl_horizontal_line(fragment_t f0, fragment_t f1) {
-    const vec3i p0 = f0.position;
-    const vec3i p1 = f1.position;
+// static void pgl_horizontal_line(fragment_t f0, fragment_t f1) {
+//     const vec3i p0 = f0.position;
+//     const vec3i p1 = f1.position;
 
-    const int dx = abs(p1.x - p0.x);
-    const int sx = (p0.x < p1.x) ? 1 : -1;
-    const int dz = -abs(p1.z - p0.z);
-    const int sz = (p0.z < p1.z) ? 1 : -1;
-    const int y  = p0.y;
+//     const int dx = abs(p1.x - p0.x);
+//     const int sx = (p0.x < p1.x) ? 1 : -1;
+//     const int dz = -abs(p1.z - p0.z);
+//     const int sz = (p0.z < p1.z) ? 1 : -1;
+//     const int y  = p0.y;
     
-    int ez = dx + dz;
-    int x = p0.x;
-    int z = p0.z;
+//     int ez = dx + dz;
+//     int x = p0.x;
+//     int z = p0.z;
 
-    while (true) {
-        if (z < pgl.depth_buffer[y][x]) {
-            const float alpha = (float)(x - p0.x) / (float)(p1.x - p0.x);
-            const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
-            const uint16_t color = sample_texture_vec2f(tex_coord, pgl.tex_index);
+//     while (true) {
+//         if (z < pgl.depth_buffer[y][x]) {
+//             const float alpha = (float)(x - p0.x) / (float)(p1.x - p0.x);
+//             const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
+//             const uint16_t color = sample_texture_vec2f(tex_coord, pgl.tex_index);
 
-            const uint32_t red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
-            const uint32_t green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
-            const uint32_t blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
-            const uint16_t shaded_color = (uint16_t)((red & (31 << 11)) | (green & (63 << 5)) | blue);
+//             const uint32_t red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
+//             const uint32_t green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
+//             const uint32_t blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
+//             const uint16_t shaded_color = (uint16_t)((red & (31 << 11)) | (green & (63 << 5)) | blue);
 
-            pgl.color_buffer[y][x] = shaded_color;
-            pgl.depth_buffer[y][x] = z;
-        }
+//             pgl.color_buffer[y][x] = shaded_color;
+//             pgl.depth_buffer[y][x] = z;
+//         }
 
-        if (x == p1.x) {
-            break;
-        }
+//         if (x == p1.x) {
+//             break;
+//         }
 
-        const int two_ez = 2 * ez;
-        if (two_ez >= dz) {
-            ez += dz;
-            x += sx;
-        }
-        if (two_ez <= dx) {
-            ez += dx;
-            z += sz;
-        }
-    }
-}
+//         const int two_ez = 2 * ez;
+//         if (two_ez >= dz) {
+//             ez += dz;
+//             x += sx;
+//         }
+//         if (two_ez <= dx) {
+//             ez += dx;
+//             z += sz;
+//         }
+//     }
+// }
 
 static void pgl_line(fragment_t f0, fragment_t f1) {
-    const vec3i p0 = f0.position;
-    const vec3i p1 = f1.position;
+    const int dx = abs(f1.position.x - f0.position.x);
+    const int sx = (f0.position.x < f1.position.x) ? 1 : -1;
+    const int dy = -abs(f1.position.y - f0.position.y);
+    const int sy = (f0.position.y < f1.position.y) ? 1 : -1;
 
-    const int dx = abs(p1.x - p0.x);
-    const int sx = (p0.x < p1.x) ? 1 : -1;
-    const int dy = -abs(p1.y - p0.y);
-    const int sy = (p0.y < p1.y) ? 1 : -1;
-    const int dz = -abs(p1.z - p0.z);
-    const int sz = (p0.z < p1.z) ? 1 : -1;
+    const int depth0 = pgl.depth_coef * ((1.0f / f0.depth_inv) - pgl.near);
+    const int depth1 = pgl.depth_coef * ((1.0f / f1.depth_inv) - pgl.near);
+
+    const int d_depth = -abs(depth1 - depth0);
+    const int s_depth = (depth0 < depth1) ? 1 : -1;
 
     int ey = dx + dy;
-    int ez = dx + dz;
-    int x = p0.x;
-    int y = p0.y;
-    int z = p0.z;
+    int e_depth = dx + d_depth;
+    int x = f0.position.x;
+    int y = f0.position.y;
+    int depth = depth0;
 
     while (true) {
-        if (z < pgl.depth_buffer[y][x]) {
-            const float alpha = (float)(x - p0.x) / (float)(p1.x - p0.x);
-            const vec2f tex_coord = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
-            pgl.color_buffer[y][x] = sample_texture_vec2f(tex_coord, pgl.tex_index);
-            pgl.depth_buffer[y][x] = z;
+        if (depth < pgl.depth_buffer[y][x]) {
+            pgl.color_buffer[y][x] = pgl.color;
+            pgl.depth_buffer[y][x] = depth;
         }
 
-        if (x == p1.x && y == p1.y) {
+        if (x == f1.position.x && y == f1.position.y) {
             break;
         }
 
@@ -147,15 +150,16 @@ static void pgl_line(fragment_t f0, fragment_t f1) {
             ey += dy;
             x += sx;
 
-            const int two_ez = 2 * ez;
-            if (two_ez >= dz) {
-                ez += dz;
+            const int two_e_depth = 2 * e_depth;
+            if (two_e_depth >= d_depth) {
+                e_depth += d_depth;
             }
-            if (two_ez <= dx) {
-                ez += dx;
-                z += sz;
+            if (two_e_depth <= dx) {
+                e_depth += dx;
+                depth += s_depth;
             }
         }
+        
         if (two_ey <= dx) {
             ey += dx;
             y += sy;
@@ -175,23 +179,27 @@ static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2) {
     if (f1.position.y > f2.position.y) { swap(&f1, &f2); }
     if (f0.position.y > f1.position.y) { swap(&f0, &f1); }
 
-	int dy1 = f1.position.y - f0.position.y;
-	int dx1 = f1.position.x - f0.position.x;
-	float dv1 = f1.tex_coord.v - f0.tex_coord.v;
+	int   dx1 = f1.position.x  - f0.position.x;
+	int   dy1 = f1.position.y  - f0.position.y;
 	float du1 = f1.tex_coord.u - f0.tex_coord.u;
+	float dv1 = f1.tex_coord.v - f0.tex_coord.v;
+    float dw1 = f1.depth_inv   - f0.depth_inv;
 
-	int dy2 = f2.position.y - f0.position.y;
-	int dx2 = f2.position.x - f0.position.x;
-	float dv2 = f2.tex_coord.v - f0.tex_coord.v;
+	int   dx2 = f2.position.x  - f0.position.x;
+	int   dy2 = f2.position.y  - f0.position.y;
 	float du2 = f2.tex_coord.u - f0.tex_coord.u;
+	float dv2 = f2.tex_coord.v - f0.tex_coord.v;
+    float dw2 = f2.depth_inv   - f0.depth_inv;
 
 	float dax_step = (dy1) ? dx1 / (float)abs(dy1) : 0.0f;
 	float du1_step = (dy1) ? du1 / (float)abs(dy1) : 0.0f;
 	float dv1_step = (dy1) ? dv1 / (float)abs(dy1) : 0.0f;
+    float dw1_step = (dy1) ? dw1 / (float)abs(dy1) : 0.0f;
 
 	float dbx_step = (dy2) ? dx2 / (float)abs(dy2) : 0.0f;
 	float du2_step = (dy2) ? du2 / (float)abs(dy2) : 0.0f;
 	float dv2_step = (dy2) ? dv2 / (float)abs(dy2) : 0.0f;
+    float dw2_step = (dy2) ? dw2 / (float)abs(dy2) : 0.0f;
 
 	if (dy1) {
 		for (int y = f0.position.y; y <= f1.position.y; y++) {
@@ -200,47 +208,53 @@ static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2) {
 
 			float tex_su = f0.tex_coord.u + (float)(y - f0.position.y) * du1_step;
 			float tex_sv = f0.tex_coord.v + (float)(y - f0.position.y) * dv1_step;
+            float tex_sw = f0.depth_inv   + (float)(y - f0.position.y) * dw1_step;
 
 			float tex_eu = f0.tex_coord.u + (float)(y - f0.position.y) * du2_step;
 			float tex_ev = f0.tex_coord.v + (float)(y - f0.position.y) * dv2_step;
+            float tex_ew = f0.depth_inv   + (float)(y - f0.position.y) * dw2_step;
 
 			if (ax > bx) {
 				swap(&ax, &bx);
 				swap(&tex_su, &tex_eu);
 				swap(&tex_sv, &tex_ev);
+                swap(&tex_sw, &tex_ew);
 			}
 
-			float tstep = 1.0f / ((float)(bx - ax));
+			float t_step = 1.0f / ((float)(bx - ax));
 			float t = 0.0f;
 
 			for (int x = ax; x < bx; x++) {
 				float tex_u = tex_su + t * (tex_eu - tex_su);
 				float tex_v = tex_sv + t * (tex_ev - tex_sv);
+                float tex_w_inv = 1.0f / (tex_sw + t * (tex_ew - tex_sw));
+                uint8_t depth = pgl.depth_coef * (tex_w_inv - pgl.near);
 
-				if (true /* z > pgl.depth_buffer[y][x] */) {
-                    const uint16_t color = sample_texture_vec2f((vec2f){tex_u, tex_v}, pgl.tex_index);
+				if (depth < pgl.depth_buffer[y][x]) {
+                    const uint16_t color = sample_texture_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
                     const uint32_t red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
                     const uint32_t green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
                     const uint32_t blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
                     const uint16_t shaded_color = (uint16_t)((red & (31 << 11)) | (green & (63 << 5)) | blue);
 
                     pgl.color_buffer[y][x] = shaded_color;
-                    // pgl.depth_buffer[y][x] = z;
-
+                    pgl.depth_buffer[y][x] = depth;
 				}
-				t += tstep;
+				t += t_step;
 			}
 		}
 	}
 
-	dy1 = f2.position.y  - f1.position.y;
 	dx1 = f2.position.x  - f1.position.x;
-	dv1 = f2.tex_coord.v - f1.tex_coord.v;
+	dy1 = f2.position.y  - f1.position.y;
 	du1 = f2.tex_coord.u - f1.tex_coord.u;
+	dv1 = f2.tex_coord.v - f1.tex_coord.v;
+    dw1 = f2.depth_inv   - f1.depth_inv;
 
     dax_step = (dy1) ? dx1 / (float)abs(dy1) : 0.0f;
 	du1_step = (dy1) ? du1 / (float)abs(dy1) : 0.0f;
 	dv1_step = (dy1) ? dv1 / (float)abs(dy1) : 0.0f;
+    dw1_step = (dy1) ? dw1 / (float)abs(dy1) : 0.0f;
 
 	if (dy1) {
 		for (int y = f1.position.y; y <= f2.position.y; y++) {
@@ -249,93 +263,97 @@ static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2) {
 
 			float tex_su = f1.tex_coord.u + (float)(y - f1.position.y) * du1_step;
 			float tex_sv = f1.tex_coord.v + (float)(y - f1.position.y) * dv1_step;
+            float tex_sw = f1.depth_inv   + (float)(y - f1.position.y) * dw1_step;
 
 			float tex_eu = f0.tex_coord.u + (float)(y - f0.position.y) * du2_step;
 			float tex_ev = f0.tex_coord.v + (float)(y - f0.position.y) * dv2_step;
+            float tex_ew = f0.depth_inv   + (float)(y - f0.position.y) * dw2_step;
 
 			if (ax > bx) {
 				swap(&ax, &bx);
 				swap(&tex_su, &tex_eu);
 				swap(&tex_sv, &tex_ev);
+                swap(&tex_sw, &tex_ew);
 			}
 
-			float tstep = 1.0f / ((float)(bx - ax));
+			float t_step = 1.0f / ((float)(bx - ax));
 			float t = 0.0f;
 
 			for (int x = ax; x < bx; x++) {
 				float tex_u = tex_su + t * (tex_eu - tex_su);
 				float tex_v = tex_sv + t * (tex_ev - tex_sv);
+                float tex_w_inv = 1.0f / (tex_sw + t * (tex_ew - tex_sw));
+                uint8_t depth = pgl.depth_coef * (tex_w_inv - pgl.near);
 
-				if (true /* z > pgl.depth_buffer[y][x] */) {
-                    const uint16_t color = sample_texture_vec2f((vec2f){tex_u, tex_v}, pgl.tex_index);
+				if (depth < pgl.depth_buffer[y][x]) {
+                    const uint16_t color = sample_texture_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
                     const uint32_t red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
                     const uint32_t green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
                     const uint32_t blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
                     const uint16_t shaded_color = (uint16_t)((red & (31 << 11)) | (green & (63 << 5)) | blue);
 
                     pgl.color_buffer[y][x] = shaded_color;
-                    // pgl.depth_buffer[y][x] = z;
-
+                    pgl.depth_buffer[y][x] = depth;
 				}
-				t += tstep;
+				t += t_step;
 			}
 		}	
 	}		
 }
 
-static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
-    // Sort fragments with respect to their y coordinates
-    if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
-    if (f2.position.y < f1.position.y) { swap(&f1, &f2); }
-    if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
+// static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
+//     // Sort fragments with respect to their y coordinates
+//     if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
+//     if (f2.position.y < f1.position.y) { swap(&f1, &f2); }
+//     if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
 
-    const vec3i p0 = f0.position;    
-    const vec3i p1 = f1.position;    
-    const vec3i p2 = f2.position;
+//     const vec3i p0 = f0.position;    
+//     const vec3i p1 = f1.position;    
+//     const vec3i p2 = f2.position;
 
-    for (int y = p0.y; y <= p2.y; y++) {
-        fragment_t fleft  = {.position = {.y = y}};
-        fragment_t fright = {.position = {.y = y}};
+//     for (int y = p0.y; y <= p2.y; y++) {
+//         fragment_t fleft  = {.position = {.y = y}};
+//         fragment_t fright = {.position = {.y = y}};
                               
-        if (y >= p1.y) {
-            const int dxl = (p2.y != p1.y) ? (y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) : 0;
-            const int dxr = (p2.y != p0.y) ? (y - p0.y) * (p2.x - p0.x) / (p2.y - p0.y) : 0;
-            fleft.position.x  = p1.x + dxl;
-            fright.position.x = p0.x + dxr;
+//         if (y >= p1.y) {
+//             const int dxl = (p2.y != p1.y) ? (y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) : 0;
+//             const int dxr = (p2.y != p0.y) ? (y - p0.y) * (p2.x - p0.x) / (p2.y - p0.y) : 0;
+//             fleft.position.x  = p1.x + dxl;
+//             fright.position.x = p0.x + dxr;
 
-            const int dzl = (p2.y != p1.y) ? (y - p1.y) * (p2.z - p1.z) / (p2.y - p1.y) : 0;
-            const int dzr = (p2.y != p0.y) ? (y - p0.y) * (p2.z - p0.z) / (p2.y - p0.y) : 0;
-            fleft.position.z  = p1.z + dzl;
-            fright.position.z = p0.z + dzr;
+//             const int dzl = (p2.y != p1.y) ? (y - p1.y) * (p2.z - p1.z) / (p2.y - p1.y) : 0;
+//             const int dzr = (p2.y != p0.y) ? (y - p0.y) * (p2.z - p0.z) / (p2.y - p0.y) : 0;
+//             fleft.position.z  = p1.z + dzl;
+//             fright.position.z = p0.z + dzr;
 
-            const float alpha_left  = (float)(y - p1.y) / (float)(p2.y - p1.y);
-            const float alpha_right = (float)(y - p0.y) / (float)(p2.y - p0.y);
-            fleft.tex_coord  = interp_vec2f(f2.tex_coord, f1.tex_coord, alpha_left);
-            fright.tex_coord = interp_vec2f(f2.tex_coord, f0.tex_coord, alpha_right);
-        } 
-        else {
-            const int dxl = (p1.y != p0.y) ? (y - p0.y) * (p1.x - p0.x) / (p1.y - p0.y) : 0;
-            const int dxr = (p2.y != p0.y) ? (y - p0.y) * (p2.x - p0.x) / (p2.y - p0.y) : 0;
-            fleft.position.x  = p0.x + dxl;
-            fright.position.x = p0.x + dxr;
+//             const float alpha_left  = (float)(y - p1.y) / (float)(p2.y - p1.y);
+//             const float alpha_right = (float)(y - p0.y) / (float)(p2.y - p0.y);
+//             fleft.tex_coord  = interp_vec2f(f2.tex_coord, f1.tex_coord, alpha_left);
+//             fright.tex_coord = interp_vec2f(f2.tex_coord, f0.tex_coord, alpha_right);
+//         } 
+//         else {
+//             const int dxl = (p1.y != p0.y) ? (y - p0.y) * (p1.x - p0.x) / (p1.y - p0.y) : 0;
+//             const int dxr = (p2.y != p0.y) ? (y - p0.y) * (p2.x - p0.x) / (p2.y - p0.y) : 0;
+//             fleft.position.x  = p0.x + dxl;
+//             fright.position.x = p0.x + dxr;
 
-            const int dzl = (p1.y != p0.y) ? (y - p0.y) * (p1.z - p0.z) / (p1.y - p0.y) : 0;
-            const int dzr = (p2.y != p0.y) ? (y - p0.y) * (p2.z - p0.z) / (p2.y - p0.y) : 0;
-            fleft.position.z  = p0.z + dzl;
-            fright.position.z = p0.z + dzr;
+//             const int dzl = (p1.y != p0.y) ? (y - p0.y) * (p1.z - p0.z) / (p1.y - p0.y) : 0;
+//             const int dzr = (p2.y != p0.y) ? (y - p0.y) * (p2.z - p0.z) / (p2.y - p0.y) : 0;
+//             fleft.position.z  = p0.z + dzl;
+//             fright.position.z = p0.z + dzr;
 
-            const float alpha_left  = (float)(y - p0.y) / (float)(p1.y - p0.y);
-            const float alpha_right = (float)(y - p0.y) / (float)(p2.y - p0.y);
-            fleft.tex_coord  = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha_left);
-            fright.tex_coord = interp_vec2f(f2.tex_coord, f0.tex_coord, alpha_right);
-        }
+//             const float alpha_left  = (float)(y - p0.y) / (float)(p1.y - p0.y);
+//             const float alpha_right = (float)(y - p0.y) / (float)(p2.y - p0.y);
+//             fleft.tex_coord  = interp_vec2f(f1.tex_coord, f0.tex_coord, alpha_left);
+//             fright.tex_coord = interp_vec2f(f2.tex_coord, f0.tex_coord, alpha_right);
+//         }
 
-        if (fleft.position.x > fright.position.x) {
-            swap(&fleft, &fright);
-        }
-        pgl_horizontal_line(fleft, fright);
-    }
-}
+//         if (fleft.position.x > fright.position.x) {
+//             swap(&fleft, &fright);
+//         }
+//         pgl_horizontal_line(fleft, fright);
+//     }
+// }
 
 // --------------------------------------------------- TRANSFORMATIONS --------------------------------------------------- // 
 
@@ -750,9 +768,9 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
             const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v1.position));
             const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v2.position));
 
-            const fragment_t f0 = {{sc0.x, sc0.y, (pgl.depth_coef * (subt->v0.position.w - pgl.near))}, subt->v0.tex_coord};
-            const fragment_t f1 = {{sc1.x, sc1.y, (pgl.depth_coef * (subt->v1.position.w - pgl.near))}, subt->v1.tex_coord};
-            const fragment_t f2 = {{sc2.x, sc2.y, (pgl.depth_coef * (subt->v2.position.w - pgl.near))}, subt->v2.tex_coord};
+            const fragment_t f0 = {{sc0.x, sc0.y}, scale_vec2f(subt->v0.tex_coord, 1.0f / subt->v0.position.w), 1.0f / subt->v0.position.w};
+            const fragment_t f1 = {{sc1.x, sc1.y}, scale_vec2f(subt->v1.tex_coord, 1.0f / subt->v1.position.w), 1.0f / subt->v1.position.w};
+            const fragment_t f2 = {{sc2.x, sc2.y}, scale_vec2f(subt->v2.tex_coord, 1.0f / subt->v2.position.w), 1.0f / subt->v2.position.w};
         
             // Rasterize
             if ((mesh->mesh_enum ^ MESH_RENDER_WIRED) == 0) {

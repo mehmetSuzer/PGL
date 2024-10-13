@@ -21,8 +21,11 @@ typedef struct {
     const uint16_t* indices;
     const uint16_t vertex_number;
     const uint16_t index_number;
-    const uint16_t tex_index;
     const uint16_t mesh_enum;
+    union {
+        const uint16_t color;       // used for wired rendering 
+        const uint16_t tex_index;   // used for filled rendering
+    };
 } mesh_t;
 
 extern const vertex_t triangle_vertices[3];

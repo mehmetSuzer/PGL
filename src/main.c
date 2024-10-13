@@ -1,5 +1,5 @@
 // wired:  0.021454 s | target = 0.016666 s
-// filled: 0.182330 s | target = 0.033333 s
+// filled: 0.046736 s | target = 0.033333 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
@@ -18,8 +18,8 @@ mesh_t meshes[] = {
         .indices = cube_indices,
         .vertex_number = count_of(cube_vertices),
         .index_number = count_of(cube_indices),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
-        .tex_index = 9,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
+        .tex_index = 10,
     },
     {
         .vertices = triangle_vertices,
@@ -42,7 +42,7 @@ mesh_t meshes[] = {
         .indices = spaceship_indices,
         .vertex_number = count_of(spaceship_vertices),
         .index_number = count_of(spaceship_indices),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
         .tex_index = 3,
     },
 };
@@ -96,10 +96,10 @@ int main() {
     pgl_enable(PGL_DEPTH_TEST);
     pgl_clear_color(PGLM_RGB565_BLACK);
 
-    meshes[0].transform = transform_init((vec3f){0.0f, 0.0f, -2.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[0].transform = transform_init((vec3f){-3.5f, 0.0f, -4.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
     meshes[1].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
     meshes[2].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_2f), (vec3f){1.0f, 1.0f, 1.0f});
-    meshes[3].transform = transform_init((vec3f){-2.5f, 0.0f, -8.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[3].transform = transform_init((vec3f){0.0f, -1.0f, -6.0f}, identity_quat, (vec3f){0.5f, 0.5f, 0.5f});
 
     for (uint32_t i = 0; i < count_of(meshes); i++) {
         find_mesh_bounding_volume(meshes+i);
@@ -114,7 +114,7 @@ int main() {
         last_time = current_time;
         camera_update(dt);
         
-        transform_rotate_quat(&meshes[0].transform, quat_angle_axis((vec3f){0.8f, 0.6f, 0.0f}, dt));
+        // transform_rotate_quat(&meshes[0].transform, quat_angle_axis((vec3f){0.8f, 0.6f, 0.0f}, dt));
 
         pgl_clear(PGL_COLOR_BUFFER_BIT | PGL_DEPTH_BUFFER_BIT);
         for (uint32_t i = 0; i < count_of(meshes); i++) {

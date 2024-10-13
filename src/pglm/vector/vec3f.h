@@ -16,6 +16,11 @@ typedef union {
         float g;
         float b;
     };
+    struct {
+        float u;
+        float v;
+        float w;
+    };
     float n[3];
 } vec3f;
 
@@ -105,7 +110,7 @@ inline vec3f bisector_vec3f(vec3f u1, vec3f u2) {
 }
 
 inline vec3f interp_vec3f(vec3f v1, vec3f v2, float alpha) {
-    return add_vec3f(scale_vec3f(v1, alpha), scale_vec3f(v2, 1.0f - alpha));
+    return add_vec3f(v2, scale_vec3f(sub_vec3f(v1, v2), alpha));
 }
 
 inline bool epsilon_equal_vec3f(vec3f v1, vec3f v2, float epsilon) {

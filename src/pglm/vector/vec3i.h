@@ -14,6 +14,11 @@ typedef union {
         int g;
         int b;
     };
+    struct {
+        int u;
+        int v;
+        int w;
+    };
     int n[3];
 } vec3i;
 

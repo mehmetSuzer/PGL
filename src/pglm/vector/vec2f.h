@@ -90,7 +90,7 @@ inline vec2f normalize_vec2f(vec2f v) {
 }
 
 inline vec2f interp_vec2f(vec2f v1, vec2f v2, float alpha) {
-    return add_vec2f(scale_vec2f(v1, alpha), scale_vec2f(v2, 1.0f - alpha));
+    return add_vec2f(v2, scale_vec2f(sub_vec2f(v1, v2), alpha));
 }
 
 inline bool epsilon_equal_vec2f(vec2f v1, vec2f v2, float epsilon) {

@@ -47,6 +47,9 @@ extern const uint16_t square_pyramid_indices[36];
 extern const vec3f dodecagon_pyramid_vertices[13];
 extern const uint16_t dodecagon_pyramid_indices[132];
 
+extern const vec3f icositetragon_pyramid_vertices[25];
+extern const uint16_t icositetragon_pyramid_indices[276];
+
 extern const vec3f icosahedron_vertices[12];
 extern const uint16_t icosahedron_indices[120];
 

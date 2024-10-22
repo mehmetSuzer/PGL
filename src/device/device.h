@@ -7,24 +7,24 @@
 #define LOW  false
 #define HIGH true
 
-#define KEY_A          15u
-#define KEY_B          17u
-#define KEY_X          19u
-#define KEY_Y          21u
+#define DEVICE_KEY_A          15u
+#define DEVICE_KEY_B          17u
+#define DEVICE_KEY_X          19u
+#define DEVICE_KEY_Y          21u
 
-#define KEY_FORWARD     2u
-#define KEY_BACKWARD   18u
-#define KEY_LEFT       16u
-#define KEY_RIGHT      20u
-#define KEY_CTRL        3u
+#define DEVICE_KEY_FORWARD     2u
+#define DEVICE_KEY_BACKWARD   18u
+#define DEVICE_KEY_LEFT       16u
+#define DEVICE_KEY_RIGHT      20u
+#define DEVICE_KEY_CTRL        3u
 
-#define SCREEN_HEIGHT 240u
-#define SCREEN_WIDTH  240u
+#define DEVICE_SCREEN_HEIGHT 240u
+#define DEVICE_SCREEN_WIDTH  240u
 
-#define SCREEN_ASPECT_RATIO ((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT)
+#define DEVICE_SCREEN_ASPECT_RATIO ((float)DEVICE_SCREEN_HEIGHT / (float)DEVICE_SCREEN_WIDTH)
 
 void device_init();
-void lcd_display(uint16_t* image);
-void set_button_irq_callback(gpio_irq_callback_t callback, uint32_t event_mask, bool enabled);
+void device_lcd_display(uint16_t* image);
+void device_set_button_irq_callback(gpio_irq_callback_t callback, uint32_t event_mask, bool enabled);
 
 #endif // __DEVICE_H__

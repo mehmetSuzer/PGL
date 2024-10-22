@@ -150,54 +150,25 @@ static void lcd_set_pins() {
 }
 
 static void buttons_init() {
-    gpio_set(KEY_A, GPIO_IN);
-    gpio_pull_up(KEY_A);
-    gpio_set(KEY_B, GPIO_IN);
-    gpio_pull_up(KEY_B);
-    gpio_set(KEY_X, GPIO_IN);
-    gpio_pull_up(KEY_X);
-    gpio_set(KEY_Y, GPIO_IN);
-    gpio_pull_up(KEY_Y);
+    gpio_set(DEVICE_KEY_A, GPIO_IN);
+    gpio_pull_up(DEVICE_KEY_A);
+    gpio_set(DEVICE_KEY_B, GPIO_IN);
+    gpio_pull_up(DEVICE_KEY_B);
+    gpio_set(DEVICE_KEY_X, GPIO_IN);
+    gpio_pull_up(DEVICE_KEY_X);
+    gpio_set(DEVICE_KEY_Y, GPIO_IN);
+    gpio_pull_up(DEVICE_KEY_Y);
 
-    gpio_set(KEY_FORWARD, GPIO_IN);
-    gpio_pull_up(KEY_FORWARD);
-    gpio_set(KEY_BACKWARD, GPIO_IN);
-    gpio_pull_up(KEY_BACKWARD);
-    gpio_set(KEY_LEFT, GPIO_IN);
-    gpio_pull_up(KEY_LEFT);
-    gpio_set(KEY_RIGHT, GPIO_IN);
-    gpio_pull_up(KEY_RIGHT);
-    gpio_set(KEY_CTRL, GPIO_IN);
-    gpio_pull_up(KEY_CTRL);
-}
-
-void lcd_display(uint16_t* screen) {
-    for (uint32_t i = 0; i < SCREEN_HEIGHT * SCREEN_WIDTH; i++) {
-        uint16_t color = screen[i];
-        screen[i] = (color << 8) | ((color & 0xFF00) >> 8);
-    }
-
-    // Set the Xstart and Xend coordinates of the LCD
-    lcd_command(0x2A);
-    lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(0); // Xstart
-	lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(SCREEN_WIDTH - 1); // Xend
-
-    // Set the Ystart and Yend coordinates of the LCD
-    lcd_command(0x2B);
-    lcd_write_8bit_data(0x00);
-	lcd_write_8bit_data(0); // Ystart
-	lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(SCREEN_HEIGHT - 1); // Yend
-
-    lcd_command(0x2C);
-
-    gpio_put(LCD_DC_PIN, HIGH);
-    gpio_put(LCD_CS_PIN, LOW);
-    spi_write_blocking(SPI_PORT, (uint8_t*)screen, 2 * SCREEN_HEIGHT * SCREEN_WIDTH);
-    gpio_put(LCD_CS_PIN, HIGH);
-    lcd_command(0x29);
+    gpio_set(DEVICE_KEY_FORWARD, GPIO_IN);
+    gpio_pull_up(DEVICE_KEY_FORWARD);
+    gpio_set(DEVICE_KEY_BACKWARD, GPIO_IN);
+    gpio_pull_up(DEVICE_KEY_BACKWARD);
+    gpio_set(DEVICE_KEY_LEFT, GPIO_IN);
+    gpio_pull_up(DEVICE_KEY_LEFT);
+    gpio_set(DEVICE_KEY_RIGHT, GPIO_IN);
+    gpio_pull_up(DEVICE_KEY_RIGHT);
+    gpio_set(DEVICE_KEY_CTRL, GPIO_IN);
+    gpio_pull_up(DEVICE_KEY_CTRL);
 }
 
 void device_init() {
@@ -242,14 +213,43 @@ void device_init() {
     lcd_init();
 }
 
-void set_button_irq_callback(gpio_irq_callback_t callback, uint32_t event_mask, bool enabled) {
-    gpio_set_irq_enabled_with_callback(KEY_FORWARD,  event_mask, enabled, callback);
-    gpio_set_irq_enabled(KEY_BACKWARD, event_mask, enabled);
-    gpio_set_irq_enabled(KEY_LEFT,     event_mask, enabled);
-    gpio_set_irq_enabled(KEY_RIGHT,    event_mask, enabled);
-    gpio_set_irq_enabled(KEY_CTRL,     event_mask, enabled);
-    gpio_set_irq_enabled(KEY_A,        event_mask, enabled);
-    gpio_set_irq_enabled(KEY_B,        event_mask, enabled);
-    gpio_set_irq_enabled(KEY_X,        event_mask, enabled);
-    gpio_set_irq_enabled(KEY_Y,        event_mask, enabled);
+void device_lcd_display(uint16_t* screen) {
+    for (uint32_t i = 0; i < DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH; i++) {
+        uint16_t color = screen[i];
+        screen[i] = (color << 8) | ((color & 0xFF00) >> 8);
+    }
+
+    // Set the Xstart and Xend coordinates of the LCD
+    lcd_command(0x2A);
+    lcd_write_8bit_data(0x00);
+    lcd_write_8bit_data(0); // Xstart
+	lcd_write_8bit_data(0x00);
+    lcd_write_8bit_data(DEVICE_SCREEN_WIDTH - 1); // Xend
+
+    // Set the Ystart and Yend coordinates of the LCD
+    lcd_command(0x2B);
+    lcd_write_8bit_data(0x00);
+	lcd_write_8bit_data(0); // Ystart
+	lcd_write_8bit_data(0x00);
+    lcd_write_8bit_data(DEVICE_SCREEN_HEIGHT - 1); // Yend
+
+    lcd_command(0x2C);
+
+    gpio_put(LCD_DC_PIN, HIGH);
+    gpio_put(LCD_CS_PIN, LOW);
+    spi_write_blocking(SPI_PORT, (uint8_t*)screen, 2 * DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH);
+    gpio_put(LCD_CS_PIN, HIGH);
+    lcd_command(0x29);
+}
+
+void device_set_button_irq_callback(gpio_irq_callback_t callback, uint32_t event_mask, bool enabled) {
+    gpio_set_irq_enabled_with_callback(DEVICE_KEY_FORWARD,  event_mask, enabled, callback);
+    gpio_set_irq_enabled(DEVICE_KEY_BACKWARD, event_mask, enabled);
+    gpio_set_irq_enabled(DEVICE_KEY_LEFT,     event_mask, enabled);
+    gpio_set_irq_enabled(DEVICE_KEY_RIGHT,    event_mask, enabled);
+    gpio_set_irq_enabled(DEVICE_KEY_CTRL,     event_mask, enabled);
+    gpio_set_irq_enabled(DEVICE_KEY_A,        event_mask, enabled);
+    gpio_set_irq_enabled(DEVICE_KEY_B,        event_mask, enabled);
+    gpio_set_irq_enabled(DEVICE_KEY_X,        event_mask, enabled);
+    gpio_set_irq_enabled(DEVICE_KEY_Y,        event_mask, enabled);
 }

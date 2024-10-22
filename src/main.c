@@ -53,31 +53,31 @@ mesh_t meshes[] = {
 
 void button_irq_callback(uint gpio, uint32_t event_mask) {
     switch (gpio) {
-    case KEY_FORWARD:
+    case DEVICE_KEY_FORWARD:
         camera.forward_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
         break;
-    case KEY_BACKWARD:
+    case DEVICE_KEY_BACKWARD:
         camera.forward_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
         break;
-    case KEY_RIGHT:
+    case DEVICE_KEY_RIGHT:
         camera.right_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
         break;
-    case KEY_LEFT:
+    case DEVICE_KEY_LEFT:
         camera.right_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
         break;
-    case KEY_A:
+    case DEVICE_KEY_A:
         camera.up_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
         break;
-    case KEY_B:
+    case DEVICE_KEY_B:
         camera.up_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
         break;
-    case KEY_X:
+    case DEVICE_KEY_X:
         camera.rotate_y_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
         break;
-    case KEY_Y:
+    case DEVICE_KEY_Y:
         camera.rotate_y_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
         break;
-    case KEY_CTRL:
+    case DEVICE_KEY_CTRL:
     default:
         break;
     }
@@ -85,17 +85,11 @@ void button_irq_callback(uint gpio, uint32_t event_mask) {
 
 int main() {
     device_init();
-    camera_init(
-        (vec3f){0.0f,  0.0f,  0.0f},   // position
-        (vec3f){0.0f,  0.0f, -1.0f},   // forward
-        (vec3f){0.0f,  1.0f,  0.0f}    // up
-    );
-    
-    set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true);
+    device_set_button_irq_callback(button_irq_callback, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true);
 
     pgl_view(camera.position, camera.right, camera.up, camera.forward);
     pgl_projection(0.1f, 30.0f, PGLM_PI_4f);
-    pgl_viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    pgl_viewport(0, 0, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT);
     
     pgl_enable(PGL_DEPTH_TEST);
     pgl_clear_color(PGLM_RGB565_BLACK);

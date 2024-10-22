@@ -31,9 +31,9 @@
 
 typedef struct {
     // Buffers
-    uint16_t color_buffer[SCREEN_HEIGHT][SCREEN_HEIGHT];
-    uint8_t depth_buffer[SCREEN_HEIGHT][SCREEN_WIDTH];
-    uint8_t stencil_buffer[SCREEN_HEIGHT][SCREEN_WIDTH/8];
+    uint16_t  color_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH];
+    uint8_t   depth_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH];
+    uint8_t stencil_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH / 8];
     // Transformation matrices
     mat4f view;
     mat4f projection;
@@ -231,7 +231,7 @@ static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2) {
                 uint8_t depth = pgl.depth_coef * (tex_w_inv - pgl.near);
 
 				if (depth < pgl.depth_buffer[y][x]) {
-                    const uint16_t color = sample_texture_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
+                    const uint16_t color = texture_sample_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
                     const uint32_t red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
                     const uint32_t green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
                     const uint32_t blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
@@ -286,7 +286,7 @@ static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2) {
                 uint8_t depth = pgl.depth_coef * (tex_w_inv - pgl.near);
 
 				if (depth < pgl.depth_buffer[y][x]) {
-                    const uint16_t color = sample_texture_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
+                    const uint16_t color = texture_sample_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
                     const uint32_t red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
                     const uint32_t green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
                     const uint32_t blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
@@ -364,7 +364,7 @@ void pgl_view(vec3f position, vec3f right, vec3f up, vec3f forward) {
 void pgl_projection(float near, float far, float fovw) {
     const float sin_half_fovw = sinf(fovw * 0.5f);
     const float cos_half_fovw = cosf(fovw * 0.5f);
-    const float tan_half_fovh = sin_half_fovw / (cos_half_fovw * SCREEN_ASPECT_RATIO);
+    const float tan_half_fovh = sin_half_fovw / (cos_half_fovw * DEVICE_SCREEN_ASPECT_RATIO);
     const float cos_half_fovh = 1.0f / sqrtf(tan_half_fovh * tan_half_fovh + 1.0f); 
     const float sin_half_fovh = tan_half_fovh * cos_half_fovh;
 
@@ -373,7 +373,7 @@ void pgl_projection(float near, float far, float fovw) {
     pgl.sin_half_fovh = sin_half_fovh;
     pgl.cos_half_fovh = cos_half_fovh;
     pgl.depth_coef = 255.0f / (far - near);
-    pgl.projection = perspective(fovw, SCREEN_ASPECT_RATIO, near, far);
+    pgl.projection = perspective(fovw, DEVICE_SCREEN_ASPECT_RATIO, near, far);
     pgl.near = near;
     pgl.far = far;
 }
@@ -400,19 +400,19 @@ void pgl_clear(pgl_enum_t buffer_bits) {
     const uint32_t double_color = (pgl.clear_color << 16) | pgl.clear_color;
     if (buffer_bits & PGL_COLOR_BUFFER_BIT) {
         uint32_t* ptr = (uint32_t*)pgl.color_buffer;
-        for (uint32_t i = 0; i < (SCREEN_HEIGHT * SCREEN_WIDTH / 2); i++) {
+        for (uint32_t i = 0; i < (DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH / 2); i++) {
             ptr[i] = double_color;
         }
     }
     if (buffer_bits & PGL_DEPTH_BUFFER_BIT) {
         uint32_t* ptr = (uint32_t*)pgl.depth_buffer;
-        for (uint32_t i = 0; i < (SCREEN_HEIGHT * SCREEN_WIDTH / 4); i++) {
+        for (uint32_t i = 0; i < (DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH / 4); i++) {
             ptr[i] = 0xFFFFFFFFu; // reset to far = 0xFF
         }
     }
     if (buffer_bits & PGL_STENCIL_BUFFER_BIT) {
         uint32_t* ptr = (uint32_t*)pgl.stencil_buffer;
-        for (uint32_t i = 0; i < (SCREEN_HEIGHT * SCREEN_WIDTH / 32); i++) {
+        for (uint32_t i = 0; i < (DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH / 32); i++) {
             ptr[i] = 0x00000000u;
         }
     }
@@ -780,5 +780,5 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
 }
 
 void pgl_display() {
-    lcd_display((uint16_t*)pgl.color_buffer);
+    device_lcd_display((uint16_t*)pgl.color_buffer);
 }

@@ -41,13 +41,13 @@ mesh_t meshes[] = {
         .tex_index = TEXTURE_BLUE,
     },
     {
-        .vertices = spaceship_vertices,
-        .indices  = spaceship_indices,
-        .vertex_number = count_of(spaceship_vertices),
-        .index_number  = count_of(spaceship_indices),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_WIRED,
-        .color = PGLM_RGB565_FUCHSIA,
-        // .tex_index = TEXTURE_RED,
+        .vertices = truncated_icosahedron_vertices,
+        .indices  = truncated_icosahedron_indices,
+        .vertex_number = count_of(truncated_icosahedron_vertices),
+        .index_number  = count_of(truncated_icosahedron_indices),
+        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
+        // .color = PGLM_RGB565_FUCHSIA,
+        .tex_index = TEXTURE_RED,
     },
 };
 
@@ -103,7 +103,7 @@ int main() {
     meshes[0].transform = transform_init((vec3f){-3.5f, 0.0f, -4.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
     meshes[1].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
     meshes[2].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_2f), (vec3f){1.0f, 1.0f, 1.0f});
-    meshes[3].transform = transform_init((vec3f){0.0f, -1.0f, -6.0f}, identity_quat, (vec3f){0.5f, 0.5f, 0.5f});
+    meshes[3].transform = transform_init((vec3f){0.0f, -1.0f, -6.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
 
     for (uint32_t i = 0; i < count_of(meshes); i++) {
         find_mesh_bounding_volume(meshes+i);

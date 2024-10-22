@@ -44,6 +44,21 @@ extern const uint16_t triangle_pyramid_indices[24];
 extern const vec3f square_pyramid_vertices[5];
 extern const uint16_t square_pyramid_indices[36];
 
+extern const vec3f dodecagon_pyramid_vertices[13];
+extern const uint16_t dodecagon_pyramid_indices[132];
+
+extern const vec3f icosahedron_vertices[12];
+extern const uint16_t icosahedron_indices[120];
+
+extern const vec3f dodacahedron_vertices[20];
+extern const uint16_t dodacahedron_indices[216];
+
+extern const vec3f truncated_icosahedron_vertices[60];
+extern const uint16_t truncated_icosahedron_indices[696];
+
+extern const vec3f rhombicubotahedron_vertices[24];
+extern const uint16_t rhombicubotahedron_indices[264];
+
 extern const vec3f spaceship_vertices[55];
 extern const uint16_t spaceship_indices[636];
 

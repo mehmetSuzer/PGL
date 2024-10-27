@@ -21,10 +21,8 @@
 #define DEVICE_SCREEN_HEIGHT 240u
 #define DEVICE_SCREEN_WIDTH  240u
 
-#define DEVICE_SCREEN_ASPECT_RATIO ((float)DEVICE_SCREEN_HEIGHT / (float)DEVICE_SCREEN_WIDTH)
-
 void device_init();
-void device_lcd_display(uint16_t* image);
+void device_display(uint16_t* image);
 void device_set_button_irq_callback(gpio_irq_callback_t callback, uint32_t event_mask, bool enabled);
 
 #endif // __DEVICE_H__

@@ -6,38 +6,17 @@
 #define DIFFUSE_COEF 0.8f
 #define SHADE_2_POWER 8u
 
-// Stencil test is disabled.
-// Stencil write mask is enabled. 
-// Stencil function is PGL_NEVER.
-// Stencil op sfail is PGL_KEEP.
-// Stencil op dpfail is PGL_KEEP.
-// Stencil op dppass is PGL_KEEP.
-// Depth test disabled.
-// Depth write mask is enabled.
-// Depth test function is PGL_LESS.
-// Cull face is PGL_CULL_NO.
-// Cull winding order is PGL_CCW.
-#define PGL_DEFAULT_STATE (0 << 0) |            \
-                          (1 << 1) |            \
-                          (PGL_NEVER << 2) |    \
-                          (PGL_KEEP << 5) |     \
-                          (PGL_KEEP << 6) |     \
-                          (PGL_KEEP << 7) |     \
-                          (0 << 8) |            \
-                          (1 << 9) |            \
-                          (PGL_LESS << 10) |    \
-                          (PGL_CULL_NO << 13) | \
-                          (PGL_CCW << 15)
-
 typedef struct {
     // Buffers
     u16  color_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH];
     u8   depth_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH];
     u8 stencil_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH / 8];
+
     // Transformation matrices
     mat4f view;
     mat4f projection;
     mat4f viewport;
+
     // Cache values for fast execution
     f32 near;
     f32 far;
@@ -46,23 +25,49 @@ typedef struct {
     f32 sin_half_fovh;
     f32 cos_half_fovh;
     f32 depth_coef;
-    // i32ernal state 
-    pgl_enum_t state;
+
+    // Internal state
+    u32 shade_multp; 
+    u16 wired_color;
+    u16 clear_color;
     union {
         u16 fill_color; // used to pai32 the mesh when 'mesh_t.filled_render' == FILLED_RENDER_SINGLE_COLOR or 'mesh_t.filled_render' == FILLED_RENDER_COLORS
         u16 tex_index;  // used to pai32 the mesh when 'mesh_t.filled_render' == FILLED_RENDER_TEX_COORDS
     };
-    u16 wired_color;
-    u16 clear_color;
-    u32 shade_multp;
+    pgl_enable_t    depth_test_enabled          : 1;
+    pgl_mask_t      depth_test_mask             : 1;
+    pgl_test_func_t depth_test_func             : 3;
+
+    pgl_enable_t     stencil_test_enabled       : 1;
+    pgl_mask_t       stencil_test_mask          : 1;
+    pgl_test_func_t  stencil_test_func          : 3;
+    pgl_stencil_op_t stencil_test_op_sfail      : 1;
+    pgl_stencil_op_t stencil_test_op_dpfail     : 1;
+    pgl_stencil_op_t stencil_test_op_dppass     : 1;
+
+    pgl_cull_face_t          cull_face          : 2;
+    pgl_cull_winding_order_t cull_winding_order : 1;
 } pgl_t;
 
 pgl_t pgl = {
-    .color_buffer = {{0x0000u}},
-    .depth_buffer = {{0x00u}},
+    .color_buffer   = {{0x0000u}},
+    .depth_buffer   = {{0x00u}},
     .stencil_buffer = {{0x00u}},
-    .state = PGL_DEFAULT_STATE,
-    .clear_color = PGLM_RGB565_BLACK,
+    .clear_color    = PGLM_RGB565_BLACK,
+
+    .depth_test_enabled = PGL_TEST_DISABLED,
+    .depth_test_mask    = PGL_MASKED,
+    .depth_test_func    = PGL_LESS,
+
+    .stencil_test_enabled   = PGL_TEST_DISABLED,
+    .stencil_test_mask      = PGL_MASKED,
+    .stencil_test_func      = PGL_NEVER,
+    .stencil_test_op_sfail  = PGL_KEEP,
+    .stencil_test_op_dpfail = PGL_KEEP,
+    .stencil_test_op_dppass = PGL_KEEP,
+
+    .cull_face          = PGL_CULL_NO,
+    .cull_winding_order = PGL_CCW,
 };
 
 typedef struct {
@@ -392,21 +397,13 @@ void pgl_viewport(i32 x, i32 y, u32 width, u32 height) {
     pgl.viewport = viewport(x, y, width, height);
 }
 
-// --------------------------------------------------- i32ERNAL STATE --------------------------------------------------- // 
-
-void pgl_enable(pgl_enum_t test) {
-    pgl.state |= test;
-}
-
-void pgl_disable(pgl_enum_t test) {
-    pgl.state &= ~test;
-}
+// --------------------------------------------------- INTERNAL STATE --------------------------------------------------- // 
 
 void pgl_clear_color(u16 color) {
     pgl.clear_color = color;
 }
 
-void pgl_clear(pgl_enum_t buffer_bits) {
+void pgl_clear(pgl_buffer_bit_t buffer_bits) {
     const u32 double_color = (pgl.clear_color << 16) | pgl.clear_color;
     if (buffer_bits & PGL_COLOR_BUFFER_BIT) {
         u32* ptr = (u32*)pgl.color_buffer;
@@ -428,39 +425,39 @@ void pgl_clear(pgl_enum_t buffer_bits) {
     }
 }
 
-void pgl_depth_mask(bool enable_write) {
-    pgl.state &= ~(0b1 << 9);
-    pgl.state |= (enable_write << 9);
+void pgl_set_tests(pgl_test_t tests, pgl_enable_t enabled) {
+    if (tests ^ PGL_DEPTH_TEST   == 0) { pgl.depth_test_enabled   = enabled; }
+    if (tests ^ PGL_STENCIL_TEST == 0) { pgl.stencil_test_enabled = enabled; }
 }
 
-void pgl_depth_func(pgl_enum_t test_func) {
-    pgl.state &= ~(0b111 << 10);
-    pgl.state |= (test_func << 10);
+void pgl_depth_mask(pgl_mask_t mask) {
+    pgl.depth_test_mask = mask;
 }
 
-void pgl_stencil_mask(bool enable_write) {
-    pgl.state &= ~(0b1 << 1);
-    pgl.state |= (enable_write << 1);
+void pgl_depth_func(pgl_test_func_t test_func) {
+    pgl.depth_test_func = test_func;
 }
 
-void pgl_stencil_func(pgl_enum_t test_func) {
-    pgl.state &= ~(0b111 << 2);
-    pgl.state |= (test_func << 2);
+void pgl_stencil_mask(pgl_mask_t mask) {
+    pgl.stencil_test_mask = mask;
 }
 
-void pgl_stencil_op(pgl_enum_t sfail, pgl_enum_t dpfail, pgl_enum_t dppass) {
-    pgl.state &= ~(0b111 << 5);
-    pgl.state |= ((sfail << 5) | (dpfail << 6) | (dppass << 7));
+void pgl_stencil_func(pgl_test_func_t test_func) {
+    pgl.stencil_test_func = test_func;
 }
 
-void pgl_cull_face(pgl_enum_t face) {
-    pgl.state &= ~(0b11 << 13);
-    pgl.state |= face;
+void pgl_stencil_op(pgl_stencil_op_t sfail, pgl_stencil_op_t dpfail, pgl_stencil_op_t dppass) {
+    pgl.stencil_test_op_sfail  = sfail;
+    pgl.stencil_test_op_dpfail = dpfail;
+    pgl.stencil_test_op_dppass = dppass;
 }
 
-void pgl_front_face(pgl_enum_t winding_order) {
-    pgl.state &= ~(0b1 << 15);
-    pgl.state |= winding_order;
+void pgl_cull_face(pgl_cull_face_t face) {
+    pgl.cull_face = face;
+}
+
+void pgl_cull_winding_order(pgl_cull_winding_order_t cull_winding_order) {
+    pgl.cull_winding_order = cull_winding_order;
 }
 
 // --------------------------------------------------- CLIPPING --------------------------------------------------- // 
@@ -808,5 +805,5 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
 }
 
 void pgl_display() {
-    device_lcd_display((u16*)pgl.color_buffer);
+    device_display((u16*)pgl.color_buffer); // a function with prototype "void device_display(u16* image)" must be defined
 }

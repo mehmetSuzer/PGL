@@ -99,7 +99,7 @@ int main() {
     pgl_projection(0.1f, 30.0f, PGLM_PI_4f);
     pgl_viewport(0, 0, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT);
     
-    pgl_enable(PGL_DEPTH_TEST);
+    pgl_set_tests(PGL_DEPTH_TEST, PGL_TEST_ENABLED);
     pgl_clear_color(PGLM_RGB565_BLACK);
 
     meshes[0].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});

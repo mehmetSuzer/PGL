@@ -49,9 +49,10 @@ typedef struct {
     // Internal state 
     pgl_enum_t state;
     union {
-        uint16_t color;     // used for wired rendering 
-        uint16_t tex_index; // used for filled rendering
+        uint16_t fill_color; // used to paint the mesh when 'mesh_t.filled_render' == FILLED_RENDER_SINGLE_COLOR or 'mesh_t.filled_render' == FILLED_RENDER_COLORS
+        uint16_t tex_index;  // used to paint the mesh when 'mesh_t.filled_render' == FILLED_RENDER_TEX_COORDS
     };
+    uint16_t wired_color;
     uint16_t clear_color;
     uint32_t shade_multp;
 } pgl_t;
@@ -137,7 +138,7 @@ static void pgl_line(fragment_t f0, fragment_t f1) {
 
     while (true) {
         if (depth < pgl.depth_buffer[y][x]) {
-            pgl.color_buffer[y][x] = pgl.color;
+            pgl.color_buffer[y][x] = pgl.wired_color;
             pgl.depth_buffer[y][x] = depth;
         }
 
@@ -173,7 +174,15 @@ static void pgl_wired_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
     pgl_line(f1, f2);
 }
 
-static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2) {
+static uint16_t pgl_shader(uint16_t color) {
+    const uint32_t red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
+    const uint32_t green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
+    const uint32_t blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
+    const uint16_t shaded_color = (uint16_t)((red & (31 << 11)) | (green & (63 << 5)) | blue);
+    return shaded_color;
+}
+
+static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2, filled_render_t filled_render) {
     // Sort fragments with respect to their y coordinates
     if (f0.position.y > f1.position.y) { swap(&f0, &f1); }
     if (f1.position.y > f2.position.y) { swap(&f1, &f2); }
@@ -200,6 +209,11 @@ static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2) {
 	float du2_step = (dy2) ? du2 / (float)abs(dy2) : 0.0f;
 	float dv2_step = (dy2) ? dv2 / (float)abs(dy2) : 0.0f;
     float dw2_step = (dy2) ? dw2 / (float)abs(dy2) : 0.0f;
+
+    uint16_t shaded_color;
+    if (filled_render == FILLED_RENDER_SINGLE_COLOR || filled_render == FILLED_RENDER_COLORS) {
+        shaded_color = pgl_shader(pgl.fill_color);
+    }
 
 	if (dy1) {
 		for (int y = f0.position.y; y <= f1.position.y; y++) {
@@ -231,12 +245,10 @@ static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2) {
                 uint8_t depth = pgl.depth_coef * (tex_w_inv - pgl.near);
 
 				if (depth < pgl.depth_buffer[y][x]) {
-                    const uint16_t color = texture_sample_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
-                    const uint32_t red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
-                    const uint32_t green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
-                    const uint32_t blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
-                    const uint16_t shaded_color = (uint16_t)((red & (31 << 11)) | (green & (63 << 5)) | blue);
-
+                    if (filled_render == FILLED_RENDER_TEX_COORDS) {
+                        const uint16_t color = texture_sample_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
+                        shaded_color = pgl_shader(color);
+                    }
                     pgl.color_buffer[y][x] = shaded_color;
                     pgl.depth_buffer[y][x] = depth;
 				}
@@ -286,12 +298,10 @@ static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2) {
                 uint8_t depth = pgl.depth_coef * (tex_w_inv - pgl.near);
 
 				if (depth < pgl.depth_buffer[y][x]) {
-                    const uint16_t color = texture_sample_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
-                    const uint32_t red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
-                    const uint32_t green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
-                    const uint32_t blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
-                    const uint16_t shaded_color = (uint16_t)((red & (31 << 11)) | (green & (63 << 5)) | blue);
-
+                    if (filled_render == FILLED_RENDER_TEX_COORDS) {
+                        const uint16_t color = texture_sample_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
+                        shaded_color = pgl_shader(color);
+                    }
                     pgl.color_buffer[y][x] = shaded_color;
                     pgl.depth_buffer[y][x] = depth;
 				}
@@ -726,13 +736,20 @@ static int pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
 void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
     const vec3f light_dir = mul_mat3f_vec3f(cast_mat4f_to_mat3f(pgl.view), dl->direction);
     const mat4f view_model = mul_mat4f_mat4f(pgl.view, mesh->transform.model);
-    pgl.tex_index = mesh->tex_index;
+    pgl.fill_color  = mesh->fill_color; // or tex_coords
+    pgl.wired_color = mesh->wired_color;
 
-    for (uint32_t i = 0; i < mesh->index_number; i += 6) {
+    const uint32_t incr   = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? 6 : (mesh->filled_render == FILLED_RENDER_COLORS) ? 4 : 3;
+    const uint32_t offset = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? 2 : 1;
+
+    for (uint32_t i = 0; i < mesh->index_number; i += incr) {
         // Camera space coordinates
-        const vec4f c0 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i+0]]));
-        const vec4f c1 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i+2]]));
-        const vec4f c2 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i+4]]));
+        const vec4f c0 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 0 * offset]]));
+        const vec4f c1 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 1 * offset]]));
+        const vec4f c2 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 2 * offset]]));
+        if (mesh->filled_render == FILLED_RENDER_COLORS) {
+            pgl.fill_color = mesh->indices[i+3]; // Color of the face
+        }
         
         // Face culling
         const vec3f normal = cross_vec3f(
@@ -746,14 +763,25 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
         pgl.shade_multp = (uint32_t)(shade * (1 << SHADE_2_POWER));
 
         // Clip space coordinates
-        pgl_queue_triangle_t triangle = {
-            {mul_mat4f_vec4f(pgl.projection, c0), tex_coords[mesh->indices[i+1]]},
-            {mul_mat4f_vec4f(pgl.projection, c1), tex_coords[mesh->indices[i+3]]},
-            {mul_mat4f_vec4f(pgl.projection, c2), tex_coords[mesh->indices[i+5]]},
+        pgl_queue_triangle_t triangle = { // New typedef can be defined to simplify
+            {.position = mul_mat4f_vec4f(pgl.projection, c0)},
+            {.position = mul_mat4f_vec4f(pgl.projection, c1)},
+            {.position = mul_mat4f_vec4f(pgl.projection, c2)},
         };
 
+        if (mesh->filled_render == FILLED_RENDER_TEX_COORDS) {
+            triangle.v0.tex_coord = tex_coords[mesh->indices[i+1]];
+            triangle.v1.tex_coord = tex_coords[mesh->indices[i+3]];
+            triangle.v2.tex_coord = tex_coords[mesh->indices[i+5]];
+        }
+        else {
+            triangle.v0.tex_coord = zero_vec2f;
+            triangle.v1.tex_coord = zero_vec2f;
+            triangle.v2.tex_coord = zero_vec2f;
+        }
+
         pgl_queue_triangle_t subtriangles[PGL_QUEUE_CAPACITY];
-        int subtriangle_index = pgl_narrow_phase_clipping(&triangle, subtriangles);
+        int subtriangle_index = pgl_narrow_phase_clipping(&triangle, subtriangles); // tex coords should not be interpolated if 'mesh->filled_render' != FILLED_RENDER_TEX_COORDS
 
         while (subtriangle_index >= 0) {
             const pgl_queue_triangle_t* subt = subtriangles + subtriangle_index;
@@ -769,11 +797,11 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
             const fragment_t f2 = {{sc2.x, sc2.y}, scale_vec2f(subt->v2.tex_coord, 1.0f / subt->v2.position.w), 1.0f / subt->v2.position.w};
         
             // Rasterize
-            if ((mesh->mesh_enum ^ MESH_RENDER_WIRED) == 0) {
-                pgl_wired_triangle(f0, f1, f2);
+            if (mesh->filled_render != FILLED_RENDER_NO) {
+                pgl_filled_triangle2(f0, f1, f2, mesh->filled_render);
             }
-            else if ((mesh->mesh_enum ^ MESH_RENDER_FILLED) == 0) {
-                pgl_filled_triangle2(f0, f1, f2);
+            if (mesh->wired_render != WIRED_RENDER_NO) {
+                pgl_wired_triangle(f0, f1, f2);
             }
         }
     }

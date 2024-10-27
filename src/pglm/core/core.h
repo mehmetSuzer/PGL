@@ -54,11 +54,11 @@
 #define PGLM_SQRT3_2f    ((float)PGLM_SQRT3_2)     // sqrt(3)/2
 #define PGLM_1_2SQRT3f   ((float)PGLM_1_2SQRT3)    // 1/(2*sqrt(3))
 
-#define smaller(x, y)       (((x) < (y)) ? (x) : (y))
-#define greater(x, y)       (((x) > (y)) ? (x) : (y))
-#define abs(x)              (((x) >= 0) ? (x) : -(x))
+#define smaller(x, y)       (((x) < (y)) ? (x) :  (y))
+#define greater(x, y)       (((x) > (y)) ? (x) :  (y))
+#define abs(x)              (((x) >= 0)  ? (x) : -(x))
 #define clamp(x, min, max)  (((x) < (min)) ? (min) : ((x) > (max)) ? (max) : (x))
-#define interp(x, y, a)     ((x) * (a) + (y) * (1.0f - (a)))
+#define interp(x, y, a)     ((y) + (a) * ((x) - (y)))
 
 #define swap(ptr1, ptr2)    { const typeof(*(ptr1)) temp = *(ptr1); *(ptr1) = *(ptr2); *(ptr2) = temp; }
 

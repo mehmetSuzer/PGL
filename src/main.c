@@ -14,40 +14,50 @@ const directional_light_t dl = {
 
 mesh_t meshes[] = {
     {
+        .vertices = triangle_vertices,
+        .indices  = triangle_indices_single_color,
+        .vertex_number = count_of(triangle_vertices),
+        .index_number  = count_of(triangle_indices_single_color),
+        .filled_render = FILLED_RENDER_SINGLE_COLOR,
+        .fill_color = PGLM_RGB565_GREEN,
+        .wired_render  = WIRED_RENDER_NO,
+    },
+    {
+        .vertices = triangle_vertices,
+        .indices  = triangle_indices_single_color,
+        .vertex_number = count_of(triangle_vertices),
+        .index_number  = count_of(triangle_indices_single_color),
+        .filled_render = FILLED_RENDER_SINGLE_COLOR,
+        .fill_color = PGLM_RGB565_BLUE,
+        .wired_render  = WIRED_RENDER_NO,
+    },
+    {
         .vertices = cube_vertices,
-        .indices  = cube_indices,
+        .indices  = cube_indices_tex_coords,
         .vertex_number = count_of(cube_vertices),
-        .index_number  = count_of(cube_indices),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
-        // .color = PGLM_RGB565_GOLD,
+        .index_number  = count_of(cube_indices_tex_coords),
+        .filled_render = FILLED_RENDER_TEX_COORDS,
         .tex_index = TEXTURE_HEART,
-    },
-    {
-        .vertices = equilateral_triangle_vertices,
-        .indices  = equilateral_triangle_indices,
-        .vertex_number = count_of(equilateral_triangle_vertices),
-        .index_number  = count_of(equilateral_triangle_indices),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
-        // .color = PGLM_RGB565_LIMEGREEN,
-        .tex_index = TEXTURE_GREEN,
-    },
-    {
-        .vertices = equilateral_triangle_vertices,
-        .indices  = equilateral_triangle_indices,
-        .vertex_number = count_of(equilateral_triangle_vertices),
-        .index_number  = count_of(equilateral_triangle_indices),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
-        // .color = PGLM_RGB565_CRIMSON,
-        .tex_index = TEXTURE_BLUE,
+        .wired_render  = WIRED_RENDER_NO,
     },
     {
         .vertices = icositetragon_pyramid_vertices,
-        .indices  = icositetragon_pyramid_indices,
+        .indices  = icositetragon_pyramid_indices_colors,
         .vertex_number = count_of(icositetragon_pyramid_vertices),
-        .index_number  = count_of(icositetragon_pyramid_indices),
-        .mesh_enum = MESH_TRIANGLE | MESH_RENDER_FILLED,
-        // .color = PGLM_RGB565_FUCHSIA,
-        .tex_index = TEXTURE_RED,
+        .index_number  = count_of(icositetragon_pyramid_indices_colors),
+        .filled_render = FILLED_RENDER_COLORS,
+        .fill_color = PGLM_RGB565_FUCHSIA,
+        .wired_render  = WIRED_RENDER_NO,
+    },
+    {
+        .vertices = spaceship_vertices,
+        .indices  = spaceship_indices_single_color,
+        .vertex_number = count_of(spaceship_vertices),
+        .index_number  = count_of(spaceship_indices_single_color),
+        .filled_render = FILLED_RENDER_SINGLE_COLOR,
+        .fill_color = PGLM_RGB565_FUCHSIA,
+        .wired_render  = WIRED_RENDER_YES,
+        .wired_color = PGLM_RGB565_BLACK,
     },
 };
 
@@ -94,13 +104,14 @@ int main() {
     pgl_enable(PGL_DEPTH_TEST);
     pgl_clear_color(PGLM_RGB565_BLACK);
 
-    meshes[0].transform = transform_init((vec3f){-3.5f, 0.0f, -4.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
-    meshes[1].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
-    meshes[2].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_2f), (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[0].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[1].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_2f), (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[2].transform = transform_init((vec3f){-3.5f, 0.0f, -4.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
     meshes[3].transform = transform_init((vec3f){0.0f, -1.0f, -6.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[4].transform = transform_init((vec3f){0.0f, -1.0f,  6.0f}, identity_quat, (vec3f){0.6f, 0.6f, 0.6f});
 
     for (uint32_t i = 0; i < count_of(meshes); i++) {
-        find_mesh_bounding_volume(meshes+i);
+        mesh_find_bounding_volume(meshes+i);
     }
 
     uint32_t last_time = time_us_32();

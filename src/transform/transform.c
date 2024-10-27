@@ -49,7 +49,7 @@ void transform_set_scalar_vec3f(transform_t* transform, vec3f scalar) {
     transform_update_model(transform);
 }
 
-void transform_set_scalar(transform_t* transform, float scale) {
+void transform_set_scalar(transform_t* transform, f32 scale) {
     transform->scalar = (vec3f){scale, scale, scale};
     transform_update_model(transform);
 }
@@ -59,7 +59,7 @@ void transform_scale_vec3f(transform_t* transform, vec3f scalar) {
     transform_update_model(transform);
 }
 
-void transform_scale(transform_t* transform, float scale) {
+void transform_scale(transform_t* transform, f32 scale) {
     transform->scalar = scale_vec3f(transform->scalar, scale);
     transform_update_model(transform);
 }

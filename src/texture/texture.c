@@ -125,7 +125,7 @@ vec2i tex_coord_vec2f_to_vec2i(vec2f tex_coord) {
     };
 }
 
-uint16_t texture_sample_vec2i(vec2i tex_coord, uint16_t tex_index) {
+u16 texture_sample_vec2i(vec2i tex_coord, u16 tex_index) {
     if (tex_coord.u < 0 || tex_coord.u > TEXTURE_RESOLUTION) {
         tex_coord.u -= (tex_coord.u & ~(TEXTURE_RESOLUTION-1));
     }
@@ -133,13 +133,13 @@ uint16_t texture_sample_vec2i(vec2i tex_coord, uint16_t tex_index) {
         tex_coord.v -= (tex_coord.v & ~(TEXTURE_RESOLUTION-1));
     }
 
-    const int u = tex_coord.u / (TEXTURE_RESOLUTION / TEXTURE_SIZE + 1);
-    const int v = tex_coord.v / (TEXTURE_RESOLUTION / TEXTURE_SIZE + 1);
+    const i32 u = tex_coord.u / (TEXTURE_RESOLUTION / TEXTURE_SIZE + 1);
+    const i32 v = tex_coord.v / (TEXTURE_RESOLUTION / TEXTURE_SIZE + 1);
 
     return textures[tex_index][7-v][u];
 }
 
-uint16_t texture_sample_vec2f(vec2f tex_coord, uint16_t tex_index) {
+u16 texture_sample_vec2f(vec2f tex_coord, u16 tex_index) {
     if (tex_coord.u < 0.0f || tex_coord.u > 1.0f) {
         tex_coord.u -= floorf(tex_coord.u);
     }
@@ -147,8 +147,8 @@ uint16_t texture_sample_vec2f(vec2f tex_coord, uint16_t tex_index) {
         tex_coord.v -= floorf(tex_coord.v);
     }
 
-    const int u = (int)(tex_coord.u / TEXTURE_SAMPLING_PERIOD);
-    const int v = (int)(tex_coord.v / TEXTURE_SAMPLING_PERIOD);
+    const i32 u = (i32)(tex_coord.u / TEXTURE_SAMPLING_PERIOD);
+    const i32 v = (i32)(tex_coord.v / TEXTURE_SAMPLING_PERIOD);
 
     return textures[tex_index][7-v][u];
 }

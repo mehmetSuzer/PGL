@@ -4,11 +4,11 @@
 
 #include "core.h"
 
-inline bool epsilon_equal(float x, float y, float epsilon) {
+inline bool epsilon_equal(f32 x, f32 y, f32 epsilon) {
     return abs(x-y) < epsilon;
 }
 
-inline bool epsilon_not_equal(float x, float y, float epsilon) {
+inline bool epsilon_not_equal(f32 x, f32 y, f32 epsilon) {
     return abs(x-y) >= epsilon;
 }
 

@@ -20,8 +20,8 @@ typedef struct {
 
 typedef struct {
     pgl_queue_triangle_t triangles[PGL_QUEUE_CAPACITY];
-    uint8_t front; // next slot for pop
-    uint8_t back;  // next slot for push
+    u8 front; // next slot for pop
+    u8 back;  // next slot for push
     bool empty;
 } pgl_queue_t;
 
@@ -43,7 +43,7 @@ inline bool triangle_queue_full(pgl_queue_t* queue) {
     return queue->front == queue->back && !queue->empty;
 }
 
-inline uint32_t triangle_queue_length(pgl_queue_t* queue) {
+inline u32 triangle_queue_length(pgl_queue_t* queue) {
     if (queue->empty) {
         return 0;
     }

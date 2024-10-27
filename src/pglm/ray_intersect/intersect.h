@@ -6,17 +6,17 @@
 #include "primitive.h"
 #include "../matrix/mat3f.h"
 
-static inline bool intersect_sphere(ray_t ray, sphere_t sphere, float near, float far, float* t) {
+static inline bool intersect_sphere(ray_t ray, sphere_t sphere, f32 near, f32 far, f32* t) {
     const vec3f center_to_source = sub_vec3f(ray.source, sphere.center);
-    const float dist2 = mag2_vec3f(center_to_source);
-    const float dot = dot_vec3f(center_to_source, ray.dir);
-    const float quarter_discriminant = dot * dot - dist2 + sphere.radius * sphere.radius;
+    const f32 dist2 = mag2_vec3f(center_to_source);
+    const f32 dot = dot_vec3f(center_to_source, ray.dir);
+    const f32 quarter_discriminant = dot * dot - dist2 + sphere.radius * sphere.radius;
 
     if (quarter_discriminant < 1E-6f) {
         return false;
     }
 
-    const float low = -dot - sqrtf(quarter_discriminant); 
+    const f32 low = -dot - sqrtf(quarter_discriminant); 
 
     if (near < low && low < far) {
         *t = low;
@@ -26,7 +26,7 @@ static inline bool intersect_sphere(ray_t ray, sphere_t sphere, float near, floa
     return false;
 }
 
-static inline bool intersect_triangle(ray_t ray, triangle_t triangle, float near, float far, float* t) {
+static inline bool intersect_triangle(ray_t ray, triangle_t triangle, f32 near, f32 far, f32* t) {
     const vec3f col0 = sub_vec3f(triangle.a, triangle.b);
     const vec3f col1 = sub_vec3f(triangle.a, triangle.c);
     const vec3f col2 = ray.dir;
@@ -44,13 +44,13 @@ static inline bool intersect_triangle(ray_t ray, triangle_t triangle, float near
     return false;
 }
 
-static inline bool intersect_plane(ray_t ray, plane_t plane, float near, float far, float* t) {
+static inline bool intersect_plane(ray_t ray, plane_t plane, f32 near, f32 far, f32* t) {
     if (dot_vec3f(ray.dir, plane.normal) < 1E-6f) {
         return false;
     }
 
-    const float dot_sn = dot_vec3f(ray.source, plane.normal);
-    const float dot_dn = dot_vec3f(ray.dir, plane.normal);
+    const f32 dot_sn = dot_vec3f(ray.source, plane.normal);
+    const f32 dot_dn = dot_vec3f(ray.dir, plane.normal);
     *t = -(plane.d + dot_sn) / dot_dn;
     return true;
 }

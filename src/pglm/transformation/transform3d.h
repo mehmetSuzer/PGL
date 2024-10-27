@@ -22,9 +22,9 @@ inline mat4f scale3D_mat4f(vec3f v) {
     return cast_mat3f_to_mat4f(scale3D_mat3f(v));
 }
 
-static inline mat3f rotate3D_x_mat3f(float radian) {
-    const float s = sinf(radian);
-    const float c = cosf(radian);
+static inline mat3f rotate3D_x_mat3f(f32 radian) {
+    const f32 s = sinf(radian);
+    const f32 c = cosf(radian);
     return (mat3f){
         1.0f, 0.0f, 0.0f,
         0.0f,    c,   -s,
@@ -32,13 +32,13 @@ static inline mat3f rotate3D_x_mat3f(float radian) {
     };
 }
 
-static inline mat4f rotate3D_x_mat4f(float radian) {
+static inline mat4f rotate3D_x_mat4f(f32 radian) {
     return cast_mat3f_to_mat4f(rotate3D_x_mat3f(radian));
 }
 
-static inline mat3f rotate3D_y_mat3f(float radian) {
-    const float s = sinf(radian);
-    const float c = cosf(radian);
+static inline mat3f rotate3D_y_mat3f(f32 radian) {
+    const f32 s = sinf(radian);
+    const f32 c = cosf(radian);
     return (mat3f){
            c, 0.0f,    s,
         0.0f, 1.0f, 0.0f,
@@ -46,13 +46,13 @@ static inline mat3f rotate3D_y_mat3f(float radian) {
     };
 }
 
-static inline mat4f rotate3D_y_mat4f(float radian) {
+static inline mat4f rotate3D_y_mat4f(f32 radian) {
     return cast_mat3f_to_mat4f(rotate3D_y_mat3f(radian));
 }
 
-static inline mat3f rotate3D_z_mat3f(float radian) {
-    const float s = sinf(radian);
-    const float c = cosf(radian);
+static inline mat3f rotate3D_z_mat3f(f32 radian) {
+    const f32 s = sinf(radian);
+    const f32 c = cosf(radian);
     return (mat3f){
            c,   -s, 0.0f,
            s,    c, 0.0f,
@@ -60,11 +60,11 @@ static inline mat3f rotate3D_z_mat3f(float radian) {
     };
 }
 
-static inline mat4f rotate3D_z_mat4f(float radian) {
+static inline mat4f rotate3D_z_mat4f(f32 radian) {
     return cast_mat3f_to_mat4f(rotate3D_z_mat3f(radian));
 }
 
-inline mat3f shear3D_mat3f(float xy, float xz, float yx, float yz, float zx, float zy) {
+inline mat3f shear3D_mat3f(f32 xy, f32 xz, f32 yx, f32 yz, f32 zx, f32 zy) {
     return (mat3f){
         1.0f,   xy,   xz,
           yx, 1.0f,   yz,
@@ -72,7 +72,7 @@ inline mat3f shear3D_mat3f(float xy, float xz, float yx, float yz, float zx, flo
     };
 }
 
-static inline mat4f shear3D_mat4f(float xy, float xz, float yx, float yz, float zx, float zy) {
+static inline mat4f shear3D_mat4f(f32 xy, f32 xz, f32 yx, f32 yz, f32 zx, f32 zy) {
     return cast_mat3f_to_mat4f(shear3D_mat3f(xy, xz, yx, yz, zx, zy));
 }
 

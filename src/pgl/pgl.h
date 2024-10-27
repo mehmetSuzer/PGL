@@ -55,13 +55,13 @@ typedef enum {
 } pgl_enum_t;
 
 void pgl_view(vec3f position, vec3f right, vec3f up, vec3f forward);
-void pgl_projection(float near, float far, float fovw);
-void pgl_viewport(int x, int y, uint32_t width, uint32_t height);
+void pgl_projection(f32 near, f32 far, f32 fovw);
+void pgl_viewport(i32 x, i32 y, u32 width, u32 height);
 
 void pgl_enable(pgl_enum_t test);
 void pgl_disable(pgl_enum_t test);
 
-void pgl_clear_color(uint16_t color);
+void pgl_clear_color(u16 color);
 void pgl_clear(pgl_enum_t buffer_bits);
 
 void pgl_depth_mask(bool enable_write);

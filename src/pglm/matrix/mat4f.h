@@ -13,12 +13,12 @@
 //  wx, wy, wz, ww
 typedef union {
     struct {
-        float xx, xy, xz, xw; // row0
-        float yx, yy, yz, yw; // row1
-        float zx, zy, zz, zw; // row2
-        float wx, wy, wz, ww; // row3
+        f32 xx, xy, xz, xw; // row0
+        f32 yx, yy, yz, yw; // row1
+        f32 zx, zy, zz, zw; // row2
+        f32 wx, wy, wz, ww; // row3
     };
-    float n[4][4];
+    f32 n[4][4];
 } mat4f;
 
 #define zero_mat4f ((mat4f){        \
@@ -106,7 +106,7 @@ inline mat4f sub_mat4f(mat4f m1, mat4f m2) {
     };
 }
 
-inline mat4f scale_mat4f(mat4f m, float scale) {
+inline mat4f scale_mat4f(mat4f m, f32 scale) {
     return (mat4f){
         m.xx * scale, m.xy * scale, m.xz * scale, m.xw * scale,
         m.yx * scale, m.yy * scale, m.yz * scale, m.yw * scale,
@@ -157,35 +157,35 @@ inline mat4f tr_mat4f(mat4f m) {
     };
 }
 
-static inline float det_mat4f(mat4f m) {
-    const float factor0 = m.zz * m.ww - m.wz * m.zw;
-	const float factor1 = m.zy * m.ww - m.wy * m.zw;
-	const float factor2 = m.zy * m.wz - m.wy * m.zz;
-	const float factor3 = m.zx * m.ww - m.wx * m.zw;
-	const float factor4 = m.zx * m.wz - m.wx * m.zz;
-	const float factor5 = m.zx * m.wy - m.wx * m.zy;
+static inline f32 det_mat4f(mat4f m) {
+    const f32 factor0 = m.zz * m.ww - m.wz * m.zw;
+	const f32 factor1 = m.zy * m.ww - m.wy * m.zw;
+	const f32 factor2 = m.zy * m.wz - m.wy * m.zz;
+	const f32 factor3 = m.zx * m.ww - m.wx * m.zw;
+	const f32 factor4 = m.zx * m.wz - m.wx * m.zz;
+	const f32 factor5 = m.zx * m.wy - m.wx * m.zy;
 
-	const float coef0 = m.yy * factor0 - m.yz * factor1 + m.yw * factor2;
-	const float coef1 = m.yx * factor0 - m.yz * factor3 + m.yw * factor4;
-	const float coef2 = m.yx * factor1 - m.yy * factor3 + m.yw * factor5;
-	const float coef3 = m.yx * factor2 - m.yy * factor4 + m.yz * factor5;
+	const f32 coef0 = m.yy * factor0 - m.yz * factor1 + m.yw * factor2;
+	const f32 coef1 = m.yx * factor0 - m.yz * factor3 + m.yw * factor4;
+	const f32 coef2 = m.yx * factor1 - m.yy * factor3 + m.yw * factor5;
+	const f32 coef3 = m.yx * factor2 - m.yy * factor4 + m.yz * factor5;
 
     return + m.xx * coef0 - m.xy * coef1
 	       + m.xz * coef2 - m.xw * coef3;
 }
 
 static inline mat4f inv_mat4f(mat4f m) {
-    const float factor0 = m.zz * m.ww - m.wz * m.zw;
-    const float factor1 = m.zy * m.ww - m.wy * m.zw;
-    const float factor2 = m.zy * m.wz - m.wy * m.zz;
-    const float factor3 = m.zx * m.ww - m.wx * m.zw;
-    const float factor4 = m.zx * m.wz - m.wx * m.zz;
-    const float factor5 = m.zx * m.wy - m.wx * m.zy;
+    const f32 factor0 = m.zz * m.ww - m.wz * m.zw;
+    const f32 factor1 = m.zy * m.ww - m.wy * m.zw;
+    const f32 factor2 = m.zy * m.wz - m.wy * m.zz;
+    const f32 factor3 = m.zx * m.ww - m.wx * m.zw;
+    const f32 factor4 = m.zx * m.wz - m.wx * m.zz;
+    const f32 factor5 = m.zx * m.wy - m.wx * m.zy;
 
-    const float coef0 = m.yy * factor0 - m.yz * factor1 + m.yw * factor2;
-    const float coef1 = m.yx * factor0 - m.yz * factor3 + m.yw * factor4;
-    const float coef2 = m.yx * factor1 - m.yy * factor3 + m.yw * factor5;
-    const float coef3 = m.yx * factor2 - m.yy * factor4 + m.yz * factor5;
+    const f32 coef0 = m.yy * factor0 - m.yz * factor1 + m.yw * factor2;
+    const f32 coef1 = m.yx * factor0 - m.yz * factor3 + m.yw * factor4;
+    const f32 coef2 = m.yx * factor1 - m.yy * factor3 + m.yw * factor5;
+    const f32 coef3 = m.yx * factor2 - m.yy * factor4 + m.yz * factor5;
 
     const mat4f adjugate = {
         coef0, 
@@ -209,7 +209,7 @@ static inline mat4f inv_mat4f(mat4f m) {
         (m.xx * factor2 - m.xy * factor4 + m.xz * factor5)
     };
 
-    const float inverse_determinant = 1.0f / det_mat4f(m);
+    const f32 inverse_determinant = 1.0f / det_mat4f(m);
     return scale_mat4f(adjugate, inverse_determinant);
 }
 
@@ -224,21 +224,21 @@ static inline vec4f solve_cramers_mat4f(mat4f m, vec4f v) {
     const mat4f m2 = mat4f_from_cols(col0, col1,    v, col3);
     const mat4f m3 = mat4f_from_cols(col0, col1, col2,    v);
 
-    const float inverse_determinant = 1.0f / det_mat4f(m);
-    const float det0 = det_mat4f(m0);
-    const float det1 = det_mat4f(m1);
-    const float det2 = det_mat4f(m2);
-    const float det3 = det_mat4f(m3);
+    const f32 inverse_determinant = 1.0f / det_mat4f(m);
+    const f32 det0 = det_mat4f(m0);
+    const f32 det1 = det_mat4f(m1);
+    const f32 det2 = det_mat4f(m2);
+    const f32 det3 = det_mat4f(m3);
 
-    const float x = det0 * inverse_determinant;
-    const float y = det1 * inverse_determinant;
-    const float z = det2 * inverse_determinant;
-    const float w = det3 * inverse_determinant;
+    const f32 x = det0 * inverse_determinant;
+    const f32 y = det1 * inverse_determinant;
+    const f32 z = det2 * inverse_determinant;
+    const f32 w = det3 * inverse_determinant;
 
     return (vec4f){x, y, z, w};
 }
 
-inline bool epsilon_equal_mat4f(mat4f m1, mat4f m2, float epsilon) {
+inline bool epsilon_equal_mat4f(mat4f m1, mat4f m2, f32 epsilon) {
     return epsilon_equal(m1.xx, m2.xx, epsilon) && 
            epsilon_equal(m1.xy, m2.xy, epsilon) && 
            epsilon_equal(m1.xz, m2.xz, epsilon) && 
@@ -260,7 +260,7 @@ inline bool epsilon_equal_mat4f(mat4f m1, mat4f m2, float epsilon) {
            epsilon_equal(m1.ww, m2.ww, epsilon);
 }
 
-inline bool epsilon_not_equal_mat4f(mat4f m1, mat4f m2, float epsilon) {
+inline bool epsilon_not_equal_mat4f(mat4f m1, mat4f m2, f32 epsilon) {
     return epsilon_not_equal(m1.xx, m2.xx, epsilon) ||
            epsilon_not_equal(m1.xy, m2.xy, epsilon) ||
            epsilon_not_equal(m1.xz, m2.xz, epsilon) ||

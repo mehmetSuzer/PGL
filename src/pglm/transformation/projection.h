@@ -4,8 +4,8 @@
 
 #include "../matrix/mat4f.h"
 
-inline mat4f orthographic(float width, float height, float near, float far) {
-    const float inverse_far_minus_near = 1.0f / (far - near);
+inline mat4f orthographic(f32 width, f32 height, f32 near, f32 far) {
+    const f32 inverse_far_minus_near = 1.0f / (far - near);
     mat4f result = zero_mat4f;
 	
     result.xx =  2.0f / width;
@@ -17,9 +17,9 @@ inline mat4f orthographic(float width, float height, float near, float far) {
     return result;
 }
 
-inline mat4f perspective(float fovw, float aspect, float near, float far) {
-    const float inverse_tan_half_fov = 1.0f / tanf(fovw * 0.5f);
-    const float inverse_far_minus_near = 1.0f / (far - near);
+inline mat4f perspective(f32 fovw, f32 aspect, f32 near, f32 far) {
+    const f32 inverse_tan_half_fov = 1.0f / tanf(fovw * 0.5f);
+    const f32 inverse_far_minus_near = 1.0f / (far - near);
 	mat4f result = zero_mat4f;
 
 	result.xx =  inverse_tan_half_fov;

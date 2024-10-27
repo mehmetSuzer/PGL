@@ -2,27 +2,26 @@
 #ifndef __VEC2I_H__
 #define __VEC2I_H__
 
+#include "../core/pglmdef.h"
+
 typedef union {
     struct {
-        int x;
-        int y;
+        i32 x;
+        i32 y;
     };
-
     struct {
-        int r;
-        int i;
+        i32 r;
+        i32 i;
     };
-
     struct {
-        int u;
-        int v;
+        i32 u;
+        i32 v;
     };
-
     struct {
-        int s;
-        int t;
+        i32 s;
+        i32 t;
     };
-    int n[2];
+    i32 n[2];
 } vec2i;
 
 #define zero_vec2i ((vec2i){0, 0})
@@ -62,7 +61,7 @@ inline vec2i div_vec2i(vec2i v1, vec2i v2) {
     };
 }
 
-inline vec2i scale_vec2i(vec2i v, int scale) {
+inline vec2i scale_vec2i(vec2i v, i32 scale) {
     return (vec2i){
         v.x * scale, 
         v.y * scale, 

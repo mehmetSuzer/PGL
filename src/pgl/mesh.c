@@ -3,14 +3,14 @@
 
 void mesh_find_bounding_volume(mesh_t* mesh) {
 	vec3f center = {0.0f, 0.0f, 0.0f};
-	for (uint32_t i = 0; i < mesh->vertex_number; i++) {
+	for (u32 i = 0; i < mesh->vertex_number; i++) {
 		center = add_vec3f(center, mesh->vertices[i]);
 	}
 	center = scale_vec3f(center, 1.0f / mesh->vertex_number);
 
-	float radius2 = 0.0f;
-	for (uint32_t i = 0; i < mesh->vertex_number; i++) {
-		const float distance2 = mag2_vec3f(sub_vec3f(center, mesh->vertices[i]));
+	f32 radius2 = 0.0f;
+	for (u32 i = 0; i < mesh->vertex_number; i++) {
+		const f32 distance2 = mag2_vec3f(sub_vec3f(center, mesh->vertices[i]));
 		if (distance2 > radius2) {
 			radius2 = distance2;
 		}
@@ -36,15 +36,15 @@ const vec3f triangle_vertices[3] = {
 	{ 0.0f,   PGLM_1_SQRT3f,  0.0f}, // Top
 };
 
-const uint16_t triangle_indices_single_color[3] = {
+const u16 triangle_indices_single_color[3] = {
     0,  1,  2,
 };
 
-const uint16_t triangle_indices_colors[4] = {
+const u16 triangle_indices_colors[4] = {
 	0,  1,  2,  PGLM_RGB565_BLUEVIOLET,
 };
 
-const uint16_t triangle_indices_tex_coords[6] = {
+const u16 triangle_indices_tex_coords[6] = {
     0, 0,  1, 1,  2, 4,
 };
 
@@ -57,17 +57,17 @@ const vec3f square_vertices[4] = {
 	{-0.5f,  0.5f,  0.0f}, // Left  Top
 };
 
-const uint16_t square_indices_single_color[6] = {
+const u16 square_indices_single_color[6] = {
     0,  1,  2,
 	0,  2,  3,
 };
 
-const uint16_t square_indices_colors[8] = {
+const u16 square_indices_colors[8] = {
     0,  1,  2,  PGLM_RGB565_RED,
 	0,  2,  3,  PGLM_RGB565_RED,
 };
 
-const uint16_t square_indices_tex_coords[12] = {
+const u16 square_indices_tex_coords[12] = {
     0, 0,  1, 1,  2, 2,
 	0, 0,  2, 2,  3, 3,
 };
@@ -85,7 +85,7 @@ const vec3f cube_vertices[8] = {
 	{-0.5f,  0.5f, -0.5f}, // Left  Top    Back
 };
 
-const uint16_t cube_indices_single_color[36] = {
+const u16 cube_indices_single_color[36] = {
 	0,  1,  2, // Front  Face
 	0,  2,  3, // Front  Face
 	1,  5,  6, // Right  Face
@@ -100,7 +100,7 @@ const uint16_t cube_indices_single_color[36] = {
 	4,  1,  0, // Bottom Face
 };
 
-const uint16_t cube_indices_colors[48] = {
+const u16 cube_indices_colors[48] = {
 	0,  1,  2,  PGLM_RGB565_ALICEBLUE,	// Front  Face
 	0,  2,  3,  PGLM_RGB565_ALICEBLUE,  // Front  Face
 	1,  5,  6,  PGLM_RGB565_CORAL,      // Right  Face
@@ -115,7 +115,7 @@ const uint16_t cube_indices_colors[48] = {
 	4,  1,  0,  PGLM_RGB565_KHAKI 		// Bottom Face
 };
 
-const uint16_t cube_indices_tex_coords[72] = {
+const u16 cube_indices_tex_coords[72] = {
 	0, 0,  1, 1,  2, 2, // Front  Face
 	0, 0,  2, 2,  3, 3, // Front  Face
 	1, 0,  5, 1,  6, 2, // Right  Face
@@ -139,21 +139,21 @@ const vec3f triangle_pyramid_vertices[4] = {
 	{ 0.0f, PGLM_SQRT2f/PGLM_SQRT3f,   		    0.0f}, // Top
 };
 
-const uint16_t triangle_pyramid_indices_single_color[12] = {
+const u16 triangle_pyramid_indices_single_color[12] = {
 	0,  1,  3, // Front  Face
 	1,  2,  3, // Right  Face
 	2,  0,  3, // Left   Face
 	0,  2,  1, // Bottom Face
 };
 
-const uint16_t triangle_pyramid_indices_colors[16] = {
+const u16 triangle_pyramid_indices_colors[16] = {
 	0,  1,  3,  PGLM_RGB565_AQUA,   // Front  Face
 	1,  2,  3,  PGLM_RGB565_YELLOW, // Right  Face
 	2,  0,  3,  PGLM_RGB565_AZURE,  // Left   Face
 	0,  2,  1,  PGLM_RGB565_OLIVE,  // Bottom Face
 };
 
-const uint16_t triangle_pyramid_indices_tex_coords[24] = {
+const u16 triangle_pyramid_indices_tex_coords[24] = {
 	0, 0,  1, 1,  3, 4, // Front  Face
 	1, 0,  2, 1,  3, 4, // Right  Face
 	2, 0,  0, 1,  3, 4, // Left   Face
@@ -170,7 +170,7 @@ const vec3f square_pyramid_vertices[5] = {
 	{ 0.0f, PGLM_1_SQRT2f,  0.0f}, // Top
 };
 
-const uint16_t square_pyramid_indices_single_color[18] = {
+const u16 square_pyramid_indices_single_color[18] = {
 	0,  1,  4, // Front  Face
 	1,  2,  4, // Right  Face
 	2,  3,  4, // Back   Face
@@ -179,7 +179,7 @@ const uint16_t square_pyramid_indices_single_color[18] = {
 	3,  1,  0, // Bottom Face
 };
 
-const uint16_t square_pyramid_indices_colors[24] = {
+const u16 square_pyramid_indices_colors[24] = {
 	0,  1,  4,  PGLM_RGB565_CHOCOLATE, // Front  Face
 	1,  2,  4,  PGLM_RGB565_HONEYDEW,  // Right  Face
 	2,  3,  4,  PGLM_RGB565_DARKKHAKI, // Back   Face
@@ -188,7 +188,7 @@ const uint16_t square_pyramid_indices_colors[24] = {
 	3,  1,  0,  PGLM_RGB565_PEACHPUFF, // Bottom Face
 };
 
-const uint16_t square_pyramid_indices_tex_coords[36] = {
+const u16 square_pyramid_indices_tex_coords[36] = {
 	0, 0,  1, 1,  4, 4, // Front  Face
 	1, 0,  2, 1,  4, 4, // Right  Face
 	2, 0,  3, 1,  4, 4, // Back   Face
@@ -216,7 +216,7 @@ const vec3f dodecagon_pyramid_vertices[13] = {
 	{ 0.000000f,  1.500000f,  0.000000f}, // Top
 };
 
-const uint16_t dodecagon_pyramid_indices_single_color[66] = {
+const u16 dodecagon_pyramid_indices_single_color[66] = {
 	 1,   0,  12, // Side Face
 	 2,   1,  12, // Side Face
 	 3,   2,  12, // Side Face
@@ -241,7 +241,7 @@ const uint16_t dodecagon_pyramid_indices_single_color[66] = {
 	 0,  10,  11, // Bottom Face
 };
 
-const uint16_t dodecagon_pyramid_indices_colors[88] = {
+const u16 dodecagon_pyramid_indices_colors[88] = {
 	 1,   0,  12,  PGLM_RGB565_NAVAJOWHITE,   // Side Face
 	 2,   1,  12,  PGLM_RGB565_FUCHSIA,       // Side Face
 	 3,   2,  12,  PGLM_RGB565_DARKORCHID,    // Side Face
@@ -266,7 +266,7 @@ const uint16_t dodecagon_pyramid_indices_colors[88] = {
 	 0,  10,  11,  PGLM_RGB565_LAVENDERBLUSH, // Bottom Face
 };
 
-const uint16_t dodecagon_pyramid_indices_tex_coords[132] = {
+const u16 dodecagon_pyramid_indices_tex_coords[132] = {
 	 1, 0,   0, 0,  12, 0, // Side Face
 	 2, 0,   1, 0,  12, 0, // Side Face
 	 3, 0,   2, 0,  12, 0, // Side Face
@@ -322,7 +322,7 @@ const vec3f icositetragon_pyramid_vertices[25] = {
 	{ 0.000000f, 1.500000f,  0.000000f}, // Top
 };
 
-const uint16_t icositetragon_pyramid_indices_single_color[138] = {
+const u16 icositetragon_pyramid_indices_single_color[138] = {
 	 1,   0,  24, // Side Face 
 	 2,   1,  24, // Side Face
 	 3,   2,  24, // Side Face
@@ -371,7 +371,7 @@ const uint16_t icositetragon_pyramid_indices_single_color[138] = {
 	 0,  22,  23, // Bottom Face
 };
 
-const uint16_t icositetragon_pyramid_indices_colors[184] = {
+const u16 icositetragon_pyramid_indices_colors[184] = {
 	 1,   0,  24,  PGLM_RGB565_ALICEBLUE,		// Side Face 
 	 2,   1,  24,  PGLM_RGB565_AQUA, 			// Side Face
 	 3,   2,  24,  PGLM_RGB565_BEIGE, 			// Side Face
@@ -420,7 +420,7 @@ const uint16_t icositetragon_pyramid_indices_colors[184] = {
 	 0,  22,  23,  PGLM_RGB565_GOLD, 			// Bottom Face
 };
 
-const uint16_t icositetragon_pyramid_indices_tex_coords[276] = {
+const u16 icositetragon_pyramid_indices_tex_coords[276] = {
 	 1, 0,   0, 0,  24, 0, // Side Face 
 	 2, 0,   1, 0,  24, 0, // Side Face
 	 3, 0,   2, 0,  24, 0, // Side Face
@@ -490,7 +490,7 @@ const vec3f icosahedron_vertices[12] = {
 	{-0.738577f,  -0.193068f,  0.577213f},
 };
 
-const uint16_t icosahedron_indices_single_color[60] = {
+const u16 icosahedron_indices_single_color[60] = {
 	 0,   1,   2,
 	 3,   1,   0,
 	 4,   1,   3,
@@ -513,7 +513,7 @@ const uint16_t icosahedron_indices_single_color[60] = {
 	 9,  11,  10,
 };
 
-const uint16_t icosahedron_indices_colors[80] = {
+const u16 icosahedron_indices_colors[80] = {
 	 0,   1,   2,  PGLM_RGB565_CRIMSON,
 	 3,   1,   0,  PGLM_RGB565_ANTIQUEWHITE,
 	 4,   1,   3,  PGLM_RGB565_BISQUE,
@@ -536,7 +536,7 @@ const uint16_t icosahedron_indices_colors[80] = {
 	 9,  11,  10,  PGLM_RGB565_LINEN,
 };
 
-const uint16_t icosahedron_indices_tex_coords[120] = {
+const u16 icosahedron_indices_tex_coords[120] = {
 	 0, 0,   1, 1,   2, 4,
 	 3, 0,   1, 1,   0, 4,
 	 4, 0,   1, 1,   3, 4,
@@ -588,7 +588,7 @@ const vec3f dodacahedron_vertices[20] = {
 	{ 0.000000f, -0.499999f,  0.654510f},
 };
 
-const uint16_t dodacahedron_indices_single_color[108] = {
+const u16 dodacahedron_indices_single_color[108] = {
 	 0,   1,   2, // 0, 1, 2, 3, 4,
 	 0,   2,   3, 
 	 0,   3,   4, 
@@ -627,7 +627,7 @@ const uint16_t dodacahedron_indices_single_color[108] = {
 	 8,   4,  11, 
 };
 
-const uint16_t dodacahedron_indices_colors[144] = {
+const u16 dodacahedron_indices_colors[144] = {
 	 0,   1,   2,  PGLM_RGB565_FUCHSIA, // 0, 1, 2, 3, 4,
 	 0,   2,   3,  PGLM_RGB565_FUCHSIA, 
 	 0,   3,   4,  PGLM_RGB565_FUCHSIA, 
@@ -666,7 +666,7 @@ const uint16_t dodacahedron_indices_colors[144] = {
 	 8,   4,  11,  PGLM_RGB565_FUCHSIA, 
 };
 
-const uint16_t dodacahedron_indices_tex_coords[216] = {
+const u16 dodacahedron_indices_tex_coords[216] = {
 	 0, 0,   1, 0,   2, 0, // 0, 1, 2, 3, 4,
 	 0, 0,   2, 0,   3, 0, 
 	 0, 0,   3, 0,   4, 0, 
@@ -774,7 +774,7 @@ const vec3f truncated_icosahedron_vertices[60] = {
 	{ 0.499999f, -2.261019f,  0.866025f},
 };
 
-const uint16_t truncated_icosahedron_indices_single_color[348] = {
+const u16 truncated_icosahedron_indices_single_color[348] = {
 	 0,   1,   2, // 0, 1, 2, 3, 4, 5,
 	 0,   2,   3,
 	 0,   3,   4,
@@ -893,7 +893,7 @@ const uint16_t truncated_icosahedron_indices_single_color[348] = {
 	17,  41,  40,
 };
 
-const uint16_t truncated_icosahedron_indices_colors[464] = {
+const u16 truncated_icosahedron_indices_colors[464] = {
 	 0,   1,   2,  PGLM_RGB565_RED, // 0, 1, 2, 3, 4, 5,
 	 0,   2,   3,  PGLM_RGB565_RED,
 	 0,   3,   4,  PGLM_RGB565_RED,
@@ -1012,7 +1012,7 @@ const uint16_t truncated_icosahedron_indices_colors[464] = {
 	17,  41,  40,  PGLM_RGB565_RED,
 };
 
-const uint16_t truncated_icosahedron_indices_tex_coords[696] = {
+const u16 truncated_icosahedron_indices_tex_coords[696] = {
 	 0, 0,   1, 0,   2, 0, // 0, 1, 2, 3, 4, 5,
 	 0, 0,   2, 0,   3, 0,
 	 0, 0,   3, 0,   4, 0,
@@ -1164,7 +1164,7 @@ const vec3f rhombicubotahedron_vertices[24] = {
 	{ 0.707107f,  0.431469f,  0.707107f},
 };
 
-const uint16_t rhombicubotahedron_indices_single_color[132] = {
+const u16 rhombicubotahedron_indices_single_color[132] = {
 	 0,   1,   2,
 	 0,   2,   3,
 	 1,   0,   4,
@@ -1211,7 +1211,7 @@ const uint16_t rhombicubotahedron_indices_single_color[132] = {
 	21,  16,  17,
 };
 
-const uint16_t rhombicubotahedron_indices_colors[176] = {
+const u16 rhombicubotahedron_indices_colors[176] = {
 	 0,   1,   2,  PGLM_RGB565_BLUEVIOLET,
 	 0,   2,   3,  PGLM_RGB565_BLUEVIOLET,
 	 1,   0,   4,  PGLM_RGB565_BLUEVIOLET,
@@ -1258,7 +1258,7 @@ const uint16_t rhombicubotahedron_indices_colors[176] = {
 	21,  16,  17,  PGLM_RGB565_BLUEVIOLET,
 };
 
-const uint16_t rhombicubotahedron_indices_tex_coords[264] = {
+const u16 rhombicubotahedron_indices_tex_coords[264] = {
 	 0, 0,   1, 0,   2, 0,
 	 0, 0,   2, 0,   3, 0,
 	 1, 0,   0, 0,   4, 0,
@@ -1390,7 +1390,7 @@ const vec3f spaceship_vertices[55] = {
 	{ 0.720000f,  0.120000f, -1.400000f},
 };
 
-const uint16_t spaceship_indices_single_color[318] = {
+const u16 spaceship_indices_single_color[318] = {
 	20,  51,  11,
 	 5,  12,   7,
 	 4,  22,   0,

@@ -2,6 +2,7 @@
 #ifndef __PGLM_H__
 #define __PGLM_H__
 
+#include "core/pglmdef.h"
 #include "core/core.h"
 #include "core/epsilon.h"
 

@@ -21,27 +21,27 @@ inline mat3f scale2D_mat3f(vec2f v) {
     return cast_mat2f_to_mat3f(scale2D_mat2f(v));
 }
 
-inline mat2f rotate2D_mat2f(float radian) {
-    const float s = sinf(radian);
-    const float c = cosf(radian);
+inline mat2f rotate2D_mat2f(f32 radian) {
+    const f32 s = sinf(radian);
+    const f32 c = cosf(radian);
     return (mat2f){
            c,   -s,
            s,    c,
     };
 }
 
-inline mat3f rotate2D_mat3f(float radian) {
+inline mat3f rotate2D_mat3f(f32 radian) {
     return cast_mat2f_to_mat3f(rotate2D_mat2f(radian));
 }
 
-inline mat2f shear2D_mat2f(float xy, float yx) {
+inline mat2f shear2D_mat2f(f32 xy, f32 yx) {
     return (mat2f){
         1.0f,   xy,
           yx, 1.0f,
     };
 }
 
-inline mat3f shear2D_mat3f(float xy, float yx) {
+inline mat3f shear2D_mat3f(f32 xy, f32 yx) {
     return cast_mat2f_to_mat3f(shear2D_mat2f(xy, yx));
 }
 

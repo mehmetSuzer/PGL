@@ -3,8 +3,6 @@
 
 #include <stdio.h>
 #include <pico/multicore.h>
-
-#include "pgl.h"
 #include "camera.h"
 
 const directional_light_t dl = {
@@ -110,23 +108,23 @@ int main() {
     meshes[3].transform = transform_init((vec3f){0.0f, -1.0f, -6.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
     meshes[4].transform = transform_init((vec3f){0.0f, -1.0f,  6.0f}, identity_quat, (vec3f){0.6f, 0.6f, 0.6f});
 
-    for (uint32_t i = 0; i < count_of(meshes); i++) {
+    for (u32 i = 0; i < count_of(meshes); i++) {
         mesh_find_bounding_volume(meshes+i);
     }
 
-    uint32_t last_time = time_us_32();
-    uint32_t current_time;
+    u32 last_time = time_us_32();
+    u32 current_time;
 
     while (true) {
         current_time = time_us_32();
-        float dt = (current_time - last_time) / 1E6f;
+        f32 dt = (current_time - last_time) / 1E6f;
         last_time = current_time;
         camera_update(dt);
         
         // transform_rotate_quat(&meshes[0].transform, quat_angle_axis((vec3f){0.8f, 0.6f, 0.0f}, dt));
 
         pgl_clear(PGL_COLOR_BUFFER_BIT | PGL_DEPTH_BUFFER_BIT);
-        for (uint32_t i = 0; i < count_of(meshes); i++) {
+        for (u32 i = 0; i < count_of(meshes); i++) {
             pgl_draw(meshes+i, &dl);
         }
         printf("dt: %f\n", dt);

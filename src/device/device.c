@@ -216,7 +216,7 @@ void device_init() {
 void device_lcd_display(uint16_t* screen) {
     for (uint32_t i = 0; i < DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH; i++) {
         uint16_t color = screen[i];
-        screen[i] = (color << 8) | ((color & 0xFF00) >> 8);
+        screen[i] = (color << 8) | ((color & 0xFF00u) >> 8);
     }
 
     // Set the Xstart and Xend coordinates of the LCD

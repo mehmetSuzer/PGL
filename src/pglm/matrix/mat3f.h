@@ -12,11 +12,11 @@
 //  zx, zy, zz
 typedef union {
     struct {
-        float xx, xy, xz; // row0
-        float yx, yy, yz; // row1
-        float zx, zy, zz; // row2
+        f32 xx, xy, xz; // row0
+        f32 yx, yy, yz; // row1
+        f32 zx, zy, zz; // row2
     };
-    float n[3][3];
+    f32 n[3][3];
 } mat3f;
 
 #define zero_mat3f ((mat3f){        \
@@ -94,7 +94,7 @@ inline mat3f sub_mat3f(mat3f m1, mat3f m2) {
     };
 }
 
-inline mat3f scale_mat3f(mat3f m, float scale) {
+inline mat3f scale_mat3f(mat3f m, f32 scale) {
     return (mat3f){
         m.xx * scale, m.xy * scale, m.xz * scale,
         m.yx * scale, m.yy * scale, m.yz * scale,
@@ -134,14 +134,14 @@ inline mat3f tr_mat3f(mat3f m) {
     };
 }
 
-inline float det_mat3f(mat3f m) {
+inline f32 det_mat3f(mat3f m) {
     return + m.xx * (m.yy * m.zz - m.yz * m.zy)
            - m.xy * (m.yx * m.zz - m.yz * m.zx)
            + m.xz * (m.yx * m.zy - m.yy * m.zx);
 }
 
 inline mat3f inv_mat3f(mat3f m) {
-    const float inverse_determinant = 1.0f / det_mat3f(m);
+    const f32 inverse_determinant = 1.0f / det_mat3f(m);
 
     return (mat3f){
         (m.yy * m.zz - m.yz * m.zy) * inverse_determinant,
@@ -159,19 +159,19 @@ inline mat3f inv_mat3f(mat3f m) {
 }
 
 static inline vec3f solve_cramers_mat3f(mat3f m, vec3f v) {
-    const float factor0 = m.yy * m.zz - m.yz * m.zy;
-    const float factor1 = m.yx * m.zz - m.yz * m.zx;
-    const float factor2 = m.yx * m.zy - m.yy * m.zx;
-    const float factor3 = m.zz * v.y  - m.yz * v.z;
-    const float factor4 = m.yx * v.z  - m.zx * v.y;
-    const float factor5 = m.zy * v.y  - m.yy * v.z;
+    const f32 factor0 = m.yy * m.zz - m.yz * m.zy;
+    const f32 factor1 = m.yx * m.zz - m.yz * m.zx;
+    const f32 factor2 = m.yx * m.zy - m.yy * m.zx;
+    const f32 factor3 = m.zz * v.y  - m.yz * v.z;
+    const f32 factor4 = m.yx * v.z  - m.zx * v.y;
+    const f32 factor5 = m.zy * v.y  - m.yy * v.z;
 
-    const float determinant = m.xx * factor0 - m.xy * factor1 + m.xz * factor2;
-    const float inverse_determinant = 1.0f / determinant;
+    const f32 determinant = m.xx * factor0 - m.xy * factor1 + m.xz * factor2;
+    const f32 inverse_determinant = 1.0f / determinant;
 
-    const float detx = v.x  * factor0 - m.xy * factor3 + m.xz * factor5;
-    const float dety = m.xx * factor3 - v.x  * factor1 + m.xz * factor4;
-    const float detz = v.x  * factor2 - m.xx * factor5 - m.xy * factor4;
+    const f32 detx = v.x  * factor0 - m.xy * factor3 + m.xz * factor5;
+    const f32 dety = m.xx * factor3 - v.x  * factor1 + m.xz * factor4;
+    const f32 detz = v.x  * factor2 - m.xx * factor5 - m.xy * factor4;
 
     return (vec3f){
         detx * inverse_determinant, // x
@@ -180,7 +180,7 @@ static inline vec3f solve_cramers_mat3f(mat3f m, vec3f v) {
     };
 }
 
-inline bool epsilon_equal_mat3f(mat3f m1, mat3f m2, float epsilon) {
+inline bool epsilon_equal_mat3f(mat3f m1, mat3f m2, f32 epsilon) {
     return epsilon_equal(m1.xx, m2.xx, epsilon) && 
            epsilon_equal(m1.xy, m2.xy, epsilon) && 
            epsilon_equal(m1.xz, m2.xz, epsilon) && 
@@ -194,7 +194,7 @@ inline bool epsilon_equal_mat3f(mat3f m1, mat3f m2, float epsilon) {
            epsilon_equal(m1.zz, m2.zz, epsilon);
 }
 
-inline bool epsilon_not_equal_mat3f(mat3f m1, mat3f m2, float epsilon) {
+inline bool epsilon_not_equal_mat3f(mat3f m1, mat3f m2, f32 epsilon) {
     return epsilon_not_equal(m1.xx, m2.xx, epsilon) || 
            epsilon_not_equal(m1.xy, m2.xy, epsilon) || 
            epsilon_not_equal(m1.xz, m2.xz, epsilon) || 

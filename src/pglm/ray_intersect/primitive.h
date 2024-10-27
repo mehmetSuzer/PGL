@@ -6,7 +6,7 @@
 
 typedef struct {
     vec3f center;
-    float radius;
+    f32   radius;
 } sphere_t;
 
 typedef struct {
@@ -23,10 +23,10 @@ inline vec3f triangle_normal(triangle_t t) {
 
 typedef struct {
     vec3f normal;
-    float d;
+    f32        d;
 } plane_t;
 
-inline float plane_signed_distance(plane_t p, vec3f v) {
+inline f32 plane_signed_distance(plane_t p, vec3f v) {
     return dot_vec3f(p.normal, v) + p.d;
 } 
 

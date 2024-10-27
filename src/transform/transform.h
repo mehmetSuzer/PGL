@@ -24,8 +24,8 @@ void transform_rotate_quat(transform_t* transform, quat quaternion);
 void transform_rotate_euler_angles(transform_t* transform, vec3f angles);
 
 void transform_set_scalar_vec3f(transform_t* transform, vec3f scalar);
-void transform_set_scalar(transform_t* transform, float scale);
+void transform_set_scalar(transform_t* transform, f32 scale);
 void transform_scale_vec3f(transform_t* transform, vec3f scalar);
-void transform_scale(transform_t* transform, float scale);
+void transform_scale(transform_t* transform, f32 scale);
 
 #endif // __TRANSFORM_H__

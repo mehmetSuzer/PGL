@@ -2,24 +2,25 @@
 #ifndef __VEC3I_H__
 #define __VEC3I_H__
 
+#include "../core/pglmdef.h"
+
 typedef union {
     struct {
-        int x;
-        int y;
-        int z;
-    };
-
-    struct {
-        int r;
-        int g;
-        int b;
+        i32 x;
+        i32 y;
+        i32 z;
     };
     struct {
-        int u;
-        int v;
-        int w;
+        i32 r;
+        i32 g;
+        i32 b;
     };
-    int n[3];
+    struct {
+        i32 u;
+        i32 v;
+        i32 w;
+    };
+    i32 n[3];
 } vec3i;
 
 #define zero_vec3i ((vec3i){0, 0, 0})
@@ -64,7 +65,7 @@ inline vec3i div_vec3i(vec3i v1, vec3i v2) {
     };
 }
 
-inline vec3i scale_vec3i(vec3i v, int scale) {
+inline vec3i scale_vec3i(vec3i v, i32 scale) {
     return (vec3i){
         v.x * scale, 
         v.y * scale, 

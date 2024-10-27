@@ -1,7 +1,7 @@
 
 #include "camera.h"
 
-#define CAMERA_MOVE_SPEED       2.0f
+#define CAMERA_MOVE_SPEED       3.0f
 #define CAMERA_ROTATION_SPEED   1.0f
 
 camera_t camera = {
@@ -27,14 +27,14 @@ void camera_init(vec3f position, vec3f forward, vec3f up) {
     camera.rotate_y_change = NONE;
 }
 
-void camera_update(float dt) {
+void camera_update(f32 dt) {
     if (camera.forward_change == NONE && camera.right_change == NONE && camera.up_change == NONE && camera.rotate_y_change == NONE) {
         return;
     }
 
-    const float dx = CAMERA_MOVE_SPEED * dt;
+    const f32 dx = CAMERA_MOVE_SPEED * dt;
     vec3f displacement = {0.0f, 0.0f, 0.0f};
-    uint32_t active_axis_number = 0;
+    u32 active_axis_number = 0;
     
     if (camera.right_change != NONE) {
         displacement = add_vec3f(displacement, scale_vec3f(camera.right, camera.right_change * dx));
@@ -58,7 +58,7 @@ void camera_update(float dt) {
     camera.position = add_vec3f(camera.position, displacement);
 
     if (camera.rotate_y_change != NONE) {
-        const float theta = camera.rotate_y_change * CAMERA_ROTATION_SPEED * dt;
+        const f32 theta = camera.rotate_y_change * CAMERA_ROTATION_SPEED * dt;
         quat rotation = quat_angle_axis(camera.up, theta);
         camera.forward = rotate_quat(rotation, camera.forward);
         camera.right = rotate_quat(rotation, camera.right);

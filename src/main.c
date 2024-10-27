@@ -1,5 +1,6 @@
-// wired:  0.021454 s | target = 0.016666 s
-// filled: 0.046736 s | target = 0.033333 s
+
+// wired  target = 0.016666 s
+// filled target = 0.033333 s
 
 #include <stdio.h>
 #include <pico/multicore.h>
@@ -105,7 +106,7 @@ int main() {
     meshes[0].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
     meshes[1].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_2f), (vec3f){1.0f, 1.0f, 1.0f});
     meshes[2].transform = transform_init((vec3f){-3.5f, 0.0f, -4.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
-    meshes[3].transform = transform_init((vec3f){0.0f, -1.0f, -6.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[3].transform = transform_init((vec3f){0.0f, -0.4f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
     meshes[4].transform = transform_init((vec3f){0.0f, -1.0f,  6.0f}, identity_quat, (vec3f){0.6f, 0.6f, 0.6f});
 
     for (u32 i = 0; i < count_of(meshes); i++) {

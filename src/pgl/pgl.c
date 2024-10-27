@@ -78,51 +78,6 @@ typedef struct {
 
 // --------------------------------------------------- RASTERIZATION --------------------------------------------------- // 
 
-// static void pgl_horizontal_line(fragment_t f0, fragment_t f1) {
-//     const vec3i p0 = f0.position;
-//     const vec3i p1 = f1.position;
-
-//     const i32 dx = abs(p1.x - p0.x);
-//     const i32 sx = (p0.x < p1.x) ? 1 : -1;
-//     const i32 dz = -abs(p1.z - p0.z);
-//     const i32 sz = (p0.z < p1.z) ? 1 : -1;
-//     const i32 y  = p0.y;
-    
-//     i32 ez = dx + dz;
-//     i32 x = p0.x;
-//     i32 z = p0.z;
-
-//     while (true) {
-//         if (z < pgl.depth_buffer[y][x]) {
-//             const f32 alpha = (f32)(x - p0.x) / (f32)(p1.x - p0.x);
-//             const vec2f tex_coord = i32erp_vec2f(f1.tex_coord, f0.tex_coord, alpha);
-//             const u16 color = sample_texture_vec2f(tex_coord, pgl.tex_index);
-
-//             const u32 red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
-//             const u32 green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
-//             const u32 blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
-//             const u16 shaded_color = (u16)((red & (31 << 11)) | (green & (63 << 5)) | blue);
-
-//             pgl.color_buffer[y][x] = shaded_color;
-//             pgl.depth_buffer[y][x] = z;
-//         }
-
-//         if (x == p1.x) {
-//             break;
-//         }
-
-//         const i32 two_ez = 2 * ez;
-//         if (two_ez >= dz) {
-//             ez += dz;
-//             x += sx;
-//         }
-//         if (two_ez <= dx) {
-//             ez += dx;
-//             z += sz;
-//         }
-//     }
-// }
-
 static void pgl_line(fragment_t f0, fragment_t f1) {
     const i32 dx = abs(f1.position.x - f0.position.x);
     const i32 sx = (f0.position.x < f1.position.x) ? 1 : -1;
@@ -181,13 +136,13 @@ static void pgl_wired_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
 
 static u16 pgl_shader(u16 color) {
     const u32 red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
-    const u32 green = (pgl.shade_multp * (color & (63 << 5))) >> SHADE_2_POWER;
-    const u32 blue  = (pgl.shade_multp * (color & 31)) >> SHADE_2_POWER;
+    const u32 green = (pgl.shade_multp * (color & (63 <<  5))) >> SHADE_2_POWER;
+    const u32 blue  = (pgl.shade_multp * (color &  31))        >> SHADE_2_POWER;
     const u16 shaded_color = (u16)((red & (31 << 11)) | (green & (63 << 5)) | blue);
     return shaded_color;
 }
 
-static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2, filled_render_t filled_render) {
+static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2, filled_render_t filled_render) {
     // Sort fragments with respect to their y coordinates
     if (f0.position.y > f1.position.y) { swap(&f0, &f1); }
     if (f1.position.y > f2.position.y) { swap(&f1, &f2); }
@@ -316,60 +271,6 @@ static void pgl_filled_triangle2(fragment_t f0, fragment_t f1, fragment_t f2, fi
 	}		
 }
 
-// static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
-//     // Sort fragments with respect to their y coordinates
-//     if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
-//     if (f2.position.y < f1.position.y) { swap(&f1, &f2); }
-//     if (f1.position.y < f0.position.y) { swap(&f0, &f1); }
-
-//     const vec3i p0 = f0.position;    
-//     const vec3i p1 = f1.position;    
-//     const vec3i p2 = f2.position;
-
-//     for (i32 y = p0.y; y <= p2.y; y++) {
-//         fragment_t fleft  = {.position = {.y = y}};
-//         fragment_t fright = {.position = {.y = y}};
-                              
-//         if (y >= p1.y) {
-//             const i32 dxl = (p2.y != p1.y) ? (y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) : 0;
-//             const i32 dxr = (p2.y != p0.y) ? (y - p0.y) * (p2.x - p0.x) / (p2.y - p0.y) : 0;
-//             fleft.position.x  = p1.x + dxl;
-//             fright.position.x = p0.x + dxr;
-
-//             const i32 dzl = (p2.y != p1.y) ? (y - p1.y) * (p2.z - p1.z) / (p2.y - p1.y) : 0;
-//             const i32 dzr = (p2.y != p0.y) ? (y - p0.y) * (p2.z - p0.z) / (p2.y - p0.y) : 0;
-//             fleft.position.z  = p1.z + dzl;
-//             fright.position.z = p0.z + dzr;
-
-//             const f32 alpha_left  = (f32)(y - p1.y) / (f32)(p2.y - p1.y);
-//             const f32 alpha_right = (f32)(y - p0.y) / (f32)(p2.y - p0.y);
-//             fleft.tex_coord  = i32erp_vec2f(f2.tex_coord, f1.tex_coord, alpha_left);
-//             fright.tex_coord = i32erp_vec2f(f2.tex_coord, f0.tex_coord, alpha_right);
-//         } 
-//         else {
-//             const i32 dxl = (p1.y != p0.y) ? (y - p0.y) * (p1.x - p0.x) / (p1.y - p0.y) : 0;
-//             const i32 dxr = (p2.y != p0.y) ? (y - p0.y) * (p2.x - p0.x) / (p2.y - p0.y) : 0;
-//             fleft.position.x  = p0.x + dxl;
-//             fright.position.x = p0.x + dxr;
-
-//             const i32 dzl = (p1.y != p0.y) ? (y - p0.y) * (p1.z - p0.z) / (p1.y - p0.y) : 0;
-//             const i32 dzr = (p2.y != p0.y) ? (y - p0.y) * (p2.z - p0.z) / (p2.y - p0.y) : 0;
-//             fleft.position.z  = p0.z + dzl;
-//             fright.position.z = p0.z + dzr;
-
-//             const f32 alpha_left  = (f32)(y - p0.y) / (f32)(p1.y - p0.y);
-//             const f32 alpha_right = (f32)(y - p0.y) / (f32)(p2.y - p0.y);
-//             fleft.tex_coord  = i32erp_vec2f(f1.tex_coord, f0.tex_coord, alpha_left);
-//             fright.tex_coord = i32erp_vec2f(f2.tex_coord, f0.tex_coord, alpha_right);
-//         }
-
-//         if (fleft.position.x > fright.position.x) {
-//             swap(&fleft, &fright);
-//         }
-//         pgl_horizontal_line(fleft, fright);
-//     }
-// }
-
 // --------------------------------------------------- TRANSFORMATIONS --------------------------------------------------- // 
 
 void pgl_view(vec3f position, vec3f right, vec3f up, vec3f forward) {
@@ -464,7 +365,7 @@ void pgl_cull_winding_order(pgl_cull_winding_order_t cull_winding_order) {
 
 // Clips the triangle with respect to a plane in the clipping space.
 // i32ersection vertices are outputted as v10 and v20.
-static void pgl_triangle_clip_plane_i32ersection(const pgl_queue_triangle_t* t, vec4f clip_plane_vector, pgl_vertex_t* restrict v10, pgl_vertex_t* restrict v20) {
+static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, vec4f clip_plane_vector, pgl_vertex_t* restrict v10, pgl_vertex_t* restrict v20) {
     const f32 d0 = dot_vec4f(t->v0.position, clip_plane_vector);
     const f32 d1 = dot_vec4f(t->v1.position, clip_plane_vector);
     const f32 d2 = dot_vec4f(t->v2.position, clip_plane_vector);
@@ -525,7 +426,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, 1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
@@ -535,7 +436,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, 1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){t->v0, v10, v20};
         }
     }
@@ -562,7 +463,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, -1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
@@ -572,7 +473,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, -1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){t->v0, v10, v20};
         }
     }
@@ -599,7 +500,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, 1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
@@ -609,7 +510,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, 1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){t->v0, v10, v20};
         }
     }
@@ -636,7 +537,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, -1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
@@ -646,7 +547,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, -1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){t->v0, v10, v20};
         }
     }
@@ -673,7 +574,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, 1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
@@ -683,7 +584,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, 1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){t->v0, v10, v20};
         }
     }
@@ -710,7 +611,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (!in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, -1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
@@ -720,7 +621,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
             else if (in2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, -1.0f};
-            pgl_triangle_clip_plane_i32ersection(t, v, &v10, &v20);
+            pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){t->v0, v10, v20};
         }
     }
@@ -795,7 +696,7 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
         
             // Rasterize
             if (mesh->filled_render != FILLED_RENDER_NO) {
-                pgl_filled_triangle2(f0, f1, f2, mesh->filled_render);
+                pgl_filled_triangle(f0, f1, f2, mesh->filled_render);
             }
             if (mesh->wired_render != WIRED_RENDER_NO) {
                 pgl_wired_triangle(f0, f1, f2);

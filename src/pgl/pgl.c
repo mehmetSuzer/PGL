@@ -642,9 +642,9 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
 
     for (u32 i = 0; i < mesh->index_number; i += incr) {
         // Camera space coordinates
-        const vec4f c0 = mat4f_mul_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 0 * offset]]));
-        const vec4f c1 = mat4f_mul_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 1 * offset]]));
-        const vec4f c2 = mat4f_mul_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 2 * offset]]));
+        const vec4f c0 = mat4f_mul_vec4f(view_model, homogeneous_point(mesh->vertices[mesh->indices[i + 0 * offset]]));
+        const vec4f c1 = mat4f_mul_vec4f(view_model, homogeneous_point(mesh->vertices[mesh->indices[i + 1 * offset]]));
+        const vec4f c2 = mat4f_mul_vec4f(view_model, homogeneous_point(mesh->vertices[mesh->indices[i + 2 * offset]]));
         if (mesh->filled_render == FILLED_RENDER_COLORS) {
             pgl.fill_color = mesh->indices[i+3]; // Color of the face
         }
@@ -686,9 +686,9 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
             subtriangle_index--;
 
             // Screen space coordinates
-            const vec4f sc0 = mat4f_mul_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v0.position));
-            const vec4f sc1 = mat4f_mul_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v1.position));
-            const vec4f sc2 = mat4f_mul_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v2.position));
+            const vec4f sc0 = mat4f_mul_vec4f(pgl.viewport, homogeneous_point_normalize(subt->v0.position));
+            const vec4f sc1 = mat4f_mul_vec4f(pgl.viewport, homogeneous_point_normalize(subt->v1.position));
+            const vec4f sc2 = mat4f_mul_vec4f(pgl.viewport, homogeneous_point_normalize(subt->v2.position));
 
             const fragment_t f0 = {{sc0.x, sc0.y}, vec2f_scale(subt->v0.tex_coord, 1.0f / subt->v0.position.w), 1.0f / subt->v0.position.w};
             const fragment_t f1 = {{sc1.x, sc1.y}, vec2f_scale(subt->v1.tex_coord, 1.0f / subt->v1.position.w), 1.0f / subt->v1.position.w};

@@ -35,12 +35,12 @@ void transform_set_rotation_euler_angles(transform_t* transform, vec3f angles) {
 }
 
 void transform_rotate_quat(transform_t* transform, quat quaternion) {
-    transform->rotation = mul_quat_quat(quaternion, transform->rotation);
+    transform->rotation = quat_mul_quat(quaternion, transform->rotation);
     transform_update_model(transform);
 }
 
 void transform_rotate_euler_angles(transform_t* transform, vec3f angles) {
-    transform->rotation = mul_quat_quat(quat_euler_angles(angles), transform->rotation);
+    transform->rotation = quat_mul_quat(quat_euler_angles(angles), transform->rotation);
     transform_update_model(transform);
 }
 

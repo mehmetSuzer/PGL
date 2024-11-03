@@ -4,6 +4,7 @@
 
 #include "../vector/vec2f.h"
 #include "../matrix/mat3f.h"
+#include "../cast/cast.h"
 
 inline mat3f translate2D_mat3f(vec2f v) {
     return (mat3f){

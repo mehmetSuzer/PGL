@@ -59,9 +59,9 @@ void camera_update(f32 dt) {
 
     if (camera.rotate_y_change != NONE) {
         const f32 theta = camera.rotate_y_change * CAMERA_ROTATION_SPEED * dt;
-        quat rotation = quat_angle_axis(camera.up, theta);
-        camera.forward = rotate_quat(rotation, camera.forward);
-        camera.right = rotate_quat(rotation, camera.right);
+        quat rotation   = quat_angle_axis(camera.up, theta);
+        camera.forward  = quat_rotate_vec3f(rotation, camera.forward);
+        camera.right    = quat_rotate_vec3f(rotation, camera.right);
     }
 
     pgl_view(camera.position, camera.right, camera.up, camera.forward);

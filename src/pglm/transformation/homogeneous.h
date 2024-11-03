@@ -5,7 +5,7 @@
 #include "../vector/vec3f.h"
 #include "../vector/vec4f.h"
 
-inline vec4f to_homogeneous_point(vec3f p) {
+inline vec4f homogeneous_point(vec3f p) {
     return (vec4f){
         p.x, 
         p.y, 
@@ -14,7 +14,7 @@ inline vec4f to_homogeneous_point(vec3f p) {
     };
 }
 
-inline vec4f to_homogeneous_vector(vec3f v) {
+inline vec4f homogeneous_vector(vec3f v) {
     return (vec4f){
         v.x, 
         v.y, 
@@ -23,7 +23,7 @@ inline vec4f to_homogeneous_vector(vec3f v) {
     }; 
 }
 
-inline vec3f from_homogeneous_point(vec4f p) {
+inline vec3f homogeneous_point_to_vec3f(vec4f p) {
     return (vec3f){
         p.x / p.w, 
         p.y / p.w, 
@@ -33,7 +33,7 @@ inline vec3f from_homogeneous_point(vec4f p) {
 
 // If it is certain that v.w = 1.0f, 
 // this function can be used to convert a homogeneous point to a vec3f point.
-inline vec3f from_homogeneous_vector(vec4f v) {
+inline vec3f homogeneous_vector_to_vec3f(vec4f v) {
     return (vec3f){
         v.x,
         v.y,
@@ -41,7 +41,7 @@ inline vec3f from_homogeneous_vector(vec4f v) {
     };
 }
 
-inline vec4f normalize_homogeneous_point(vec4f p) {
+inline vec4f homogeneous_point_normalize(vec4f p) {
     return (vec4f){
         p.x / p.w, 
         p.y / p.w, 

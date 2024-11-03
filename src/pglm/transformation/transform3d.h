@@ -4,6 +4,7 @@
 
 #include "../vector/vec3f.h"
 #include "../matrix/mat4f.h"
+#include "../cast/cast.h"
 
 inline mat4f translate3D_mat4f(vec3f v) {
     return (mat4f){

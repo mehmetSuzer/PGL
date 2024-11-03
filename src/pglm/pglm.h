@@ -6,8 +6,6 @@
 #include "core/core.h"
 #include "core/epsilon.h"
 
-#include "color/rgb565.h"
-
 #include "vector/vec2i.h"
 #include "vector/vec3i.h"
 #include "vector/vec4i.h"
@@ -19,13 +17,17 @@
 #include "matrix/mat2f.h"
 #include "matrix/mat3f.h"
 #include "matrix/mat4f.h"
-#include "matrix/cast_matrix.h"
 
 #include "quat/quat.h"
 
-#include "ray_intersect/ray.h"
-#include "ray_intersect/primitive.h"
-#include "ray_intersect/intersect.h"
+#include "color/rgb565.h"
+
+#include "cast/cast.h"
+
+#include "geometry/ray.h"
+#include "geometry/plane.h"
+#include "geometry/sphere.h"
+#include "geometry/triangle.h"
 
 #include "transformation/homogeneous.h"
 #include "transformation/transform2d.h"

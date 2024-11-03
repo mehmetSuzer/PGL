@@ -103,11 +103,11 @@ int main() {
     pgl_set_tests(PGL_DEPTH_TEST, PGL_TEST_ENABLED);
     pgl_clear_color(PGLM_RGB565_BLACK);
 
-    meshes[0].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[0].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, quat_identity, (vec3f){1.0f, 1.0f, 1.0f});
     meshes[1].transform = transform_init((vec3f){2.0f, -PGLM_1_2SQRT3f, -3.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_2f), (vec3f){1.0f, 1.0f, 1.0f});
     meshes[2].transform = transform_init((vec3f){-3.5f, 0.0f, -4.0f}, quat_angle_axis((vec3f){0.0f, 1.0f, 0.0f}, PGLM_PI_4f), (vec3f){1.0f, 1.0f, 1.0f});
-    meshes[3].transform = transform_init((vec3f){0.0f, -0.4f, -3.0f}, identity_quat, (vec3f){1.0f, 1.0f, 1.0f});
-    meshes[4].transform = transform_init((vec3f){0.0f, -1.0f,  6.0f}, identity_quat, (vec3f){0.6f, 0.6f, 0.6f});
+    meshes[3].transform = transform_init((vec3f){0.0f, -0.4f, -3.0f}, quat_identity, (vec3f){1.0f, 1.0f, 1.0f});
+    meshes[4].transform = transform_init((vec3f){0.0f, -1.0f,  6.0f}, quat_identity, (vec3f){0.6f, 0.6f, 0.6f});
 
     for (u32 i = 0; i < count_of(meshes); i++) {
         mesh_find_bounding_volume(meshes+i);

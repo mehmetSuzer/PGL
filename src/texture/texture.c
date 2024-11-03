@@ -4,7 +4,7 @@
 // Choose a power of 2
 #define TEXTURE_RESOLUTION  256u
 
-#define TEXTURE_SAMPLING_PERIOD ((1.0f / (float)TEXTURE_SIZE) + 1E-6f)
+#define TEXTURE_SAMPLING_PERIOD ((1.0f / (f32)TEXTURE_SIZE) + 1E-6f)
 
 const texture_t textures[64] = {
     // Red

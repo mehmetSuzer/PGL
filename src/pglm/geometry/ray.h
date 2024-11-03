@@ -9,4 +9,8 @@ typedef struct {
     vec3f dir; // must be a unit vector
 } ray_t;
 
+inline vec3f ray_position(ray_t ray, f32 distance) {
+    return vec3f_add(ray.source, vec3f_scale(ray.dir, distance));
+}
+
 #endif // __RAY_H__

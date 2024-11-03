@@ -5,13 +5,13 @@
 #define CAMERA_ROTATION_SPEED   1.0f
 
 camera_t camera = {
-    .position = { 0.0f,  0.0f,  0.0f},
-    .forward =  { 0.0f,  0.0f, -1.0f},
-    .up =       { 0.0f,  1.0f,  0.0f},
-    .right =    { 1.0f,  0.0f,  0.0f},
-    .forward_change = NONE,
-    .right_change = NONE,
-    .up_change = NONE,
+    .position        = { 0.0f,  0.0f,  0.0f},
+    .forward         = { 0.0f,  0.0f, -1.0f},
+    .up              = { 0.0f,  1.0f,  0.0f},
+    .right           = { 1.0f,  0.0f,  0.0f},
+    .forward_change  = NONE,
+    .right_change    = NONE,
+    .up_change       = NONE,
     .rotate_y_change = NONE,
 };
 
@@ -21,14 +21,17 @@ void camera_init(vec3f position, vec3f forward, vec3f up) {
     camera.up = up;
     camera.right = vec3f_cross(forward, up);
 
-    camera.forward_change = NONE;
-    camera.right_change = NONE;
-    camera.up_change = NONE;
+    camera.forward_change  = NONE;
+    camera.right_change    = NONE;
+    camera.up_change       = NONE;
     camera.rotate_y_change = NONE;
 }
 
 void camera_update(f32 dt) {
-    if (camera.forward_change == NONE && camera.right_change == NONE && camera.up_change == NONE && camera.rotate_y_change == NONE) {
+    if (camera.forward_change  == NONE && 
+        camera.right_change    == NONE && 
+        camera.up_change       == NONE && 
+        camera.rotate_y_change == NONE) {
         return;
     }
 

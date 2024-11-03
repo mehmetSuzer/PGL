@@ -56,7 +56,7 @@ typedef enum {
 
 typedef enum {
     PGL_KEEP    = 0b0, // The currently stored stencil value is kept
-    PGL_REPLACE = 0b1, // The currently stored stencil value is replaced with the one that is compared 
+    PGL_REPLACE = 0b1, // The currently stored stencil value is replaced with the one compared 
 } pgl_stencil_op_t;
 
 typedef enum {

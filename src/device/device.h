@@ -4,8 +4,8 @@
 
 #include "pico/stdlib.h"
 
-#define LOW  false
-#define HIGH true
+#define DEVICE_LOW  false
+#define DEVICE_HIGH true
 
 #define DEVICE_KEY_A          15u
 #define DEVICE_KEY_B          17u

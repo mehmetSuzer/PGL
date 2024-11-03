@@ -1,10 +1,14 @@
 
 #include "texture.h"
 
-// Choose a power of 2
+#define TEXTURE_SIZE 8u
+
+// Must be a power of 2
 #define TEXTURE_RESOLUTION  256u
 
 #define TEXTURE_SAMPLING_PERIOD ((1.0f / (f32)TEXTURE_SIZE) + 1E-6f)
+
+typedef u16 texture_t[TEXTURE_SIZE][TEXTURE_SIZE];
 
 const texture_t textures[64] = {
     // Red

@@ -5,9 +5,9 @@
 #include "pgl.h"
 
 typedef enum {
-    NEGATIVE = -1,
-    NONE = 0,
-    POSITIVE = 1,
+    NEGATIVE    = -1,
+    NONE        =  0,
+    POSITIVE    =  1,
 } camera_change_t;
 
 typedef struct {

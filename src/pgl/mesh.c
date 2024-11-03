@@ -1,7 +1,7 @@
 
 #include "mesh.h"
 
-void mesh_find_bounding_volume(mesh_t* mesh) {
+void mesh_set_bounding_volume(mesh_t* mesh) {
 	vec3f center = {0.0f, 0.0f, 0.0f};
 	for (u32 i = 0; i < mesh->vertex_number; i++) {
 		center = vec3f_add(center, mesh->vertices[i]);

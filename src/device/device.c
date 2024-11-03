@@ -6,14 +6,15 @@
 #include "hardware/pwm.h"
 #include "hardware/vreg.h"
 
-// Use it to set the clock frequency of Pico
+// Use it to set the clock frequency of Pico.
+// If you want to use the default clock frequency, comment out.
 #define CLOCK_FREQUENCY_KHZ 300000u
 
 #ifdef CLOCK_FREQUENCY_KHZ
-    // spi baudrate when the cpu is overclocked
-    #define SPI_BAUDRATE_HZ (CLOCK_FREQUENCY_KHZ * 250)
+    // spi baudrate when the pico is overclocked
+    #define SPI_BAUDRATE_HZ (CLOCK_FREQUENCY_KHZ * 250u)
 #else
-    // default spi baudrate for default cpu clock frequency 
+    // default spi baudrate
     #define SPI_BAUDRATE_HZ 62500000u
 #endif
 
@@ -29,26 +30,26 @@
 #define LCD_SDA_PIN     6u
 
 static void lcd_reset() {
-    gpio_put(LCD_RST_PIN, HIGH);
+    gpio_put(LCD_RST_PIN, DEVICE_HIGH);
     sleep_ms(100);
-    gpio_put(LCD_RST_PIN, LOW);
+    gpio_put(LCD_RST_PIN, DEVICE_LOW);
     sleep_ms(100);
-    gpio_put(LCD_RST_PIN, HIGH);
+    gpio_put(LCD_RST_PIN, DEVICE_HIGH);
     sleep_ms(100);
 }
 
 static void lcd_command(uint8_t reg) {
-    gpio_put(LCD_DC_PIN, LOW);
-    gpio_put(LCD_CS_PIN, LOW);
+    gpio_put(LCD_DC_PIN, DEVICE_LOW);
+    gpio_put(LCD_CS_PIN, DEVICE_LOW);
     spi_write_blocking(SPI_PORT, &reg, 1);
-    gpio_put(LCD_CS_PIN, HIGH);
+    gpio_put(LCD_CS_PIN, DEVICE_HIGH);
 }
 
 static void lcd_write_8bit_data(uint8_t data) {
-    gpio_put(LCD_DC_PIN, HIGH);
-    gpio_put(LCD_CS_PIN, LOW);
+    gpio_put(LCD_DC_PIN, DEVICE_HIGH);
+    gpio_put(LCD_CS_PIN, DEVICE_LOW);
     spi_write_blocking(SPI_PORT, &data, 1);
-    gpio_put(LCD_CS_PIN, HIGH);
+    gpio_put(LCD_CS_PIN, DEVICE_HIGH);
 }
 
 static void lcd_init() {
@@ -138,15 +139,15 @@ static void gpio_set(uint pin, bool mode) {
 
 static void lcd_set_pins() {
     gpio_set(LCD_RST_PIN, GPIO_OUT);
-    gpio_set(LCD_DC_PIN, GPIO_OUT);
-    gpio_set(LCD_CS_PIN, GPIO_OUT);
-    gpio_set(LCD_BL_PIN, GPIO_OUT);
-    gpio_set(LCD_CS_PIN, GPIO_OUT);
-    gpio_set(LCD_BL_PIN, GPIO_OUT);
+    gpio_set(LCD_DC_PIN,  GPIO_OUT);
+    gpio_set(LCD_CS_PIN,  GPIO_OUT);
+    gpio_set(LCD_BL_PIN,  GPIO_OUT);
+    gpio_set(LCD_CS_PIN,  GPIO_OUT);
+    gpio_set(LCD_BL_PIN,  GPIO_OUT);
 
-    gpio_put(LCD_CS_PIN, HIGH);
-    gpio_put(LCD_DC_PIN, LOW);
-    gpio_put(LCD_BL_PIN, HIGH);
+    gpio_put(LCD_CS_PIN, DEVICE_HIGH);
+    gpio_put(LCD_DC_PIN, DEVICE_LOW);
+    gpio_put(LCD_BL_PIN, DEVICE_HIGH);
 }
 
 static void buttons_init() {
@@ -176,19 +177,19 @@ void device_init() {
         vreg_set_voltage(VREG_VOLTAGE_MAX);
     #endif
 
-    stdio_init_all();  
+    stdio_init_all();
 
     #ifdef CLOCK_FREQUENCY_KHZ
         set_sys_clock_khz(CLOCK_FREQUENCY_KHZ, true);
         setup_default_uart();
 
         // Wait and do it again to clear up some UART issues
-        sleep_ms(100);
+        sleep_ms(100u);
         set_sys_clock_khz(CLOCK_FREQUENCY_KHZ, true);
         setup_default_uart();
 
         // Get the processor sys_clk frequency in Hz
-        uint32_t freq = clock_get_hz(clk_sys);
+        const uint32_t freq = clock_get_hz(clk_sys);
 
         // clk_peri does not have a divider, so input and output frequencies will be the same
         clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, freq, freq);
@@ -219,26 +220,26 @@ void device_display(uint16_t* screen) {
         screen[i] = (color << 8) | ((color & 0xFF00u) >> 8);
     }
 
-    // Set the Xstart and Xend coordinates of the LCD
+    // Set the x_start and x_end coordinates of the LCD
     lcd_command(0x2A);
     lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(0); // Xstart
+    lcd_write_8bit_data(0); // x_start
 	lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(DEVICE_SCREEN_WIDTH - 1); // Xend
+    lcd_write_8bit_data(DEVICE_SCREEN_WIDTH - 1); // x_end
 
-    // Set the Ystart and Yend coordinates of the LCD
+    // Set the y_start and y_end coordinates of the LCD
     lcd_command(0x2B);
     lcd_write_8bit_data(0x00);
-	lcd_write_8bit_data(0); // Ystart
+	lcd_write_8bit_data(0); // y_start
 	lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(DEVICE_SCREEN_HEIGHT - 1); // Yend
+    lcd_write_8bit_data(DEVICE_SCREEN_HEIGHT - 1); // y_end
 
     lcd_command(0x2C);
 
-    gpio_put(LCD_DC_PIN, HIGH);
-    gpio_put(LCD_CS_PIN, LOW);
+    gpio_put(LCD_DC_PIN, DEVICE_HIGH);
+    gpio_put(LCD_CS_PIN, DEVICE_LOW);
     spi_write_blocking(SPI_PORT, (uint8_t*)screen, 2 * DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH);
-    gpio_put(LCD_CS_PIN, HIGH);
+    gpio_put(LCD_CS_PIN, DEVICE_HIGH);
     lcd_command(0x29);
 }
 

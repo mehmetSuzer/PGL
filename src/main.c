@@ -110,7 +110,7 @@ int main() {
     meshes[4].transform = transform_init((vec3f){0.0f, -1.0f,  6.0f}, quat_identity, (vec3f){0.6f, 0.6f, 0.6f});
 
     for (u32 i = 0; i < count_of(meshes); i++) {
-        mesh_find_bounding_volume(meshes+i);
+        mesh_set_bounding_volume(meshes+i);
     }
 
     u32 last_time = time_us_32();
@@ -122,7 +122,7 @@ int main() {
         last_time = current_time;
         camera_update(dt);
         
-        // transform_rotate_quat(&meshes[0].transform, quat_angle_axis((vec3f){0.8f, 0.6f, 0.0f}, dt));
+        transform_rotate_quat(&meshes[2].transform, quat_angle_axis((vec3f){0.8f, 0.6f, 0.0f}, dt));
 
         pgl_clear(PGL_COLOR_BUFFER_BIT | PGL_DEPTH_BUFFER_BIT);
         for (u32 i = 0; i < count_of(meshes); i++) {

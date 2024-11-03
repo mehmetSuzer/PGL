@@ -5,36 +5,36 @@
 #include "transform.h"
 
 typedef enum {
-    FILLED_RENDER_NO           = 0, // Do not rasterize insides of triangles
-    FILLED_RENDER_TEX_COORDS   = 1, // Each triangle vertex is coupled with a tex coord in 'indices' list: Index0, Tex0, Index1, Tex1, Index2, Tex2,
-    FILLED_RENDER_COLORS       = 2, // Each face of a mesh is painted by a single color specified in 'indices' list: Index0, Index1, Index2, Color,
-    FILLED_RENDER_SINGLE_COLOR = 3, // Whole mesh is painted by a single color specified at 'mesh_t.fill_color': Index0, Index1, Index2,
+    FILLED_RENDER_NO           = 0, // Do not rasterize the inside of the triangle
+    FILLED_RENDER_TEX_COORDS   = 1, // Each vertex of the triangle is coupled with a tex coord in 'indices' list: Index0, Tex0, Index1, Tex1, Index2, Tex2,
+    FILLED_RENDER_COLORS       = 2, // Each face of the mesh is painted by the color specified in 'indices' list: Index0, Index1, Index2, Color,
+    FILLED_RENDER_SINGLE_COLOR = 3, // The whole mesh is painted by the color specified at 'mesh_t.fill_color': Index0, Index1, Index2,
 } filled_render_t;
 
 typedef enum {
-    WIRED_RENDER_NO     = 0, // Do not explicitly rasterize sides of triangles
+    WIRED_RENDER_NO     = 0, // Do not explicitly rasterize the sides of the triangle
     WIRED_RENDER_YES    = 1, // A wireframe rendering is done with the color specified at 'mesh_t.wired_color'
 } wired_render_t;
 
 typedef struct {
-    transform_t transform;          // Indicates the scale, the rotation, and the translation of the mesh
-    sphere_t bounding_volume;       // The spherical bounding volume containing all vertices and used in broad phase clipping
+    transform_t transform;
+    sphere_t bounding_volume;
     const vec3f* vertices;
     const u16* indices;
     const u16 vertex_number;
     const u16 index_number;
     
     union {
-        const u16 fill_color; // used to paint the mesh when 'mesh_t.filled_render' == FILLED_RENDER_SINGLE_COLOR
-        const u16 tex_index;  // used to paint the mesh when 'mesh_t.filled_render' == FILLED_RENDER_TEX_COORDS
+        const u16 fill_color; // used for painting the mesh when 'mesh_t.filled_render' == FILLED_RENDER_SINGLE_COLOR
+        const u16 tex_index;  // used for painting the mesh when 'mesh_t.filled_render' == FILLED_RENDER_TEX_COORDS
     };
-    const u16 wired_color;     // used to paint the wireframe structure of the mesh when 'mesh_t.wired_render' == WIRED_RENDER_YES
+    const u16 wired_color;     // used for painting the wireframe structure of the mesh when 'mesh_t.wired_render' == WIRED_RENDER_YES
 
     const filled_render_t filled_render : 2;
     const wired_render_t wired_render   : 1;
 } mesh_t;
 
-void mesh_find_bounding_volume(mesh_t* mesh);
+void mesh_set_bounding_volume(mesh_t* mesh);
 
 extern const vec2f  tex_coords[5];
 

@@ -4,8 +4,6 @@
 
 #include "pglm.h"
 
-#define TEXTURE_SIZE        8u
-
 #define TEXTURE_RED         0u
 #define TEXTURE_GREEN       1u
 #define TEXTURE_BLUE        2u
@@ -17,8 +15,6 @@
 #define TEXTURE_WHITE       8u
 #define TEXTURE_DIAGONAL    9u
 #define TEXTURE_HEART       10u
-
-typedef u16 texture_t[TEXTURE_SIZE][TEXTURE_SIZE];
 
 vec2i tex_coord_vec2f_to_vec2i(vec2f tex_coord);
 

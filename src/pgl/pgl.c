@@ -6,6 +6,9 @@
 #define DIFFUSE_COEF 0.8f
 #define SHADE_2_POWER 8u
 
+#define PGL_DEPTH_NEAR 0x00u
+#define PGL_DEPTH_FAR  0xFFu
+
 typedef struct {
     // Buffers
     u16  color_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH];
@@ -31,9 +34,10 @@ typedef struct {
     u16 wired_color;
     u16 clear_color;
     union {
-        u16 fill_color; // used to pai32 the mesh when 'mesh_t.filled_render' == FILLED_RENDER_SINGLE_COLOR or 'mesh_t.filled_render' == FILLED_RENDER_COLORS
-        u16 tex_index;  // used to pai32 the mesh when 'mesh_t.filled_render' == FILLED_RENDER_TEX_COORDS
+        u16 fill_color; // used for painting the mesh when 'mesh_t.filled_render' == FILLED_RENDER_SINGLE_COLOR or 'mesh_t.filled_render' == FILLED_RENDER_COLORS
+        u16 tex_index;  // used for painting the mesh when 'mesh_t.filled_render' == FILLED_RENDER_TEX_COORDS
     };
+
     pgl_enable_t    depth_test_enabled          : 1;
     pgl_mask_t      depth_test_mask             : 1;
     pgl_test_func_t depth_test_func             : 3;
@@ -49,9 +53,9 @@ typedef struct {
     pgl_cull_winding_order_t cull_winding_order : 1;
 } pgl_t;
 
-pgl_t pgl = {
-    .color_buffer   = {{0x0000u}},
-    .depth_buffer   = {{0x00u}},
+static pgl_t pgl = {
+    .color_buffer   = {{PGLM_RGB565_BLACK}},
+    .depth_buffer   = {{PGL_DEPTH_FAR}},
     .stencil_buffer = {{0x00u}},
     .clear_color    = PGLM_RGB565_BLACK,
 
@@ -315,7 +319,7 @@ void pgl_clear(pgl_buffer_bit_t buffer_bits) {
     if (buffer_bits & PGL_DEPTH_BUFFER_BIT) {
         u32* ptr = (u32*)pgl.depth_buffer;
         for (u32 i = 0; i < (DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH / 4); i++) {
-            ptr[i] = 0xFFFFFFFFu; // reset to far = 0xFF
+            ptr[i] = (PGL_DEPTH_FAR << 24) | (PGL_DEPTH_FAR << 16) | (PGL_DEPTH_FAR << 8) | PGL_DEPTH_FAR;
         }
     }
     if (buffer_bits & PGL_STENCIL_BUFFER_BIT) {
@@ -364,7 +368,7 @@ void pgl_cull_winding_order(pgl_cull_winding_order_t cull_winding_order) {
 // --------------------------------------------------- CLIPPING --------------------------------------------------- // 
 
 // Clips the triangle with respect to a plane in the clipping space.
-// i32ersection vertices are outputted as v10 and v20.
+// intersection vertices are outputted as v10 and v20.
 static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, vec4f clip_plane_vector, pgl_vertex_t* restrict v10, pgl_vertex_t* restrict v20) {
     const f32 d0 = vec4f_dot(t->v0.position, clip_plane_vector);
     const f32 d1 = vec4f_dot(t->v1.position, clip_plane_vector);
@@ -410,30 +414,30 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     pgl_vertex_t v20;
     
     // Near Clip: Z + W > 0
-    while (!queue.empty) {
+    while (!queue.is_empty) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
-        const i32 in0 = t->v0.position.z > -t->v0.position.w;
-        const i32 in1 = t->v1.position.z > -t->v1.position.w;
-        const i32 in2 = t->v2.position.z > -t->v2.position.w;
-        const i32 in_number = in0 + in1 + in2;
+        const i32 inside0 = t->v0.position.z > -t->v0.position.w;
+        const i32 inside1 = t->v1.position.z > -t->v1.position.w;
+        const i32 inside2 = t->v2.position.z > -t->v2.position.w;
+        const i32 inside_number = inside0 + inside1 + inside2;
 
-        if (in_number == 3) {
+        if (inside_number == 3) {
             subtriangles[++index] = *t;
         }
-        else if (in_number == 2) {
-            // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap(&t->v0, &t->v1); }
-            else if (!in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 2) {
+            // Ensure that c0 is the vertex that is not inside
+            if      (!inside1) { swap(&t->v0, &t->v1); }
+            else if (!inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
-        else if (in_number == 1) {
-            // Ensure that c0 is the vertex that is in
-            if      (in1) { swap(&t->v0, &t->v1); }
-            else if (in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 1) {
+            // Ensure that c0 is the vertex that is inside
+            if      (inside1) { swap(&t->v0, &t->v1); }
+            else if (inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -447,30 +451,30 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     }
 
     // Far Clip: Z - W < 0
-    while (!queue.empty) {
+    while (!queue.is_empty) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
-        const i32 in0 = t->v0.position.z < t->v0.position.w;
-        const i32 in1 = t->v1.position.z < t->v1.position.w;
-        const i32 in2 = t->v2.position.z < t->v2.position.w;
-        const i32 in_number = in0 + in1 + in2;
+        const i32 inside0 = t->v0.position.z < t->v0.position.w;
+        const i32 inside1 = t->v1.position.z < t->v1.position.w;
+        const i32 inside2 = t->v2.position.z < t->v2.position.w;
+        const i32 inside_number = inside0 + inside1 + inside2;
 
-        if (in_number == 3) {
+        if (inside_number == 3) {
             subtriangles[++index] = *t;
         }
-        else if (in_number == 2) {
-            // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap(&t->v0, &t->v1); }
-            else if (!in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 2) {
+            // Ensure that c0 is the vertex that is not inside
+            if      (!inside1) { swap(&t->v0, &t->v1); }
+            else if (!inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
-        else if (in_number == 1) {
-            // Ensure that c0 is the vertex that is in
-            if      (in1) { swap(&t->v0, &t->v1); }
-            else if (in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 1) {
+            // Ensure that c0 is the vertex that is inside
+            if      (inside1) { swap(&t->v0, &t->v1); }
+            else if (inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 0.0f, 1.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -484,30 +488,30 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     }
 
     // Left Clip: X + W > 0
-    while (!queue.empty) {
+    while (!queue.is_empty) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
-        const i32 in0 = t->v0.position.x > -t->v0.position.w;
-        const i32 in1 = t->v1.position.x > -t->v1.position.w;
-        const i32 in2 = t->v2.position.x > -t->v2.position.w;
-        const i32 in_number = in0 + in1 + in2;
+        const i32 inside0 = t->v0.position.x > -t->v0.position.w;
+        const i32 inside1 = t->v1.position.x > -t->v1.position.w;
+        const i32 inside2 = t->v2.position.x > -t->v2.position.w;
+        const i32 inside_number = inside0 + inside1 + inside2;
 
-        if (in_number == 3) {
+        if (inside_number == 3) {
             subtriangles[++index] = *t;
         }
-        else if (in_number == 2) {
-            // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap(&t->v0, &t->v1); }
-            else if (!in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 2) {
+            // Ensure that c0 is the vertex that is not inside
+            if      (!inside1) { swap(&t->v0, &t->v1); }
+            else if (!inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
-        else if (in_number == 1) {
-            // Ensure that c0 is the vertex that is in
-            if      (in1) { swap(&t->v0, &t->v1); }
-            else if (in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 1) {
+            // Ensure that c0 is the vertex that is inside
+            if      (inside1) { swap(&t->v0, &t->v1); }
+            else if (inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -521,30 +525,30 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     }
 
     // Right Clip: X - W < 0
-    while (!queue.empty) {
+    while (!queue.is_empty) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
-        const i32 in0 = t->v0.position.x < t->v0.position.w;
-        const i32 in1 = t->v1.position.x < t->v1.position.w;
-        const i32 in2 = t->v2.position.x < t->v2.position.w;
-        const i32 in_number = in0 + in1 + in2;
+        const i32 inside0 = t->v0.position.x < t->v0.position.w;
+        const i32 inside1 = t->v1.position.x < t->v1.position.w;
+        const i32 inside2 = t->v2.position.x < t->v2.position.w;
+        const i32 inside_number = inside0 + inside1 + inside2;
 
-        if (in_number == 3) {
+        if (inside_number == 3) {
             subtriangles[++index] = *t;
         }
-        else if (in_number == 2) {
-            // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap(&t->v0, &t->v1); }
-            else if (!in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 2) {
+            // Ensure that c0 is the vertex that is not inside
+            if      (!inside1) { swap(&t->v0, &t->v1); }
+            else if (!inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
-        else if (in_number == 1) {
-            // Ensure that c0 is the vertex that is in
-            if      (in1) { swap(&t->v0, &t->v1); }
-            else if (in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 1) {
+            // Ensure that c0 is the vertex that is inside
+            if      (inside1) { swap(&t->v0, &t->v1); }
+            else if (inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){1.0f, 0.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -558,30 +562,30 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     }
 
     // Bottom Clip: Y + W > 0
-    while (!queue.empty) {
+    while (!queue.is_empty) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
-        const i32 in0 = t->v0.position.y > -t->v0.position.w;
-        const i32 in1 = t->v1.position.y > -t->v1.position.w;
-        const i32 in2 = t->v2.position.y > -t->v2.position.w;
-        const i32 in_number = in0 + in1 + in2;
+        const i32 inside0 = t->v0.position.y > -t->v0.position.w;
+        const i32 inside1 = t->v1.position.y > -t->v1.position.w;
+        const i32 inside2 = t->v2.position.y > -t->v2.position.w;
+        const i32 inside_number = inside0 + inside1 + inside2;
 
-        if (in_number == 3) {
+        if (inside_number == 3) {
             subtriangles[++index] = *t;
         }
-        else if (in_number == 2) {
-            // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap(&t->v0, &t->v1); }
-            else if (!in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 2) {
+            // Ensure that c0 is the vertex that is not inside
+            if      (!inside1) { swap(&t->v0, &t->v1); }
+            else if (!inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
-        else if (in_number == 1) {
-            // Ensure that c0 is the vertex that is in
-            if      (in1) { swap(&t->v0, &t->v1); }
-            else if (in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 1) {
+            // Ensure that c0 is the vertex that is inside
+            if      (inside1) { swap(&t->v0, &t->v1); }
+            else if (inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, 1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -595,30 +599,30 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     }
 
     // Top Clip: Y - W < 0
-    while (!queue.empty) {
+    while (!queue.is_empty) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
-        const i32 in0 = t->v0.position.y < t->v0.position.w;
-        const i32 in1 = t->v1.position.y < t->v1.position.w;
-        const i32 in2 = t->v2.position.y < t->v2.position.w;
-        const i32 in_number = in0 + in1 + in2;
+        const i32 inside0 = t->v0.position.y < t->v0.position.w;
+        const i32 inside1 = t->v1.position.y < t->v1.position.w;
+        const i32 inside2 = t->v2.position.y < t->v2.position.w;
+        const i32 inside_number = inside0 + inside1 + inside2;
 
-        if (in_number == 3) {
+        if (inside_number == 3) {
             subtriangles[++index] = *t;
         }
-        else if (in_number == 2) {
-            // Ensure that c0 is the vertex that is not in
-            if      (!in1) { swap(&t->v0, &t->v1); }
-            else if (!in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 2) {
+            // Ensure that c0 is the vertex that is not inside
+            if      (!inside1) { swap(&t->v0, &t->v1); }
+            else if (!inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
             subtriangles[++index] = (pgl_queue_triangle_t){v10, t->v1, t->v2};
             subtriangles[++index] = (pgl_queue_triangle_t){v10,   v20, t->v2};
         }
-        else if (in_number == 1) {
-            // Ensure that c0 is the vertex that is in
-            if      (in1) { swap(&t->v0, &t->v1); }
-            else if (in2) { swap(&t->v0, &t->v2); }
+        else if (inside_number == 1) {
+            // Ensure that c0 is the vertex that is inside
+            if      (inside1) { swap(&t->v0, &t->v1); }
+            else if (inside2) { swap(&t->v0, &t->v2); }
 
             const vec4f v = (vec4f){0.0f, 1.0f, 0.0f, -1.0f};
             pgl_triangle_clip_plane_intersection(t, v, &v10, &v20);
@@ -632,21 +636,22 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
 // --------------------------------------------------- DRAWING --------------------------------------------------- // 
 
 void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
-    const vec3f light_dir = mat3f_mul_vec3f(cast_mat4f_to_mat3f(pgl.view), dl->direction);
+    const vec3f light_direction = mat3f_mul_vec3f(cast_mat4f_to_mat3f(pgl.view), dl->direction);
     const mat4f view_model = mat4f_mul_mat4f(pgl.view, mesh->transform.model);
     pgl.fill_color  = mesh->fill_color; // or tex_coords
     pgl.wired_color = mesh->wired_color;
 
-    const u32 incr   = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? 6 : (mesh->filled_render == FILLED_RENDER_COLORS) ? 4 : 3;
-    const u32 offset = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? 2 : 1;
+    const u32 increment = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? 6 : (mesh->filled_render == FILLED_RENDER_COLORS) ? 4 : 3;
+    const u32 offset    = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? 2 : 1;
 
-    for (u32 i = 0; i < mesh->index_number; i += incr) {
+    for (u32 i = 0; i < mesh->index_number; i += increment) {
         // Camera space coordinates
         const vec4f c0 = mat4f_mul_vec4f(view_model, homogeneous_point(mesh->vertices[mesh->indices[i + 0 * offset]]));
         const vec4f c1 = mat4f_mul_vec4f(view_model, homogeneous_point(mesh->vertices[mesh->indices[i + 1 * offset]]));
         const vec4f c2 = mat4f_mul_vec4f(view_model, homogeneous_point(mesh->vertices[mesh->indices[i + 2 * offset]]));
+        
         if (mesh->filled_render == FILLED_RENDER_COLORS) {
-            pgl.fill_color = mesh->indices[i+3]; // Color of the face
+            pgl.fill_color = mesh->indices[i+3]; // Color of the whole face
         }
         
         // Face culling
@@ -657,7 +662,7 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
         if (vec3f_dot(normal, (vec3f){c0.x, c0.y, c0.z}) >= 0.0f) { continue; }
 
         // Flat shading
-        const f32 shade = dl->intensity * (AMBIENT_COEF + DIFFUSE_COEF * greater(-vec3f_dot(light_dir, vec3f_normalize(normal)), 0.0f));
+        const f32 shade = dl->intensity * (AMBIENT_COEF + DIFFUSE_COEF * greater(-vec3f_dot(light_direction, vec3f_normalize(normal)), 0.0f));
         pgl.shade_multp = (u32)(shade * (1 << SHADE_2_POWER));
 
         // Clip space coordinates
@@ -667,19 +672,12 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
             {.position = mat4f_mul_vec4f(pgl.projection, c2)},
         };
 
-        if (mesh->filled_render == FILLED_RENDER_TEX_COORDS) {
-            triangle.v0.tex_coord = tex_coords[mesh->indices[i+1]];
-            triangle.v1.tex_coord = tex_coords[mesh->indices[i+3]];
-            triangle.v2.tex_coord = tex_coords[mesh->indices[i+5]];
-        }
-        else {
-            triangle.v0.tex_coord = vec2f_zero;
-            triangle.v1.tex_coord = vec2f_zero;
-            triangle.v2.tex_coord = vec2f_zero;
-        }
+        triangle.v0.tex_coord = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? tex_coords[mesh->indices[i+1]] : vec2f_zero;
+        triangle.v1.tex_coord = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? tex_coords[mesh->indices[i+3]] : vec2f_zero;
+        triangle.v2.tex_coord = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? tex_coords[mesh->indices[i+5]] : vec2f_zero;
 
         pgl_queue_triangle_t subtriangles[PGL_QUEUE_CAPACITY];
-        i32 subtriangle_index = pgl_narrow_phase_clipping(&triangle, subtriangles); // tex coords should not be i32erpolated if 'mesh->filled_render' != FILLED_RENDER_TEX_COORDS
+        i32 subtriangle_index = pgl_narrow_phase_clipping(&triangle, subtriangles); // tex coords should not be interpolated if 'mesh->filled_render' != FILLED_RENDER_TEX_COORDS
 
         while (subtriangle_index >= 0) {
             const pgl_queue_triangle_t* subt = subtriangles + subtriangle_index;

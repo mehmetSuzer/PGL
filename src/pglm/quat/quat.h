@@ -9,27 +9,27 @@ typedef struct {
     f32   w;
 } quat;
 
-#define quat_identity ((quat){(vec3f){0.0f, 0.0f, 0.0f}, 1.0f})
+#define quat_identity ((quat){(vec3f){{0.0f, 0.0f, 0.0f}}, 1.0f})
 
 // Returns a unit quaternion equivalent to the rotation corresponding to the (x,y,z) euler angles
 inline quat quat_euler_angles(vec3f angles) {
     const vec3f half_angles = vec3f_scale(angles, 0.5f);
-    const vec3f c = {
+    const vec3f c = {{
         cosf(half_angles.x),
         cosf(half_angles.y),
         cosf(half_angles.z),
-    };
-    const vec3f s = {
+    }};
+    const vec3f s = {{
         sinf(half_angles.x),
         sinf(half_angles.y),
         sinf(half_angles.z),
-    };
+    }};
 
     const f32 w = c.x * c.y * c.z + s.x * s.y * s.z;
 	const f32 x = s.x * c.y * c.z - c.x * s.y * s.z;
 	const f32 y = c.x * s.y * c.z + s.x * c.y * s.z;
 	const f32 z = c.x * c.y * s.z - s.x * s.y * c.z;
-    const vec3f v = {x, y, z};
+    const vec3f v = {{x, y, z}};
 
     return (quat){v, w};
 }
@@ -50,33 +50,33 @@ inline quat quat_negate(quat q) {
 
 inline quat quat_add(quat q1, quat q2) {
     const f32 w = q1.w + q2.w;
-    const vec3f v = {
+    const vec3f v = {{
         q1.v.x + q2.v.x, 
         q1.v.y + q2.v.y, 
         q1.v.z + q2.v.z,
-    };
+    }};
 
     return (quat){v, w};
 }
 
 inline quat quat_sub(quat q1, quat q2) {
     const f32 w = q1.w - q2.w;
-    const vec3f v = {
+    const vec3f v = {{
         q1.v.x - q2.v.x, 
         q1.v.y - q2.v.y, 
         q1.v.z - q2.v.z,
-    };
+    }};
 
     return (quat){v, w};
 }
 
 inline quat quat_scale(quat q1, f32 scale) {
     const f32 w = q1.w * scale;
-    const vec3f v = {
+    const vec3f v = {{
         q1.v.x * scale, 
         q1.v.y * scale, 
         q1.v.z * scale,
-    };
+    }};
 
     return (quat){v, w};
 }

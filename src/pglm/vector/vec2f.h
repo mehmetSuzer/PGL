@@ -24,48 +24,48 @@ typedef union {
     f32 n[2];
 } vec2f;
 
-#define vec2f_zero ((vec2f){0.0f, 0.0f})
+#define vec2f_zero ((vec2f){{0.0f, 0.0f}})
 
 inline vec2f vec2f_negate(vec2f v) {
-    return (vec2f){
+    return (vec2f){{
         -v.x,
         -v.y,
-    };
+    }};
 }
 
 inline vec2f vec2f_add(vec2f v1, vec2f v2) {
-    return (vec2f){
+    return (vec2f){{
         v1.x + v2.x, 
         v1.y + v2.y,
-    };
+    }};
 }
 
 inline vec2f vec2f_sub(vec2f v1, vec2f v2) {
-    return (vec2f){
+    return (vec2f){{
         v1.x - v2.x, 
         v1.y - v2.y,
-    };
+    }};
 }
 
 inline vec2f vec2f_mul(vec2f v1, vec2f v2) {
-    return (vec2f){
+    return (vec2f){{
         v1.x * v2.x, 
         v1.y * v2.y,
-    };
+    }};
 }
 
 inline vec2f vec2f_div(vec2f v1, vec2f v2) {
-    return (vec2f){
+    return (vec2f){{
         v1.x / v2.x, 
         v1.y / v2.y,
-    };
+    }};
 }
 
 inline vec2f vec2f_scale(vec2f v, f32 scale) {
-    return (vec2f){
+    return (vec2f){{
         v.x * scale, 
         v.y * scale,
-    };
+    }};
 }
 
 inline f32 vec2f_dot(vec2f v1, vec2f v2) {

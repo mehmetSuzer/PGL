@@ -8,35 +8,35 @@
 #include "../quat/quat.h"
 
 inline mat3f cast_mat2f_to_mat3f(mat2f m) {
-    return (mat3f){
+    return (mat3f){{
         m.xx, m.xy, 0.0f,
         m.yx, m.yy, 0.0f,
         0.0f, 0.0f, 1.0f,
-    };
+    }};
 }
 
 inline mat2f cast_mat3f_to_mat2f(mat3f m) {
-    return (mat2f){
+    return (mat2f){{
         m.xx, m.xy,
         m.yx, m.yy,
-    };
+    }};
 }
 
 inline mat4f cast_mat3f_to_mat4f(mat3f m) {
-    return (mat4f){
+    return (mat4f){{
         m.xx, m.xy, m.xz, 0.0f,
         m.yx, m.yy, m.yz, 0.0f,
         m.zx, m.zy, m.zz, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f,
-    };
+    }};
 }
 
 inline mat3f cast_mat4f_to_mat3f(mat4f m) {
-    return (mat3f){
+    return (mat3f){{
         m.xx, m.xy, m.xz,
         m.yx, m.yy, m.yz,
         m.zx, m.zy, m.zz,
-    };
+    }};
 }
 
 inline mat3f cast_quat_to_mat3f(quat q) {
@@ -50,11 +50,11 @@ inline mat3f cast_quat_to_mat3f(quat q) {
     const f32 wy = q.w   * q.v.y;
     const f32 wz = q.w   * q.v.z;
 
-    return (mat3f){
+    return (mat3f){{
         1.0f - 2.0f * (yy + zz),        2.0f * (xy - wz),        2.0f * (xz + wy),
                2.0f * (xy + wz), 1.0f - 2.0f * (xx + zz),        2.0f * (yz - wx),
                2.0f * (xz - wy),        2.0f * (yz + wx), 1.0f - 2.0f * (xx + yy),
-    };
+    }};
 }
 
 inline mat4f cast_quat_to_mat4f(quat q) {

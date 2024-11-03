@@ -35,6 +35,11 @@ pico_enable_stdio_uart(${PROJECT_NAME} 1)
 # create map/bin/hex/uf2 file etc.
 pico_add_extra_outputs(${PROJECT_NAME})
 
+target_compile_options(${PROJECT_NAME} PRIVATE 
+    -Wall 
+    -Wextra
+)
+
 target_link_libraries(${PROJECT_NAME}
     device
     pglm

@@ -20,8 +20,14 @@ static inline bool plane_intersects_ray(ray_t ray, plane_t plane, f32 near, f32 
 
     const f32 dot_sn = vec3f_dot(ray.source, plane.normal);
     const f32 dot_dn = vec3f_dot(ray.dir, plane.normal);
-    *t = -(plane.d + dot_sn) / dot_dn;
-    return true;
+    const f32 distance = -(plane.d + dot_sn) / dot_dn;
+
+    if (near < distance && distance < far) {
+        *t = distance;
+        return true;
+    }
+
+    return false;
 }
 
 #endif // __PLANE_H__

@@ -23,54 +23,54 @@ typedef union {
     f32 n[3];
 } vec3f;
 
-#define vec3f_zero ((vec3f){0.0f, 0.0f, 0.0f})
+#define vec3f_zero ((vec3f){{0.0f, 0.0f, 0.0f}})
 
 inline vec3f vec3f_negate(vec3f v) {
-    return (vec3f){
+    return (vec3f){{
         -v.x,
         -v.y,
         -v.z,
-    };
+    }};
 }
 
 inline vec3f vec3f_add(vec3f v1, vec3f v2) {
-    return (vec3f){
+    return (vec3f){{
         v1.x + v2.x, 
         v1.y + v2.y, 
         v1.z + v2.z,
-    };
+    }};
 }
 
 inline vec3f vec3f_sub(vec3f v1, vec3f v2) {
-    return (vec3f){
+    return (vec3f){{
         v1.x - v2.x, 
         v1.y - v2.y, 
         v1.z - v2.z,
-    };
+    }};
 }
 
 inline vec3f vec3f_mul(vec3f v1, vec3f v2) {
-    return (vec3f){
+    return (vec3f){{
         v1.x * v2.x, 
         v1.y * v2.y, 
         v1.z * v2.z,
-    };
+    }};
 }
 
 inline vec3f vec3f_div(vec3f v1, vec3f v2) {
-    return (vec3f){
+    return (vec3f){{
         v1.x / v2.x, 
         v1.y / v2.y, 
         v1.z / v2.z,
-    };
+    }};
 }
 
 inline vec3f vec3f_scale(vec3f v, f32 scale) {
-    return (vec3f){
+    return (vec3f){{
         v.x * scale, 
         v.y * scale, 
         v.z * scale,
-    };
+    }};
 }
 
 inline f32 vec3f_dot(vec3f v1, vec3f v2) {
@@ -95,7 +95,7 @@ inline vec3f vec3f_cross(vec3f v1, vec3f v2) {
     const f32 x = v1.y * v2.z - v1.z * v2.y;
     const f32 y = v1.z * v2.x - v1.x * v2.z;
     const f32 z = v1.x * v2.y - v1.y * v2.x;
-    return (vec3f){x, y, z};
+    return (vec3f){{x, y, z}};
 }
 
 // Reflects unit vector v with respect to unit vector n.

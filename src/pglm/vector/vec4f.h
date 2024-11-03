@@ -20,60 +20,60 @@ typedef union {
     f32 n[4];
 } vec4f;
 
-#define vec4f_zero ((vec4f){0.0f, 0.0f, 0.0f, 0.0f})
+#define vec4f_zero ((vec4f){{0.0f, 0.0f, 0.0f, 0.0f}})
 
 inline vec4f vec4f_negate(vec4f v) {
-    return (vec4f){
+    return (vec4f){{
         -v.x,
         -v.y,
         -v.z,
         -v.w,
-    };
+    }};
 }
 
 inline vec4f vec4f_add(vec4f v1, vec4f v2) {
-    return (vec4f){
+    return (vec4f){{
         v1.x + v2.x, 
         v1.y + v2.y, 
         v1.z + v2.z,
         v1.w + v2.w,
-    };
+    }};
 }
 
 inline vec4f vec4f_sub(vec4f v1, vec4f v2) {
-    return (vec4f){
+    return (vec4f){{
         v1.x - v2.x, 
         v1.y - v2.y, 
         v1.z - v2.z,
         v1.w - v2.w,
-    };
+    }};
 }
 
 inline vec4f vec4f_mul(vec4f v1, vec4f v2) {
-    return (vec4f){
+    return (vec4f){{
         v1.x * v2.x, 
         v1.y * v2.y, 
         v1.z * v2.z,
         v1.w * v2.w,
-    };
+    }};
 }
 
 inline vec4f vec4f_div(vec4f v1, vec4f v2) {
-    return (vec4f){
+    return (vec4f){{
         v1.x / v2.x, 
         v1.y / v2.y, 
         v1.z / v2.z,
         v1.w / v2.w,
-    };
+    }};
 }
 
 inline vec4f vec4f_scale(vec4f v, f32 scale) {
-    return (vec4f){
+    return (vec4f){{
         v.x * scale, 
         v.y * scale, 
         v.z * scale,
         v.w * scale,
-    };
+    }};
 }
 
 inline f32 vec4f_dot(vec4f v1, vec4f v2) {

@@ -8,11 +8,11 @@
 #include "mesh.h"
 
 #ifndef DEVICE_SCREEN_WIDTH
-#error "DEVICE_SCREEN_WIDTH is not defined."
+    #error "DEVICE_SCREEN_WIDTH is not defined."
 #endif
 
 #ifndef DEVICE_SCREEN_HEIGHT
-#error "DEVICE_SCREEN_HEIGHT is not defined."
+    #error "DEVICE_SCREEN_HEIGHT is not defined."
 #endif
 
 #define DEVICE_SCREEN_ASPECT_RATIO ((f32)DEVICE_SCREEN_HEIGHT / (f32)DEVICE_SCREEN_WIDTH)

@@ -20,9 +20,9 @@ typedef union {
     f32 n[4];
 } vec4f;
 
-#define zero_vec4f ((vec4f){0.0f, 0.0f, 0.0f, 0.0f})
+#define vec4f_zero ((vec4f){0.0f, 0.0f, 0.0f, 0.0f})
 
-inline vec4f neg_vec4f(vec4f v) {
+inline vec4f vec4f_negate(vec4f v) {
     return (vec4f){
         -v.x,
         -v.y,
@@ -31,7 +31,7 @@ inline vec4f neg_vec4f(vec4f v) {
     };
 }
 
-inline vec4f add_vec4f(vec4f v1, vec4f v2) {
+inline vec4f vec4f_add(vec4f v1, vec4f v2) {
     return (vec4f){
         v1.x + v2.x, 
         v1.y + v2.y, 
@@ -40,7 +40,7 @@ inline vec4f add_vec4f(vec4f v1, vec4f v2) {
     };
 }
 
-inline vec4f sub_vec4f(vec4f v1, vec4f v2) {
+inline vec4f vec4f_sub(vec4f v1, vec4f v2) {
     return (vec4f){
         v1.x - v2.x, 
         v1.y - v2.y, 
@@ -49,7 +49,7 @@ inline vec4f sub_vec4f(vec4f v1, vec4f v2) {
     };
 }
 
-inline vec4f mul_vec4f(vec4f v1, vec4f v2) {
+inline vec4f vec4f_mul(vec4f v1, vec4f v2) {
     return (vec4f){
         v1.x * v2.x, 
         v1.y * v2.y, 
@@ -58,7 +58,7 @@ inline vec4f mul_vec4f(vec4f v1, vec4f v2) {
     };
 }
 
-inline vec4f div_vec4f(vec4f v1, vec4f v2) {
+inline vec4f vec4f_div(vec4f v1, vec4f v2) {
     return (vec4f){
         v1.x / v2.x, 
         v1.y / v2.y, 
@@ -67,7 +67,7 @@ inline vec4f div_vec4f(vec4f v1, vec4f v2) {
     };
 }
 
-inline vec4f scale_vec4f(vec4f v, f32 scale) {
+inline vec4f vec4f_scale(vec4f v, f32 scale) {
     return (vec4f){
         v.x * scale, 
         v.y * scale, 
@@ -76,36 +76,36 @@ inline vec4f scale_vec4f(vec4f v, f32 scale) {
     };
 }
 
-inline f32 dot_vec4f(vec4f v1, vec4f v2) {
+inline f32 vec4f_dot(vec4f v1, vec4f v2) {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
 }
 
-inline f32 mag2_vec4f(vec4f v) {
-    return dot_vec4f(v, v);
+inline f32 vec4f_mag2(vec4f v) {
+    return vec4f_dot(v, v);
 }
 
-inline f32 mag_vec4f(vec4f v) {
-    const f32 mag2 = mag2_vec4f(v);
+inline f32 vec4f_mag(vec4f v) {
+    const f32 mag2 = vec4f_mag2(v);
     return sqrtf(mag2);
 }
 
-inline vec4f normalize_vec4f(vec4f v) {
-    const f32 inverse_mag = 1.0f / mag_vec4f(v);
-    return scale_vec4f(v, inverse_mag);
+inline vec4f vec4f_normalize(vec4f v) {
+    const f32 inverse_mag = 1.0f / vec4f_mag(v);
+    return vec4f_scale(v, inverse_mag);
 }
 
-inline vec4f interp_vec4f(vec4f v1, vec4f v2, f32 alpha) {
-    return add_vec4f(v2, scale_vec4f(sub_vec4f(v1, v2), alpha));
+inline vec4f vec4f_interp(vec4f v1, vec4f v2, f32 alpha) {
+    return vec4f_add(v2, vec4f_scale(vec4f_sub(v1, v2), alpha));
 }
 
-inline bool epsilon_equal_vec4f(vec4f v1, vec4f v2, f32 epsilon) {
+inline bool vec4f_epsilon_equal(vec4f v1, vec4f v2, f32 epsilon) {
     return epsilon_equal(v1.x, v2.x, epsilon) && 
            epsilon_equal(v1.y, v2.y, epsilon) && 
            epsilon_equal(v1.z, v2.z, epsilon) &&
            epsilon_equal(v1.w, v2.w, epsilon);
 }
 
-inline bool epsilon_not_equal_vec4f(vec4f v1, vec4f v2, f32 epsilon) {
+inline bool vec4f_epsilon_not_equal(vec4f v1, vec4f v2, f32 epsilon) {
     return epsilon_not_equal(v1.x, v2.x, epsilon) ||
            epsilon_not_equal(v1.y, v2.y, epsilon) || 
            epsilon_not_equal(v1.z, v2.z, epsilon) ||

@@ -23,9 +23,9 @@ typedef union {
     i32 n[3];
 } vec3i;
 
-#define zero_vec3i ((vec3i){0, 0, 0})
+#define vec3i_zero ((vec3i){0, 0, 0})
 
-inline vec3i neg_vec3i(vec3i v) {
+inline vec3i vec3i_negate(vec3i v) {
     return (vec3i){
         -v.x,
         -v.y,
@@ -33,7 +33,7 @@ inline vec3i neg_vec3i(vec3i v) {
     };
 }
 
-inline vec3i add_vec3i(vec3i v1, vec3i v2) {
+inline vec3i vec3i_add(vec3i v1, vec3i v2) {
     return (vec3i){
         v1.x + v2.x, 
         v1.y + v2.y, 
@@ -41,7 +41,7 @@ inline vec3i add_vec3i(vec3i v1, vec3i v2) {
     };
 }
 
-inline vec3i sub_vec3i(vec3i v1, vec3i v2) {
+inline vec3i vec3i_sub(vec3i v1, vec3i v2) {
     return (vec3i){
         v1.x - v2.x, 
         v1.y - v2.y, 
@@ -49,7 +49,7 @@ inline vec3i sub_vec3i(vec3i v1, vec3i v2) {
     };
 }
 
-inline vec3i mul_vec3i(vec3i v1, vec3i v2) {
+inline vec3i vec3i_mul(vec3i v1, vec3i v2) {
     return (vec3i){
         v1.x * v2.x, 
         v1.y * v2.y, 
@@ -57,7 +57,7 @@ inline vec3i mul_vec3i(vec3i v1, vec3i v2) {
     };
 }
 
-inline vec3i div_vec3i(vec3i v1, vec3i v2) {
+inline vec3i vec3i_div(vec3i v1, vec3i v2) {
     return (vec3i){
         v1.x / v2.x, 
         v1.y / v2.y, 
@@ -65,7 +65,7 @@ inline vec3i div_vec3i(vec3i v1, vec3i v2) {
     };
 }
 
-inline vec3i scale_vec3i(vec3i v, i32 scale) {
+inline vec3i vec3i_scale(vec3i v, i32 scale) {
     return (vec3i){
         v.x * scale, 
         v.y * scale, 
@@ -73,13 +73,13 @@ inline vec3i scale_vec3i(vec3i v, i32 scale) {
     };
 }
 
-inline bool equal_vec3i(vec3i v1, vec3i v2) {
+inline bool vec3i_equal(vec3i v1, vec3i v2) {
     return v1.x == v2.x && 
            v1.y == v2.y && 
            v1.z == v2.z;
 }
 
-inline bool not_equal_vec3i(vec3i v1, vec3i v2) {
+inline bool vec3i_not_equal(vec3i v1, vec3i v2) {
     return v1.x != v2.x ||
            v1.y != v2.y || 
            v1.z != v2.z;

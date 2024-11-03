@@ -2,7 +2,7 @@
 #ifndef __LIGHT_H__
 #define __LIGHT_H__
 
-#include "../vector/vec3f.h"
+#include "pglm.h"
 #include <assert.h>
 
 typedef struct {

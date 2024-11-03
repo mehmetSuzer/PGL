@@ -14,7 +14,7 @@ typedef struct {
 
 // Returns a unit quaternion equivalent to the rotation corresponding to the (x,y,z) euler angles
 inline quat quat_euler_angles(vec3f angles) {
-    const vec3f half_angles = scale_vec3f(angles, 0.5f);
+    const vec3f half_angles = vec3f_scale(angles, 0.5f);
     const vec3f c = {
         cosf(half_angles.x),
         cosf(half_angles.y),
@@ -42,11 +42,11 @@ inline quat quat_angle_axis(vec3f v, f32 radian) {
     const f32 c = cosf(half_radian);
     const f32 s = sinf(half_radian);
 
-    return (quat){scale_vec3f(v, s), c};
+    return (quat){vec3f_scale(v, s), c};
 }
 
 inline quat neg_quat(quat q) {
-    return (quat){neg_vec3f(q.v), -q.w};
+    return (quat){vec3f_negate(q.v), -q.w};
 }
 
 inline quat add_quat(quat q1, quat q2) {
@@ -83,7 +83,7 @@ inline quat scale_quat(quat q1, f32 scale) {
 }
 
 inline quat conjugate_quat(quat q) {
-    return (quat){neg_vec3f(q.v), q.w};
+    return (quat){vec3f_negate(q.v), q.w};
 }
 
 inline f32 norm2_quat(quat q) {
@@ -108,40 +108,40 @@ inline quat inv_quat(quat q) {
 }
 
 inline quat mul_quat_quat(quat q1, quat q2) {
-    const f32 w = q1.w * q2.w - dot_vec3f(q1.v, q2.v);
-    const vec3f w1v2 = scale_vec3f(q2.v, q1.w);
-    const vec3f w2v1 = scale_vec3f(q1.v, q2.w);
-    const vec3f v1v2 = cross_vec3f(q1.v, q2.v);
-    const vec3f v = add_vec3f(add_vec3f(w1v2, w2v1), v1v2);
+    const f32 w = q1.w * q2.w - vec3f_dot(q1.v, q2.v);
+    const vec3f w1v2 = vec3f_scale(q2.v, q1.w);
+    const vec3f w2v1 = vec3f_scale(q1.v, q2.w);
+    const vec3f v1v2 = vec3f_cross(q1.v, q2.v);
+    const vec3f v = vec3f_add(vec3f_add(w1v2, w2v1), v1v2);
 
     return (quat){v, w};
 }
 
 inline quat mul_quat_vec3f(quat q, vec3f v) {
-    const f32 w = -dot_vec3f(q.v, v);
-    const vec3f xyz1 = scale_vec3f(v, q.w);
-    const vec3f xyz2 = cross_vec3f(q.v, v);
-    const vec3f xyz  = add_vec3f(xyz1, xyz2);
+    const f32 w = -vec3f_dot(q.v, v);
+    const vec3f xyz1 = vec3f_scale(v, q.w);
+    const vec3f xyz2 = vec3f_cross(q.v, v);
+    const vec3f xyz  = vec3f_add(xyz1, xyz2);
 
     return (quat){xyz, w};
 }
 
 inline quat mul_vec3f_quat(vec3f v, quat q) {
-    const f32 w = -dot_vec3f(v, q.v);
-    const vec3f xyz1 = scale_vec3f(v, q.w);
-    const vec3f xyz2 = cross_vec3f(v, q.v);
-    const vec3f xyz  = add_vec3f(xyz1, xyz2);
+    const f32 w = -vec3f_dot(v, q.v);
+    const vec3f xyz1 = vec3f_scale(v, q.w);
+    const vec3f xyz2 = vec3f_cross(v, q.v);
+    const vec3f xyz  = vec3f_add(xyz1, xyz2);
 
     return (quat){xyz, w};
 }
 
 // q must be unit quaternion
 inline vec3f rotate_quat(quat q, vec3f v) {
-    const vec3f uv  = cross_vec3f(q.v, v);
-    const vec3f uuv = cross_vec3f(q.v, uv);
-    const vec3f wuv = scale_vec3f(uv, q.w);
+    const vec3f uv  = vec3f_cross(q.v, v);
+    const vec3f uuv = vec3f_cross(q.v, uv);
+    const vec3f wuv = vec3f_scale(uv, q.w);
 
-    return add_vec3f(v, scale_vec3f(add_vec3f(wuv, uuv), 2.0f));
+    return vec3f_add(v, vec3f_scale(vec3f_add(wuv, uuv), 2.0f));
 }
 
 inline mat3f cast_quat_to_mat3f(quat q) {

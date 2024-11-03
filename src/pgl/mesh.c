@@ -4,13 +4,13 @@
 void mesh_find_bounding_volume(mesh_t* mesh) {
 	vec3f center = {0.0f, 0.0f, 0.0f};
 	for (u32 i = 0; i < mesh->vertex_number; i++) {
-		center = add_vec3f(center, mesh->vertices[i]);
+		center = vec3f_add(center, mesh->vertices[i]);
 	}
-	center = scale_vec3f(center, 1.0f / mesh->vertex_number);
+	center = vec3f_scale(center, 1.0f / mesh->vertex_number);
 
 	f32 radius2 = 0.0f;
 	for (u32 i = 0; i < mesh->vertex_number; i++) {
-		const f32 distance2 = mag2_vec3f(sub_vec3f(center, mesh->vertices[i]));
+		const f32 distance2 = vec3f_mag2(vec3f_sub(center, mesh->vertices[i]));
 		if (distance2 > radius2) {
 			radius2 = distance2;
 		}

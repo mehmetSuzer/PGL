@@ -20,7 +20,7 @@ void transform_set_position(transform_t* transform, vec3f position) {
 }
 
 void transform_translate(transform_t* transform, vec3f translation) {
-    transform->position = add_vec3f(transform->position, translation);
+    transform->position = vec3f_add(transform->position, translation);
     transform_update_model(transform);
 }
 
@@ -55,11 +55,11 @@ void transform_set_scalar(transform_t* transform, f32 scale) {
 }
 
 void transform_scale_vec3f(transform_t* transform, vec3f scalar) {
-    transform->scalar = mul_vec3f(transform->scalar, scalar);
+    transform->scalar = vec3f_mul(transform->scalar, scalar);
     transform_update_model(transform);
 }
 
 void transform_scale(transform_t* transform, f32 scale) {
-    transform->scalar = scale_vec3f(transform->scalar, scale);
+    transform->scalar = vec3f_scale(transform->scalar, scale);
     transform_update_model(transform);
 }

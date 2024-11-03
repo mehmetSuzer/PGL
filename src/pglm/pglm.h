@@ -26,8 +26,6 @@
 #include "ray_intersect/primitive.h"
 #include "ray_intersect/intersect.h"
 
-#include "light/light.h"
-
 #include "transformation/homogeneous.h"
 #include "transformation/transform2d.h"
 #include "transformation/transform3d.h"

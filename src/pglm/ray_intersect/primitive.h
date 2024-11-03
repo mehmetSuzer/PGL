@@ -16,9 +16,9 @@ typedef struct {
 } triangle_t;
 
 inline vec3f triangle_normal(triangle_t t) {
-    const vec3f vab = sub_vec3f(t.b, t.a);
-    const vec3f vac = sub_vec3f(t.c, t.a);
-    return normalize_vec3f(cross_vec3f(vab, vac));
+    const vec3f v_ab = vec3f_sub(t.b, t.a);
+    const vec3f v_ac = vec3f_sub(t.c, t.a);
+    return vec3f_normalize(vec3f_cross(v_ab, v_ac));
 }
 
 typedef struct {
@@ -27,7 +27,7 @@ typedef struct {
 } plane_t;
 
 inline f32 plane_signed_distance(plane_t p, vec3f v) {
-    return dot_vec3f(p.normal, v) + p.d;
+    return vec3f_dot(p.normal, v) + p.d;
 } 
 
 #endif // __PRIMITIVE_H__

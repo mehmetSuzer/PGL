@@ -366,17 +366,17 @@ void pgl_cull_winding_order(pgl_cull_winding_order_t cull_winding_order) {
 // Clips the triangle with respect to a plane in the clipping space.
 // i32ersection vertices are outputted as v10 and v20.
 static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, vec4f clip_plane_vector, pgl_vertex_t* restrict v10, pgl_vertex_t* restrict v20) {
-    const f32 d0 = dot_vec4f(t->v0.position, clip_plane_vector);
-    const f32 d1 = dot_vec4f(t->v1.position, clip_plane_vector);
-    const f32 d2 = dot_vec4f(t->v2.position, clip_plane_vector);
+    const f32 d0 = vec4f_dot(t->v0.position, clip_plane_vector);
+    const f32 d1 = vec4f_dot(t->v1.position, clip_plane_vector);
+    const f32 d2 = vec4f_dot(t->v2.position, clip_plane_vector);
 
     const f32 alpha10 = d0 / (d0 - d1);
     const f32 alpha20 = d0 / (d0 - d2);
 
-    v10->position  = interp_vec4f(t->v1.position,  t->v0.position,  alpha10);
-    v10->tex_coord = interp_vec2f(t->v1.tex_coord, t->v0.tex_coord, alpha10);
-    v20->position  = interp_vec4f(t->v2.position,  t->v0.position,  alpha20);
-    v20->tex_coord = interp_vec2f(t->v2.tex_coord, t->v0.tex_coord, alpha20);
+    v10->position  = vec4f_interp(t->v1.position,  t->v0.position,  alpha10);
+    v10->tex_coord = vec2f_interp(t->v1.tex_coord, t->v0.tex_coord, alpha10);
+    v20->position  = vec4f_interp(t->v2.position,  t->v0.position,  alpha20);
+    v20->tex_coord = vec2f_interp(t->v2.tex_coord, t->v0.tex_coord, alpha20);
 }
 
 // Returns true if the mesh may be visible.
@@ -650,14 +650,14 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
         }
         
         // Face culling
-        const vec3f normal = cross_vec3f(
+        const vec3f normal = vec3f_cross(
             (vec3f){c1.x - c0.x, c1.y - c0.y, c1.z - c0.z}, 
             (vec3f){c2.x - c0.x, c2.y - c0.y, c2.z - c0.z}
         );
-        if (dot_vec3f(normal, (vec3f){c0.x, c0.y, c0.z}) >= 0.0f) { continue; }
+        if (vec3f_dot(normal, (vec3f){c0.x, c0.y, c0.z}) >= 0.0f) { continue; }
 
         // Flat shading
-        const f32 shade = dl->intensity * (AMBIENT_COEF + DIFFUSE_COEF * greater(-dot_vec3f(light_dir, normalize_vec3f(normal)), 0.0f));
+        const f32 shade = dl->intensity * (AMBIENT_COEF + DIFFUSE_COEF * greater(-vec3f_dot(light_dir, vec3f_normalize(normal)), 0.0f));
         pgl.shade_multp = (u32)(shade * (1 << SHADE_2_POWER));
 
         // Clip space coordinates
@@ -673,9 +673,9 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
             triangle.v2.tex_coord = tex_coords[mesh->indices[i+5]];
         }
         else {
-            triangle.v0.tex_coord = zero_vec2f;
-            triangle.v1.tex_coord = zero_vec2f;
-            triangle.v2.tex_coord = zero_vec2f;
+            triangle.v0.tex_coord = vec2f_zero;
+            triangle.v1.tex_coord = vec2f_zero;
+            triangle.v2.tex_coord = vec2f_zero;
         }
 
         pgl_queue_triangle_t subtriangles[PGL_QUEUE_CAPACITY];
@@ -690,9 +690,9 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
             const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v1.position));
             const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v2.position));
 
-            const fragment_t f0 = {{sc0.x, sc0.y}, scale_vec2f(subt->v0.tex_coord, 1.0f / subt->v0.position.w), 1.0f / subt->v0.position.w};
-            const fragment_t f1 = {{sc1.x, sc1.y}, scale_vec2f(subt->v1.tex_coord, 1.0f / subt->v1.position.w), 1.0f / subt->v1.position.w};
-            const fragment_t f2 = {{sc2.x, sc2.y}, scale_vec2f(subt->v2.tex_coord, 1.0f / subt->v2.position.w), 1.0f / subt->v2.position.w};
+            const fragment_t f0 = {{sc0.x, sc0.y}, vec2f_scale(subt->v0.tex_coord, 1.0f / subt->v0.position.w), 1.0f / subt->v0.position.w};
+            const fragment_t f1 = {{sc1.x, sc1.y}, vec2f_scale(subt->v1.tex_coord, 1.0f / subt->v1.position.w), 1.0f / subt->v1.position.w};
+            const fragment_t f2 = {{sc2.x, sc2.y}, vec2f_scale(subt->v2.tex_coord, 1.0f / subt->v2.position.w), 1.0f / subt->v2.position.w};
         
             // Rasterize
             if (mesh->filled_render != FILLED_RENDER_NO) {

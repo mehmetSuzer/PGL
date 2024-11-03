@@ -19,7 +19,7 @@ void camera_init(vec3f position, vec3f forward, vec3f up) {
     camera.position = position;
     camera.forward = forward;
     camera.up = up;
-    camera.right = cross_vec3f(forward, up);
+    camera.right = vec3f_cross(forward, up);
 
     camera.forward_change = NONE;
     camera.right_change = NONE;
@@ -37,25 +37,25 @@ void camera_update(f32 dt) {
     u32 active_axis_number = 0;
     
     if (camera.right_change != NONE) {
-        displacement = add_vec3f(displacement, scale_vec3f(camera.right, camera.right_change * dx));
+        displacement = vec3f_add(displacement, vec3f_scale(camera.right, camera.right_change * dx));
         active_axis_number++;
     }
     if (camera.forward_change != NONE) {
-        displacement = add_vec3f(displacement, scale_vec3f(camera.forward, camera.forward_change * dx));
+        displacement = vec3f_add(displacement, vec3f_scale(camera.forward, camera.forward_change * dx));
         active_axis_number++;
     }
     if (camera.up_change != NONE) {
-        displacement = add_vec3f(displacement, scale_vec3f(camera.up, camera.up_change * dx));
+        displacement = vec3f_add(displacement, vec3f_scale(camera.up, camera.up_change * dx));
         active_axis_number++;
     }
 
     if (active_axis_number == 2) {
-        displacement = scale_vec3f(displacement, PGLM_1_SQRT2f);
+        displacement = vec3f_scale(displacement, PGLM_1_SQRT2f);
     }
     else if (active_axis_number == 3) {
-        displacement = scale_vec3f(displacement, PGLM_1_SQRT3f);
+        displacement = vec3f_scale(displacement, PGLM_1_SQRT3f);
     }
-    camera.position = add_vec3f(camera.position, displacement);
+    camera.position = vec3f_add(camera.position, displacement);
 
     if (camera.rotate_y_change != NONE) {
         const f32 theta = camera.rotate_y_change * CAMERA_ROTATION_SPEED * dt;

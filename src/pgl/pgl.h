@@ -3,6 +3,7 @@
 #define __PGL_H__
 
 #include "device.h"
+#include "light.h"
 #include "texture.h"
 #include "mesh.h"
 

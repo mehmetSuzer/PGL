@@ -21,6 +21,7 @@ pico_sdk_init()
 add_subdirectory(src/device)
 add_subdirectory(src/pglm)
 add_subdirectory(src/transform)
+add_subdirectory(src/light)
 add_subdirectory(src/pgl)
 add_subdirectory(src/camera)
 add_subdirectory(src/texture)
@@ -38,6 +39,7 @@ target_link_libraries(${PROJECT_NAME}
     device
     pglm
     transform
+    light
     pgl
     camera
     texture

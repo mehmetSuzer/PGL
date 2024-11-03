@@ -16,7 +16,7 @@ static void assert_intensity(f32 intensity) {
 }
 
 static void assert_direction(vec3f direction) {
-    assert(epsilon_equal(mag2_vec3f(direction), 1.0f, 1E-6f));
+    assert(epsilon_equal(vec3f_mag2(direction), 1.0f, 1E-6f));
 }
 
 static void assert_cutoff_angle(f32 cutoff_angle) {
@@ -51,7 +51,7 @@ point_light_t point_light_init(vec3f color, vec3f position, f32 distance1, f32 a
 }
 
 f32 point_light_attenuation(point_light_t light, vec3f point) {
-    const f32 distance = mag_vec3f(sub_vec3f(point, light.position));
+    const f32 distance = vec3f_mag(vec3f_sub(point, light.position));
     const f32 attenuation = 1.0f / ((light.quadratic * distance + light.linear) * distance + 1.0f);
     return attenuation;
 }
@@ -92,10 +92,10 @@ spot_light_t spot_light_init(vec3f color, vec3f position, vec3f direction, f32 d
 }
 
 f32 spot_light_attenuation(spot_light_t light, vec3f point) {
-    const vec3f light_to_point = sub_vec3f(point, light.position);
-    const f32 distance = mag_vec3f(light_to_point);
-    const vec3f direction_to_point = scale_vec3f(light_to_point, 1.0f / distance);
-    const f32 cos_angle_between_directions = dot_vec3f(direction_to_point, light.direction);
+    const vec3f light_to_point = vec3f_sub(point, light.position);
+    const f32 distance = vec3f_mag(light_to_point);
+    const vec3f direction_to_point = vec3f_scale(light_to_point, 1.0f / distance);
+    const f32 cos_angle_between_directions = vec3f_dot(direction_to_point, light.direction);
     
     if (cos_angle_between_directions < light.cos_cutoff_angle) {
         return 0.0f;

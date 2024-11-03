@@ -19,6 +19,7 @@
 #include "matrix/mat2f.h"
 #include "matrix/mat3f.h"
 #include "matrix/mat4f.h"
+#include "matrix/cast_matrix.h"
 
 #include "quat/quat.h"
 

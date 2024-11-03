@@ -6,7 +6,7 @@
 
 inline mat4f orthographic(f32 width, f32 height, f32 near, f32 far) {
     const f32 inverse_far_minus_near = 1.0f / (far - near);
-    mat4f result = zero_mat4f;
+    mat4f result = mat4f_zero;
 	
     result.xx =  2.0f / width;
 	result.yy =  2.0f / height;
@@ -20,7 +20,7 @@ inline mat4f orthographic(f32 width, f32 height, f32 near, f32 far) {
 inline mat4f perspective(f32 fovw, f32 aspect, f32 near, f32 far) {
     const f32 inverse_tan_half_fov = 1.0f / tanf(fovw * 0.5f);
     const f32 inverse_far_minus_near = 1.0f / (far - near);
-	mat4f result = zero_mat4f;
+	mat4f result = mat4f_zero;
 
 	result.xx =  inverse_tan_half_fov;
 	result.yy =  inverse_tan_half_fov * aspect;

@@ -15,7 +15,7 @@ inline mat4f translate3D_mat4f(vec3f v) {
 }
 
 inline mat3f scale3D_mat3f(vec3f v) {
-    return diagonal_mat3f(v);
+    return mat3f_diagonal(v);
 }
 
 inline mat4f scale3D_mat4f(vec3f v) {

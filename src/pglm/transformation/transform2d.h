@@ -14,7 +14,7 @@ inline mat3f translate2D_mat3f(vec2f v) {
 }
 
 inline mat2f scale2D_mat2f(vec2f v) {
-    return diagonal_mat2f(v);
+    return mat2f_diagonal(v);
 }
 
 inline mat3f scale2D_mat3f(vec2f v) {

@@ -2,8 +2,7 @@
 #ifndef __QUAT_H__
 #define __QUAT_H__
 
-#include "../matrix/mat3f.h"
-#include "../matrix/mat4f.h"
+#include "../matrix/cast_matrix.h"
 
 typedef struct {
     vec3f v;

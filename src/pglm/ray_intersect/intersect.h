@@ -32,7 +32,7 @@ static inline bool intersect_triangle(ray_t ray, triangle_t triangle, f32 near, 
     
     const mat3f matrix = mat3f_from_cols(col0, col1, col2);
     const vec3f vector = vec3f_sub(triangle.a, ray.source);
-    const vec3f solution = solve_cramers_mat3f(matrix, vector);
+    const vec3f solution = mat3f_solve_cramers(matrix, vector);
 
     // Alpha > epsilon and Beta > epsilon and Alpha + Beta < 1.0 and near < t < far
     if (solution.x > 1E-6f && solution.y > 1E-6f && solution.x + solution.y < 1.0f && near < solution.z && solution.z < far) {

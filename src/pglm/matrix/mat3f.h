@@ -3,7 +3,6 @@
 #define __MAT3F_H__
 
 #include "../vector/vec3f.h"
-#include "../matrix/mat2f.h"
 
 // Row-based 3x3 matrix typedef.
 // Element layout is as follows:
@@ -19,34 +18,19 @@ typedef union {
     f32 n[3][3];
 } mat3f;
 
-#define zero_mat3f ((mat3f){        \
+#define mat3f_zero ((mat3f){        \
     0.0f, 0.0f, 0.0f,               \
     0.0f, 0.0f, 0.0f,               \
     0.0f, 0.0f, 0.0f                \
 })
 
-#define identity_mat3f ((mat3f){    \
+#define mat3f_identity ((mat3f){    \
     1.0f, 0.0f, 0.0f,               \
     0.0f, 1.0f, 0.0f,               \
     0.0f, 0.0f, 1.0f                \
 })
 
-inline mat3f cast_mat2f_to_mat3f(mat2f m) {
-    return (mat3f){
-        m.xx, m.xy, 0.0f,
-        m.yx, m.yy, 0.0f,
-        0.0f, 0.0f, 1.0f,
-    };
-}
-
-inline mat2f cast_mat3f_to_mat2f(mat3f m) {
-    return (mat2f){
-        m.xx, m.xy,
-        m.yx, m.yy,
-    };
-}
-
-inline mat3f diagonal_mat3f(vec3f v) {
+inline mat3f mat3f_diagonal(vec3f v) {
     return (mat3f){
          v.x, 0.0f, 0.0f,
         0.0f,  v.y, 0.0f,
@@ -54,7 +38,7 @@ inline mat3f diagonal_mat3f(vec3f v) {
     };
 }
 
-inline mat3f neg_mat3f(mat3f m) {
+inline mat3f mat3f_negate(mat3f m) {
     return (mat3f){
         -m.xx, -m.xy, -m.xz,
         -m.yx, -m.yy, -m.yz,
@@ -78,7 +62,7 @@ inline mat3f mat3f_from_cols(vec3f col0, vec3f col1, vec3f col2) {
     };
 }
 
-inline mat3f add_mat3f(mat3f m1, mat3f m2) {
+inline mat3f mat3f_add(mat3f m1, mat3f m2) {
     return (mat3f){
         m1.xx + m2.xx, m1.xy + m2.xy, m1.xz + m2.xz,
         m1.yx + m2.yx, m1.yy + m2.yy, m1.yz + m2.yz,
@@ -86,7 +70,7 @@ inline mat3f add_mat3f(mat3f m1, mat3f m2) {
     };
 }
 
-inline mat3f sub_mat3f(mat3f m1, mat3f m2) {
+inline mat3f mat3f_sub(mat3f m1, mat3f m2) {
     return (mat3f){
         m1.xx - m2.xx, m1.xy - m2.xy, m1.xz - m2.xz,
         m1.yx - m2.yx, m1.yy - m2.yy, m1.yz - m2.yz,
@@ -94,7 +78,7 @@ inline mat3f sub_mat3f(mat3f m1, mat3f m2) {
     };
 }
 
-inline mat3f scale_mat3f(mat3f m, f32 scale) {
+inline mat3f mat3f_scale(mat3f m, f32 scale) {
     return (mat3f){
         m.xx * scale, m.xy * scale, m.xz * scale,
         m.yx * scale, m.yy * scale, m.yz * scale,
@@ -102,7 +86,7 @@ inline mat3f scale_mat3f(mat3f m, f32 scale) {
     };
 }
 
-inline vec3f mul_mat3f_vec3f(mat3f m, vec3f v) {
+inline vec3f mat3f_mul_vec3f(mat3f m, vec3f v) {
     return (vec3f){
         m.xx * v.x + m.xy * v.y + m.xz * v.z, // x
         m.yx * v.x + m.yy * v.y + m.yz * v.z, // y
@@ -110,7 +94,7 @@ inline vec3f mul_mat3f_vec3f(mat3f m, vec3f v) {
     };
 }
 
-inline mat3f mul_mat3f_mat3f(mat3f m1, mat3f m2) {
+inline mat3f mat3f_mul_mat3f(mat3f m1, mat3f m2) {
     return (mat3f){
         m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx,
         m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy,
@@ -126,7 +110,7 @@ inline mat3f mul_mat3f_mat3f(mat3f m1, mat3f m2) {
     };
 }
 
-inline mat3f tr_mat3f(mat3f m) {
+inline mat3f mat3f_tr(mat3f m) {
     return (mat3f){
         m.xx, m.yx, m.zx,
         m.xy, m.yy, m.zy,
@@ -134,14 +118,14 @@ inline mat3f tr_mat3f(mat3f m) {
     };
 }
 
-inline f32 det_mat3f(mat3f m) {
+inline f32 mat3f_det(mat3f m) {
     return + m.xx * (m.yy * m.zz - m.yz * m.zy)
            - m.xy * (m.yx * m.zz - m.yz * m.zx)
            + m.xz * (m.yx * m.zy - m.yy * m.zx);
 }
 
-inline mat3f inv_mat3f(mat3f m) {
-    const f32 inverse_determinant = 1.0f / det_mat3f(m);
+inline mat3f mat3f_inv(mat3f m) {
+    const f32 inverse_determinant = 1.0f / mat3f_det(m);
 
     return (mat3f){
         (m.yy * m.zz - m.yz * m.zy) * inverse_determinant,
@@ -158,7 +142,7 @@ inline mat3f inv_mat3f(mat3f m) {
     };
 }
 
-static inline vec3f solve_cramers_mat3f(mat3f m, vec3f v) {
+static inline vec3f mat3f_solve_cramers(mat3f m, vec3f v) {
     const f32 factor0 = m.yy * m.zz - m.yz * m.zy;
     const f32 factor1 = m.yx * m.zz - m.yz * m.zx;
     const f32 factor2 = m.yx * m.zy - m.yy * m.zx;
@@ -180,7 +164,7 @@ static inline vec3f solve_cramers_mat3f(mat3f m, vec3f v) {
     };
 }
 
-inline bool epsilon_equal_mat3f(mat3f m1, mat3f m2, f32 epsilon) {
+inline bool mat3f_epsilon_equal(mat3f m1, mat3f m2, f32 epsilon) {
     return epsilon_equal(m1.xx, m2.xx, epsilon) && 
            epsilon_equal(m1.xy, m2.xy, epsilon) && 
            epsilon_equal(m1.xz, m2.xz, epsilon) && 
@@ -194,7 +178,7 @@ inline bool epsilon_equal_mat3f(mat3f m1, mat3f m2, f32 epsilon) {
            epsilon_equal(m1.zz, m2.zz, epsilon);
 }
 
-inline bool epsilon_not_equal_mat3f(mat3f m1, mat3f m2, f32 epsilon) {
+inline bool mat3f_epsilon_not_equal(mat3f m1, mat3f m2, f32 epsilon) {
     return epsilon_not_equal(m1.xx, m2.xx, epsilon) || 
            epsilon_not_equal(m1.xy, m2.xy, epsilon) || 
            epsilon_not_equal(m1.xz, m2.xz, epsilon) || 

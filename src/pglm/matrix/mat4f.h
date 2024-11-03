@@ -3,7 +3,6 @@
 #define __MAT4F_H__
 
 #include "../vector/vec4f.h"
-#include "../matrix/mat3f.h"
 
 // Row-based 4x4 matrix typedef.
 // Element layout is as follows:
@@ -21,38 +20,21 @@ typedef union {
     f32 n[4][4];
 } mat4f;
 
-#define zero_mat4f ((mat4f){        \
+#define mat4f_zero ((mat4f){        \
     0.0f, 0.0f, 0.0f, 0.0f,         \
     0.0f, 0.0f, 0.0f, 0.0f,         \
     0.0f, 0.0f, 0.0f, 0.0f,         \
     0.0f, 0.0f, 0.0f, 0.0f          \
 })
 
-#define identity_mat4f ((mat4f){    \
+#define mat4f_identity ((mat4f){    \
     1.0f, 0.0f, 0.0f, 0.0f,         \
     0.0f, 1.0f, 0.0f, 0.0f,         \
     0.0f, 0.0f, 1.0f, 0.0f,         \
     0.0f, 0.0f, 0.0f, 1.0f          \
 })
 
-inline mat4f cast_mat3f_to_mat4f(mat3f m) {
-    return (mat4f){
-        m.xx, m.xy, m.xz, 0.0f,
-        m.yx, m.yy, m.yz, 0.0f,
-        m.zx, m.zy, m.zz, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f,
-    };
-}
-
-inline mat3f cast_mat4f_to_mat3f(mat4f m) {
-    return (mat3f){
-        m.xx, m.xy, m.xz,
-        m.yx, m.yy, m.yz,
-        m.zx, m.zy, m.zz,
-    };
-}
-
-inline mat4f diagonal_mat4f(vec4f v) {
+inline mat4f mat4f_diagonal(vec4f v) {
     return (mat4f){
          v.x, 0.0f, 0.0f, 0.0f,
         0.0f,  v.y, 0.0f, 0.0f,
@@ -61,7 +43,7 @@ inline mat4f diagonal_mat4f(vec4f v) {
     };
 }
 
-inline mat4f neg_mat4f(mat4f m) {
+inline mat4f mat4f_negate(mat4f m) {
     return (mat4f){
         -m.xx, -m.xy, -m.xz, -m.xw,
         -m.yx, -m.yy, -m.yz, -m.yw,
@@ -88,7 +70,7 @@ inline mat4f mat4f_from_cols(vec4f col0, vec4f col1, vec4f col2, vec4f col3) {
     };
 }
 
-inline mat4f add_mat4f(mat4f m1, mat4f m2) {
+inline mat4f mat4f_add(mat4f m1, mat4f m2) {
     return (mat4f){
         m1.xx + m2.xx, m1.xy + m2.xy, m1.xz + m2.xz, m1.xw + m2.xw,
         m1.yx + m2.yx, m1.yy + m2.yy, m1.yz + m2.yz, m1.yw + m2.yw,
@@ -97,7 +79,7 @@ inline mat4f add_mat4f(mat4f m1, mat4f m2) {
     };
 }
 
-inline mat4f sub_mat4f(mat4f m1, mat4f m2) {
+inline mat4f mat4f_sub(mat4f m1, mat4f m2) {
     return (mat4f){
         m1.xx - m2.xx, m1.xy - m2.xy, m1.xz - m2.xz, m1.xw - m2.xw,
         m1.yx - m2.yx, m1.yy - m2.yy, m1.yz - m2.yz, m1.yw - m2.yw,
@@ -106,7 +88,7 @@ inline mat4f sub_mat4f(mat4f m1, mat4f m2) {
     };
 }
 
-inline mat4f scale_mat4f(mat4f m, f32 scale) {
+inline mat4f mat4f_scale(mat4f m, f32 scale) {
     return (mat4f){
         m.xx * scale, m.xy * scale, m.xz * scale, m.xw * scale,
         m.yx * scale, m.yy * scale, m.yz * scale, m.yw * scale,
@@ -115,7 +97,7 @@ inline mat4f scale_mat4f(mat4f m, f32 scale) {
     };
 }
 
-inline vec4f mul_mat4f_vec4f(mat4f m, vec4f v) {
+inline vec4f mat4f_mul_vec4f(mat4f m, vec4f v) {
     return (vec4f){
         m.xx * v.x + m.xy * v.y + m.xz * v.z + m.xw * v.w, // x
         m.yx * v.x + m.yy * v.y + m.yz * v.z + m.yw * v.w, // y
@@ -124,7 +106,7 @@ inline vec4f mul_mat4f_vec4f(mat4f m, vec4f v) {
     };
 }
 
-static inline mat4f mul_mat4f_mat4f(mat4f m1, mat4f m2) {
+static inline mat4f mat4f_mul_mat4f(mat4f m1, mat4f m2) {
     return (mat4f){
         m1.xx * m2.xx + m1.xy * m2.yx + m1.xz * m2.zx + m1.xw * m2.wx,
         m1.xx * m2.xy + m1.xy * m2.yy + m1.xz * m2.zy + m1.xw * m2.wy,
@@ -148,7 +130,7 @@ static inline mat4f mul_mat4f_mat4f(mat4f m1, mat4f m2) {
     };
 }
 
-inline mat4f tr_mat4f(mat4f m) {
+inline mat4f mat4f_tr(mat4f m) {
     return (mat4f){
         m.xx, m.yx, m.zx, m.wx,
         m.xy, m.yy, m.zy, m.wy,
@@ -157,7 +139,7 @@ inline mat4f tr_mat4f(mat4f m) {
     };
 }
 
-static inline f32 det_mat4f(mat4f m) {
+static inline f32 mat4f_det(mat4f m) {
     const f32 factor0 = m.zz * m.ww - m.wz * m.zw;
 	const f32 factor1 = m.zy * m.ww - m.wy * m.zw;
 	const f32 factor2 = m.zy * m.wz - m.wy * m.zz;
@@ -174,7 +156,7 @@ static inline f32 det_mat4f(mat4f m) {
 	       + m.xz * coef2 - m.xw * coef3;
 }
 
-static inline mat4f inv_mat4f(mat4f m) {
+static inline mat4f mat4f_inv(mat4f m) {
     const f32 factor0 = m.zz * m.ww - m.wz * m.zw;
     const f32 factor1 = m.zy * m.ww - m.wy * m.zw;
     const f32 factor2 = m.zy * m.wz - m.wy * m.zz;
@@ -209,11 +191,11 @@ static inline mat4f inv_mat4f(mat4f m) {
         (m.xx * factor2 - m.xy * factor4 + m.xz * factor5)
     };
 
-    const f32 inverse_determinant = 1.0f / det_mat4f(m);
-    return scale_mat4f(adjugate, inverse_determinant);
+    const f32 inverse_determinant = 1.0f / mat4f_det(m);
+    return mat4f_scale(adjugate, inverse_determinant);
 }
 
-static inline vec4f solve_cramers_mat4f(mat4f m, vec4f v) {
+static inline vec4f mat4f_solve_cramers(mat4f m, vec4f v) {
     const vec4f col0 = (vec4f){m.xx, m.yx, m.zx, m.wx};
     const vec4f col1 = (vec4f){m.xy, m.yy, m.zy, m.wy};
     const vec4f col2 = (vec4f){m.xz, m.yz, m.zz, m.wz};
@@ -224,11 +206,11 @@ static inline vec4f solve_cramers_mat4f(mat4f m, vec4f v) {
     const mat4f m2 = mat4f_from_cols(col0, col1,    v, col3);
     const mat4f m3 = mat4f_from_cols(col0, col1, col2,    v);
 
-    const f32 inverse_determinant = 1.0f / det_mat4f(m);
-    const f32 det0 = det_mat4f(m0);
-    const f32 det1 = det_mat4f(m1);
-    const f32 det2 = det_mat4f(m2);
-    const f32 det3 = det_mat4f(m3);
+    const f32 inverse_determinant = 1.0f / mat4f_det(m);
+    const f32 det0 = mat4f_det(m0);
+    const f32 det1 = mat4f_det(m1);
+    const f32 det2 = mat4f_det(m2);
+    const f32 det3 = mat4f_det(m3);
 
     const f32 x = det0 * inverse_determinant;
     const f32 y = det1 * inverse_determinant;
@@ -238,7 +220,7 @@ static inline vec4f solve_cramers_mat4f(mat4f m, vec4f v) {
     return (vec4f){x, y, z, w};
 }
 
-inline bool epsilon_equal_mat4f(mat4f m1, mat4f m2, f32 epsilon) {
+inline bool mat4f_epsilon_equal(mat4f m1, mat4f m2, f32 epsilon) {
     return epsilon_equal(m1.xx, m2.xx, epsilon) && 
            epsilon_equal(m1.xy, m2.xy, epsilon) && 
            epsilon_equal(m1.xz, m2.xz, epsilon) && 
@@ -260,7 +242,7 @@ inline bool epsilon_equal_mat4f(mat4f m1, mat4f m2, f32 epsilon) {
            epsilon_equal(m1.ww, m2.ww, epsilon);
 }
 
-inline bool epsilon_not_equal_mat4f(mat4f m1, mat4f m2, f32 epsilon) {
+inline bool mat4f_epsilon_not_equal(mat4f m1, mat4f m2, f32 epsilon) {
     return epsilon_not_equal(m1.xx, m2.xx, epsilon) ||
            epsilon_not_equal(m1.xy, m2.xy, epsilon) ||
            epsilon_not_equal(m1.xz, m2.xz, epsilon) ||

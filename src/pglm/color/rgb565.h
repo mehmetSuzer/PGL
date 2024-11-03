@@ -152,7 +152,7 @@
 #define PGLM_RGB565_YELLOW               ((u16)0xFFE0u)
 #define PGLM_RGB565_YELLOWGREEN          ((u16)0x9E66u)
 
-inline u16 vec3f_to_rgb565(vec3f color) {
+inline u16 color_vec3f_to_rgb565(vec3f color) {
     const u8 red     = (color.x < 1.0f) ? (u8)(color.x * 0x1Fu) : 0x1Fu; 
     const u8 green   = (color.y < 1.0f) ? (u8)(color.y * 0x3Fu) : 0x3Fu; 
     const u8 blue    = (color.z < 1.0f) ? (u8)(color.z * 0x1Fu) : 0x1Fu; 
@@ -160,7 +160,7 @@ inline u16 vec3f_to_rgb565(vec3f color) {
     return rgb565;
 }
 
-inline u16 average_rgb565(u16 c1, u16 c2) {
+inline u16 color_average_rgb565(u16 c1, u16 c2) {
     c1 &= 0xF7DFu;
     c1 >>= 1;
     c2 &= 0xF7DFu;

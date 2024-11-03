@@ -382,7 +382,7 @@ static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, 
 // Returns true if the mesh may be visible.
 // Returns false if there is no chance that the mesh is visible. 
 static bool pgl_broad_phase_clipping(const mesh_t* mesh, mat4f view_model) {
-    const vec3f center = mul_mat3f_vec3f(cast_mat4f_to_mat3f(view_model), mesh->bounding_volume.center);
+    const vec3f center = mat3f_mul_vec3f(cast_mat4f_to_mat3f(view_model), mesh->bounding_volume.center);
     const f32 minus_sin_half_fovw = -pgl.sin_half_fovw;
     const f32 cos_half_fovw       =  pgl.cos_half_fovw;
     const f32 minus_sin_half_fovh = -pgl.sin_half_fovh;
@@ -632,8 +632,8 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
 // --------------------------------------------------- DRAWING --------------------------------------------------- // 
 
 void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
-    const vec3f light_dir = mul_mat3f_vec3f(cast_mat4f_to_mat3f(pgl.view), dl->direction);
-    const mat4f view_model = mul_mat4f_mat4f(pgl.view, mesh->transform.model);
+    const vec3f light_dir = mat3f_mul_vec3f(cast_mat4f_to_mat3f(pgl.view), dl->direction);
+    const mat4f view_model = mat4f_mul_mat4f(pgl.view, mesh->transform.model);
     pgl.fill_color  = mesh->fill_color; // or tex_coords
     pgl.wired_color = mesh->wired_color;
 
@@ -642,9 +642,9 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
 
     for (u32 i = 0; i < mesh->index_number; i += incr) {
         // Camera space coordinates
-        const vec4f c0 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 0 * offset]]));
-        const vec4f c1 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 1 * offset]]));
-        const vec4f c2 = mul_mat4f_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 2 * offset]]));
+        const vec4f c0 = mat4f_mul_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 0 * offset]]));
+        const vec4f c1 = mat4f_mul_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 1 * offset]]));
+        const vec4f c2 = mat4f_mul_vec4f(view_model, to_homogeneous_point(mesh->vertices[mesh->indices[i + 2 * offset]]));
         if (mesh->filled_render == FILLED_RENDER_COLORS) {
             pgl.fill_color = mesh->indices[i+3]; // Color of the face
         }
@@ -662,9 +662,9 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
 
         // Clip space coordinates
         pgl_queue_triangle_t triangle = { // New typedef can be defined to simplify
-            {.position = mul_mat4f_vec4f(pgl.projection, c0)},
-            {.position = mul_mat4f_vec4f(pgl.projection, c1)},
-            {.position = mul_mat4f_vec4f(pgl.projection, c2)},
+            {.position = mat4f_mul_vec4f(pgl.projection, c0)},
+            {.position = mat4f_mul_vec4f(pgl.projection, c1)},
+            {.position = mat4f_mul_vec4f(pgl.projection, c2)},
         };
 
         if (mesh->filled_render == FILLED_RENDER_TEX_COORDS) {
@@ -686,9 +686,9 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
             subtriangle_index--;
 
             // Screen space coordinates
-            const vec4f sc0 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v0.position));
-            const vec4f sc1 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v1.position));
-            const vec4f sc2 = mul_mat4f_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v2.position));
+            const vec4f sc0 = mat4f_mul_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v0.position));
+            const vec4f sc1 = mat4f_mul_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v1.position));
+            const vec4f sc2 = mat4f_mul_vec4f(pgl.viewport, normalize_homogeneous_point(subt->v2.position));
 
             const fragment_t f0 = {{sc0.x, sc0.y}, vec2f_scale(subt->v0.tex_coord, 1.0f / subt->v0.position.w), 1.0f / subt->v0.position.w};
             const fragment_t f1 = {{sc1.x, sc1.y}, vec2f_scale(subt->v1.tex_coord, 1.0f / subt->v1.position.w), 1.0f / subt->v1.position.w};

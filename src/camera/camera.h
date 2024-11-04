@@ -5,20 +5,20 @@
 #include "pgl.h"
 
 typedef enum {
-    NEGATIVE    = -1,
-    NONE        =  0,
-    POSITIVE    =  1,
-} camera_change_t;
+    CHANGE_NEGATIVE  = -1,
+    CHANGE_NONE      =  0,
+    CHANGE_POSITIVE  =  1,
+} change_t;
 
 typedef struct {
     vec3f position;
     vec3f forward;
     vec3f up;
     vec3f right;
-    camera_change_t forward_change;
-    camera_change_t right_change;
-    camera_change_t up_change;
-    camera_change_t rotate_y_change;
+    change_t forward_change  : 2;
+    change_t right_change    : 2;
+    change_t up_change       : 2;
+    change_t rotate_y_change : 2;
 } camera_t;
 extern camera_t camera;
 

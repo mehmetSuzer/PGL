@@ -23,7 +23,13 @@ typedef union {
     f32 n[3];
 } vec3f;
 
-#define vec3f_zero ((vec3f){{0.0f, 0.0f, 0.0f}})
+#define vec3f_zero      ((vec3f){{ 0.0f,  0.0f,  0.0f}})
+#define vec3f_i         ((vec3f){{ 1.0f,  0.0f,  0.0f}})
+#define vec3f_j         ((vec3f){{ 0.0f,  1.0f,  0.0f}})
+#define vec3f_k         ((vec3f){{ 0.0f,  0.0f,  1.0f}})
+#define vec3f_minus_i   ((vec3f){{-1.0f,  0.0f,  0.0f}})
+#define vec3f_minus_j   ((vec3f){{ 0.0f, -1.0f,  0.0f}})
+#define vec3f_minus_k   ((vec3f){{ 0.0f,  0.0f, -1.0f}})
 
 inline vec3f vec3f_negate(vec3f v) {
     return (vec3f){{

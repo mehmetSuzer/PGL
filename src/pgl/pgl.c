@@ -11,9 +11,9 @@
 
 typedef struct {
     // Buffers
-    u16  color_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH];
-    u8   depth_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH];
-    u8 stencil_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH / 8];
+    u16  color_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH];       // 16 bits per pixel
+    u8   depth_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH];       //  8 bits per pixel
+    u8 stencil_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH / 8];   //  1 bit  per pixel
 
     // Transformation matrices
     mat4f view;

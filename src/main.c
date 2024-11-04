@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <pico/multicore.h>
+#include "pgl.h"
 #include "camera.h"
 
 const directional_light_t dl = {
@@ -63,28 +64,28 @@ mesh_t meshes[] = {
 void button_irq_callback(uint gpio, uint32_t event_mask) {
     switch (gpio) {
     case DEVICE_KEY_FORWARD:
-        camera.forward_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        camera.forward_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? CHANGE_POSITIVE : CHANGE_NONE;
         break;
     case DEVICE_KEY_BACKWARD:
-        camera.forward_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        camera.forward_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? CHANGE_NEGATIVE : CHANGE_NONE;
         break;
     case DEVICE_KEY_RIGHT:
-        camera.right_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        camera.right_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? CHANGE_POSITIVE : CHANGE_NONE;
         break;
     case DEVICE_KEY_LEFT:
-        camera.right_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        camera.right_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? CHANGE_NEGATIVE : CHANGE_NONE;
         break;
     case DEVICE_KEY_A:
-        camera.up_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        camera.up_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? CHANGE_POSITIVE : CHANGE_NONE;
         break;
     case DEVICE_KEY_B:
-        camera.up_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        camera.up_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? CHANGE_NEGATIVE : CHANGE_NONE;
         break;
     case DEVICE_KEY_X:
-        camera.rotate_y_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? POSITIVE : NONE;
+        camera.rotate_y_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? CHANGE_POSITIVE : CHANGE_NONE;
         break;
     case DEVICE_KEY_Y:
-        camera.rotate_y_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? NEGATIVE : NONE;
+        camera.rotate_y_change = (event_mask & GPIO_IRQ_EDGE_FALL) ? CHANGE_NEGATIVE : CHANGE_NONE;
         break;
     case DEVICE_KEY_CTRL:
     default:
@@ -114,10 +115,9 @@ int main() {
     }
 
     u32 last_time = time_us_32();
-    u32 current_time;
 
     while (true) {
-        current_time = time_us_32();
+        u32 current_time = time_us_32();
         f32 dt = (current_time - last_time) / 1E6f;
         last_time = current_time;
         camera_update(dt);

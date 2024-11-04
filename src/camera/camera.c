@@ -9,10 +9,10 @@ camera_t camera = {
     .forward         = { 0.0f,  0.0f, -1.0f},
     .up              = { 0.0f,  1.0f,  0.0f},
     .right           = { 1.0f,  0.0f,  0.0f},
-    .forward_change  = NONE,
-    .right_change    = NONE,
-    .up_change       = NONE,
-    .rotate_y_change = NONE,
+    .forward_change  = CHANGE_NONE,
+    .right_change    = CHANGE_NONE,
+    .up_change       = CHANGE_NONE,
+    .rotate_y_change = CHANGE_NONE,
 };
 
 void camera_init(vec3f position, vec3f forward, vec3f up) {
@@ -21,50 +21,52 @@ void camera_init(vec3f position, vec3f forward, vec3f up) {
     camera.up = up;
     camera.right = vec3f_cross(forward, up);
 
-    camera.forward_change  = NONE;
-    camera.right_change    = NONE;
-    camera.up_change       = NONE;
-    camera.rotate_y_change = NONE;
+    camera.forward_change  = CHANGE_NONE;
+    camera.right_change    = CHANGE_NONE;
+    camera.up_change       = CHANGE_NONE;
+    camera.rotate_y_change = CHANGE_NONE;
 }
 
 void camera_update(f32 dt) {
-    if (camera.forward_change  == NONE && 
-        camera.right_change    == NONE && 
-        camera.up_change       == NONE && 
-        camera.rotate_y_change == NONE) {
+    if (camera.forward_change  == CHANGE_NONE && 
+        camera.right_change    == CHANGE_NONE && 
+        camera.up_change       == CHANGE_NONE && 
+        camera.rotate_y_change == CHANGE_NONE) {
         return;
     }
 
-    const f32 dx = CAMERA_MOVE_SPEED * dt;
-    vec3f displacement = {0.0f, 0.0f, 0.0f};
+    vec3f direction = {0.0f, 0.0f, 0.0f};
     u32 active_axis_number = 0;
     
-    if (camera.right_change != NONE) {
-        displacement = vec3f_add(displacement, vec3f_scale(camera.right, camera.right_change * dx));
+    if (camera.right_change != CHANGE_NONE) {
+        direction = vec3f_add(direction, (camera.right_change == CHANGE_POSITIVE) ? camera.right : vec3f_negate(camera.right));
         active_axis_number++;
     }
-    if (camera.forward_change != NONE) {
-        displacement = vec3f_add(displacement, vec3f_scale(camera.forward, camera.forward_change * dx));
+    if (camera.forward_change != CHANGE_NONE) {
+        direction = vec3f_add(direction, (camera.forward_change == CHANGE_POSITIVE) ? camera.forward : vec3f_negate(camera.forward));
         active_axis_number++;
     }
-    if (camera.up_change != NONE) {
-        displacement = vec3f_add(displacement, vec3f_scale(camera.up, camera.up_change * dx));
+    if (camera.up_change != CHANGE_NONE) {
+        direction = vec3f_add(direction, (camera.up_change == CHANGE_POSITIVE) ? camera.up : vec3f_negate(camera.up));
         active_axis_number++;
     }
 
     if (active_axis_number == 2) {
-        displacement = vec3f_scale(displacement, PGLM_1_SQRT2f);
+        direction = vec3f_scale(direction, PGLM_1_SQRT2f);
     }
     else if (active_axis_number == 3) {
-        displacement = vec3f_scale(displacement, PGLM_1_SQRT3f);
+        direction = vec3f_scale(direction, PGLM_1_SQRT3f);
     }
+
+    const vec3f displacement = vec3f_scale(direction, CAMERA_MOVE_SPEED * dt);
     camera.position = vec3f_add(camera.position, displacement);
 
-    if (camera.rotate_y_change != NONE) {
-        const f32 theta = camera.rotate_y_change * CAMERA_ROTATION_SPEED * dt;
-        quat rotation   = quat_angle_axis(camera.up, theta);
-        camera.forward  = quat_rotate_vec3f(rotation, camera.forward);
-        camera.right    = quat_rotate_vec3f(rotation, camera.right);
+    if (camera.rotate_y_change != CHANGE_NONE) {
+        const f32 angular_velocity = (camera.rotate_y_change == CHANGE_POSITIVE) ? CAMERA_ROTATION_SPEED : -CAMERA_ROTATION_SPEED;
+        const f32 angle = angular_velocity * dt;
+        const quat rotation = quat_angle_axis(camera.up, angle);
+        camera.forward = quat_rotate_vec3f(rotation, camera.forward);
+        camera.right = quat_rotate_vec3f(rotation, camera.right);
     }
 
     pgl_view(camera.position, camera.right, camera.up, camera.forward);

@@ -23,7 +23,13 @@ typedef union {
     i32 n[3];
 } vec3i;
 
-#define vec3i_zero ((vec3i){{0, 0, 0}})
+#define vec3i_zero      ((vec3i){{ 0,  0,  0}})
+#define vec3i_i         ((vec3i){{ 1,  0,  0}})
+#define vec3i_j         ((vec3i){{ 0,  1,  0}})
+#define vec3i_k         ((vec3i){{ 0,  0,  1}})
+#define vec3i_minus_i   ((vec3i){{-1,  0,  0}})
+#define vec3i_minus_j   ((vec3i){{ 0, -1,  0}})
+#define vec3i_minus_k   ((vec3i){{ 0,  0, -1}})
 
 inline vec3i vec3i_negate(vec3i v) {
     return (vec3i){{

@@ -102,6 +102,12 @@ int main() {
     pgl_viewport(0, 0, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT);
     
     pgl_set_tests(PGL_DEPTH_TEST, PGL_TEST_ENABLED);
+    pgl_depth_func(PGL_LESS);
+    pgl_depth_mask(PGL_MASKED);
+
+    pgl_cull_face(PGL_CULL_BACK);
+    pgl_cull_winding_order(PGL_CCW);
+
     pgl_clear_color(PGLM_RGB565_BLACK);
 
     meshes[0].transform = transform_init((vec3f){{2.0f, -PGLM_1_2SQRT3f, -3.0f}}, quat_identity, (vec3f){{1.0f, 1.0f, 1.0f}});

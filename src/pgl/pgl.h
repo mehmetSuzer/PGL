@@ -85,7 +85,7 @@ void pgl_stencil_mask(pgl_mask_t mask);
 void pgl_stencil_func(pgl_test_func_t test_func);
 void pgl_stencil_op(pgl_stencil_op_t sfail, pgl_stencil_op_t dpfail, pgl_stencil_op_t dppass);
 
-void pgl_cull_face(pgl_cull_face_t face);
+void pgl_cull_face(pgl_cull_face_t cull_face);
 void pgl_cull_winding_order(pgl_cull_winding_order_t cull_winding_order);
 
 void pgl_draw(const mesh_t* mesh, const directional_light_t* dl);

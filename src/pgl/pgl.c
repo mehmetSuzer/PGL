@@ -9,6 +9,9 @@
 #define PGL_DEPTH_NEAR 0x00u
 #define PGL_DEPTH_FAR  0xFFu
 
+#define PGL_DEPTH_CLEAR_TO_NEAR ((PGL_DEPTH_NEAR << 24) | (PGL_DEPTH_NEAR << 16) | (PGL_DEPTH_NEAR << 8) | PGL_DEPTH_NEAR)
+#define PGL_DEPTH_CLEAR_TO_FAR  ((PGL_DEPTH_FAR  << 24) | (PGL_DEPTH_FAR  << 16) | (PGL_DEPTH_FAR  << 8) | PGL_DEPTH_FAR)
+
 typedef struct {
     // Buffers
     u16  color_buffer[DEVICE_SCREEN_HEIGHT][DEVICE_SCREEN_WIDTH];       // 16 bits per pixel
@@ -80,6 +83,101 @@ typedef struct {
     f32 depth_inv;
 } fragment_t;
 
+// --------------------------------------------------- INTERNAL STATE --------------------------------------------------- // 
+
+void pgl_clear_color(u16 color) {
+    pgl.clear_color = color;
+}
+
+void pgl_clear(pgl_buffer_bit_t buffer_bits) {
+    if (buffer_bits & PGL_COLOR_BUFFER_BIT) {
+        const u32 clear_value = (pgl.clear_color << 16) | pgl.clear_color;
+        u32* ptr = (u32*)pgl.color_buffer;
+        for (u32 i = 0; i < (DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH / 2); i++) {
+            ptr[i] = clear_value;
+        }
+    }
+    if (buffer_bits & PGL_DEPTH_BUFFER_BIT) {
+        const u32 clear_value = (pgl.depth_test_func & PGL_LESS) ? PGL_DEPTH_CLEAR_TO_FAR : PGL_DEPTH_CLEAR_TO_NEAR;
+        u32* ptr = (u32*)pgl.depth_buffer;
+        for (u32 i = 0; i < (DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH / 4); i++) {
+            ptr[i] = clear_value;
+        }
+    }
+    if (buffer_bits & PGL_STENCIL_BUFFER_BIT) {
+        const u32 clear_value = 0x00000000u;
+        u32* ptr = (u32*)pgl.stencil_buffer;
+        for (u32 i = 0; i < (DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH / 32); i++) {
+            ptr[i] = clear_value;
+        }
+    }
+}
+
+void pgl_set_tests(pgl_test_t tests, pgl_enable_t enabled) {
+    if (tests ^ PGL_DEPTH_TEST   == 0) { pgl.depth_test_enabled   = enabled; }
+    if (tests ^ PGL_STENCIL_TEST == 0) { pgl.stencil_test_enabled = enabled; }
+}
+
+void pgl_depth_mask(pgl_mask_t mask) {
+    pgl.depth_test_mask = mask;
+}
+
+void pgl_depth_func(pgl_test_func_t test_func) {
+    pgl.depth_test_func = test_func;
+}
+
+static bool passed_depth_test(u32 x, u32 y, u8 depth) {
+    if (!pgl.depth_test_enabled) { return true; }
+    const u8 depth_in_buffer = pgl.depth_buffer[y][x];
+
+    switch (pgl.depth_test_func) {
+        case PGL_NEVER    : return false;  
+        case PGL_EQUAL    : return depth == depth_in_buffer;   
+        case PGL_LESS     : return depth  < depth_in_buffer;    
+        case PGL_LEQUAL   : return depth <= depth_in_buffer;  
+        case PGL_GREATER  : return depth  > depth_in_buffer;
+        case PGL_GEQUAL   : return depth >= depth_in_buffer;  
+        case PGL_NOTEQUAL : return depth != depth_in_buffer;
+        case PGL_ALWAYS   : return true;  
+    }
+}
+
+static void update_depth_buffer(u32 x, u32 y, u8 depth) {
+    if (pgl.depth_test_enabled && pgl.depth_test_mask) {
+        pgl.depth_buffer[y][x] = depth;
+    }
+}
+
+void pgl_stencil_mask(pgl_mask_t mask) {
+    pgl.stencil_test_mask = mask;
+}
+
+void pgl_stencil_func(pgl_test_func_t test_func) {
+    pgl.stencil_test_func = test_func;
+}
+
+void pgl_stencil_op(pgl_stencil_op_t sfail, pgl_stencil_op_t dpfail, pgl_stencil_op_t dppass) {
+    pgl.stencil_test_op_sfail  = sfail;
+    pgl.stencil_test_op_dpfail = dpfail;
+    pgl.stencil_test_op_dppass = dppass;
+}
+
+void pgl_cull_face(pgl_cull_face_t cull_face) {
+    pgl.cull_face = cull_face;
+}
+
+void pgl_cull_winding_order(pgl_cull_winding_order_t cull_winding_order) {
+    pgl.cull_winding_order = cull_winding_order;
+}
+
+static bool face_is_culled(vec3f face_normal_in_camera_space, vec3f point_on_face_in_camera_space) {
+    const f32 dot = vec3f_dot(face_normal_in_camera_space, point_on_face_in_camera_space);
+    return (pgl.cull_winding_order == PGL_CCW && pgl.cull_face & PGL_CULL_BACK  && dot >= 0.0f) || 
+           (pgl.cull_winding_order == PGL_CW  && pgl.cull_face & PGL_CULL_BACK  && dot <= 0.0f) ||
+           (pgl.cull_winding_order == PGL_CCW && pgl.cull_face & PGL_CULL_FRONT && dot <= 0.0f) || 
+           (pgl.cull_winding_order == PGL_CW  && pgl.cull_face & PGL_CULL_FRONT && dot >= 0.0f);
+}
+
 // --------------------------------------------------- RASTERIZATION --------------------------------------------------- // 
 
 static void pgl_line(fragment_t f0, fragment_t f1) {
@@ -101,9 +199,9 @@ static void pgl_line(fragment_t f0, fragment_t f1) {
     i32 depth = depth0;
 
     while (true) {
-        if (depth <= pgl.depth_buffer[y][x]) { // <= allows us to wireframe-render onto filled rendering
+        if (passed_depth_test(x, y, depth)) {
             pgl.color_buffer[y][x] = pgl.wired_color;
-            pgl.depth_buffer[y][x] = depth;
+            update_depth_buffer(x, y, depth);
         }
 
         if (x == f1.position.x && y == f1.position.y) {
@@ -208,13 +306,13 @@ static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2, fil
                 f32 tex_w_inv = 1.0f / (tex_sw + t * (tex_ew - tex_sw));
                 u8 depth = pgl.depth_coef * (tex_w_inv - pgl.near);
 
-				if (depth < pgl.depth_buffer[y][x]) {
+				if (passed_depth_test(x, y, depth)) {
                     if (filled_render == FILLED_RENDER_TEX_COORDS) {
                         const u16 color = texture_sample_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
                         shaded_color = pgl_shader(color);
                     }
                     pgl.color_buffer[y][x] = shaded_color;
-                    pgl.depth_buffer[y][x] = depth;
+                    update_depth_buffer(x, y, depth);
 				}
 				t += t_step;
 			}
@@ -261,13 +359,13 @@ static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2, fil
                 f32 tex_w_inv = 1.0f / (tex_sw + t * (tex_ew - tex_sw));
                 u8 depth = pgl.depth_coef * (tex_w_inv - pgl.near);
 
-				if (depth < pgl.depth_buffer[y][x]) {
+				if (passed_depth_test(x, y, depth)) {
                     if (filled_render == FILLED_RENDER_TEX_COORDS) {
                         const u16 color = texture_sample_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
                         shaded_color = pgl_shader(color);
                     }
                     pgl.color_buffer[y][x] = shaded_color;
-                    pgl.depth_buffer[y][x] = depth;
+                    update_depth_buffer(x, y, depth);
 				}
 				t += t_step;
 			}
@@ -302,69 +400,6 @@ void pgl_viewport(i32 x, i32 y, u32 width, u32 height) {
     pgl.viewport = viewport(x, y, width, height);
 }
 
-// --------------------------------------------------- INTERNAL STATE --------------------------------------------------- // 
-
-void pgl_clear_color(u16 color) {
-    pgl.clear_color = color;
-}
-
-void pgl_clear(pgl_buffer_bit_t buffer_bits) {
-    const u32 double_color = (pgl.clear_color << 16) | pgl.clear_color;
-    if (buffer_bits & PGL_COLOR_BUFFER_BIT) {
-        u32* ptr = (u32*)pgl.color_buffer;
-        for (u32 i = 0; i < (DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH / 2); i++) {
-            ptr[i] = double_color;
-        }
-    }
-    if (buffer_bits & PGL_DEPTH_BUFFER_BIT) {
-        u32* ptr = (u32*)pgl.depth_buffer;
-        for (u32 i = 0; i < (DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH / 4); i++) {
-            ptr[i] = (PGL_DEPTH_FAR << 24) | (PGL_DEPTH_FAR << 16) | (PGL_DEPTH_FAR << 8) | PGL_DEPTH_FAR;
-        }
-    }
-    if (buffer_bits & PGL_STENCIL_BUFFER_BIT) {
-        u32* ptr = (u32*)pgl.stencil_buffer;
-        for (u32 i = 0; i < (DEVICE_SCREEN_HEIGHT * DEVICE_SCREEN_WIDTH / 32); i++) {
-            ptr[i] = 0x00000000u;
-        }
-    }
-}
-
-void pgl_set_tests(pgl_test_t tests, pgl_enable_t enabled) {
-    if (tests ^ PGL_DEPTH_TEST   == 0) { pgl.depth_test_enabled   = enabled; }
-    if (tests ^ PGL_STENCIL_TEST == 0) { pgl.stencil_test_enabled = enabled; }
-}
-
-void pgl_depth_mask(pgl_mask_t mask) {
-    pgl.depth_test_mask = mask;
-}
-
-void pgl_depth_func(pgl_test_func_t test_func) {
-    pgl.depth_test_func = test_func;
-}
-
-void pgl_stencil_mask(pgl_mask_t mask) {
-    pgl.stencil_test_mask = mask;
-}
-
-void pgl_stencil_func(pgl_test_func_t test_func) {
-    pgl.stencil_test_func = test_func;
-}
-
-void pgl_stencil_op(pgl_stencil_op_t sfail, pgl_stencil_op_t dpfail, pgl_stencil_op_t dppass) {
-    pgl.stencil_test_op_sfail  = sfail;
-    pgl.stencil_test_op_dpfail = dpfail;
-    pgl.stencil_test_op_dppass = dppass;
-}
-
-void pgl_cull_face(pgl_cull_face_t face) {
-    pgl.cull_face = face;
-}
-
-void pgl_cull_winding_order(pgl_cull_winding_order_t cull_winding_order) {
-    pgl.cull_winding_order = cull_winding_order;
-}
-
 // --------------------------------------------------- CLIPPING --------------------------------------------------- // 
 
 // Clips the triangle with respect to a plane in the clipping space.
@@ -385,7 +420,7 @@ static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, 
 
 // Returns true if the mesh may be visible.
 // Returns false if there is no chance that the mesh is visible. 
-static bool pgl_broad_phase_clipping(const mesh_t* mesh, mat4f view_model) {
+static bool pgl_passed_broad_phase_clipping(const mesh_t* mesh, mat4f view_model) {
     const vec3f center = mat3f_mul_vec3f(cast_mat4f_to_mat3f(view_model), mesh->bounding_volume.center);
     const f32 minus_sin_half_fovw = -pgl.sin_half_fovw;
     const f32 cos_half_fovw       =  pgl.cos_half_fovw;
@@ -654,15 +689,14 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
             pgl.fill_color = mesh->indices[i+3]; // Color of the whole face
         }
         
-        // Face culling
-        const vec3f normal = vec3f_cross(
+        const vec3f face_normal_in_camera_space = vec3f_cross(
             (vec3f){c1.x - c0.x, c1.y - c0.y, c1.z - c0.z}, 
             (vec3f){c2.x - c0.x, c2.y - c0.y, c2.z - c0.z}
         );
-        if (vec3f_dot(normal, (vec3f){c0.x, c0.y, c0.z}) >= 0.0f) { continue; }
+        if (face_is_culled(face_normal_in_camera_space, (vec3f){c0.x, c0.y, c0.z})) { continue; }
 
         // Flat shading
-        const f32 shade = dl->intensity * (AMBIENT_COEF + DIFFUSE_COEF * greater(-vec3f_dot(light_direction, vec3f_normalize(normal)), 0.0f));
+        const f32 shade = dl->intensity * (AMBIENT_COEF + DIFFUSE_COEF * greater(-vec3f_dot(light_direction, vec3f_normalize(face_normal_in_camera_space)), 0.0f));
         pgl.shade_multp = (u32)(shade * (1 << SHADE_2_POWER));
 
         // Clip space coordinates

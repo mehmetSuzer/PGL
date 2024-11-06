@@ -14,13 +14,13 @@ inline f32 plane_signed_distance(plane_t p, vec3f v) {
 }
 
 static inline bool plane_intersects_ray(ray_t ray, plane_t plane, f32 near, f32 far, f32* t) {
-    if (vec3f_dot(ray.dir, plane.normal) < 1E-6f) {
+    const f32 dot_dir_normal = vec3f_dot(ray.dir, plane.normal);
+    if (dot_dir_normal < PGLM_EPSILON) {
         return false;
     }
 
-    const f32 dot_sn = vec3f_dot(ray.source, plane.normal);
-    const f32 dot_dn = vec3f_dot(ray.dir, plane.normal);
-    const f32 distance = -(plane.d + dot_sn) / dot_dn;
+    const f32 dot_source_normal = vec3f_dot(ray.source, plane.normal);
+    const f32 distance = -(plane.d + dot_source_normal) / dot_dir_normal;
 
     if (near < distance && distance < far) {
         *t = distance;

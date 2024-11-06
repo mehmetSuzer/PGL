@@ -101,7 +101,7 @@ static void pgl_line(fragment_t f0, fragment_t f1) {
     i32 depth = depth0;
 
     while (true) {
-        if (depth < pgl.depth_buffer[y][x]) {
+        if (depth <= pgl.depth_buffer[y][x]) { // <= allows us to wireframe-render onto filled rendering
             pgl.color_buffer[y][x] = pgl.wired_color;
             pgl.depth_buffer[y][x] = depth;
         }
@@ -139,10 +139,10 @@ static void pgl_wired_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
 }
 
 static u16 pgl_shader(u16 color) {
-    const u32 red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
-    const u32 green = (pgl.shade_multp * (color & (63 <<  5))) >> SHADE_2_POWER;
-    const u32 blue  = (pgl.shade_multp * (color &  31))        >> SHADE_2_POWER;
-    const u16 shaded_color = (u16)((red & (31 << 11)) | (green & (63 << 5)) | blue);
+    const u16 red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
+    const u16 green = (pgl.shade_multp * (color & (63 <<  5))) >> SHADE_2_POWER;
+    const u16 blue  = (pgl.shade_multp * (color &  31))        >> SHADE_2_POWER;
+    const u16 shaded_color = (red & (31 << 11)) | (green & (63 << 5)) | blue;
     return shaded_color;
 }
 

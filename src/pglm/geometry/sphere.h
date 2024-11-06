@@ -19,7 +19,7 @@ static inline bool sphere_intersects_ray(ray_t ray, sphere_t sphere, f32 near, f
     const f32 dot = vec3f_dot(center_to_source, ray.dir);
     const f32 quarter_discriminant = dot * dot - dist2 + sphere.radius * sphere.radius;
 
-    if (quarter_discriminant < 1E-6f) {
+    if (quarter_discriminant < PGLM_EPSILON) {
         return false;
     }
 

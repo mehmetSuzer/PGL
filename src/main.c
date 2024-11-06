@@ -42,12 +42,12 @@ mesh_t meshes[] = {
     },
     {
         .vertices = icositetragon_pyramid_vertices,
-        .indices  = icositetragon_pyramid_indices_colors,
+        .indices  = icositetragon_pyramid_indices_single_color,
         .vertex_number = count_of(icositetragon_pyramid_vertices),
-        .index_number  = count_of(icositetragon_pyramid_indices_colors),
-        .filled_render = FILLED_RENDER_COLORS,
-        .fill_color = PGLM_RGB565_FUCHSIA,
-        .wired_render  = WIRED_RENDER_NO,
+        .index_number  = count_of(icositetragon_pyramid_indices_single_color),
+        .filled_render = FILLED_RENDER_NO,
+        .wired_render  = WIRED_RENDER_YES,
+        .wired_color = PGLM_RGB565_FUCHSIA,
     },
     {
         .vertices = spaceship_vertices,
@@ -122,8 +122,10 @@ int main() {
         last_time = current_time;
         camera_update(dt);
         
-        const vec3f rotation = (vec3f){{0.8f, 0.6f, 0.0f}};
-        transform_rotate_quat(&meshes[2].transform, quat_angle_axis(rotation, dt));
+        const vec3f cube_rotation_axis = (vec3f){{0.8f, 0.6f, 0.0f}};
+        transform_rotate_quat(&meshes[2].transform, quat_angle_axis(cube_rotation_axis, dt));
+        const vec3f icositetragon_rotation_axis = vec3f_j;
+        transform_rotate_quat(&meshes[3].transform, quat_angle_axis(icositetragon_rotation_axis, dt));
 
         pgl_clear(PGL_COLOR_BUFFER_BIT | PGL_DEPTH_BUFFER_BIT);
         for (u32 i = 0; i < count_of(meshes); i++) {

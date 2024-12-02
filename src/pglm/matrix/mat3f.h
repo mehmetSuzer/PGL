@@ -15,7 +15,8 @@ typedef union {
         f32 yx, yy, yz; // row1
         f32 zx, zy, zz; // row2
     };
-    f32 n[3][3];
+    f32 raw[3][3];
+    vec3f rows[3];
 } mat3f;
 
 #define mat3f_zero ((mat3f){{       \
@@ -124,6 +125,7 @@ inline f32 mat3f_det(mat3f m) {
            + m.xz * (m.yx * m.zy - m.yy * m.zx);
 }
 
+// REQUIREMENT: m must be invertible. det(m) != 0.0f.
 inline mat3f mat3f_inv(mat3f m) {
     const f32 inverse_determinant = 1.0f / mat3f_det(m);
 
@@ -142,6 +144,7 @@ inline mat3f mat3f_inv(mat3f m) {
     }};
 }
 
+// REQUIREMENT: m must be invertible. det(m) != 0.0f.
 static inline vec3f mat3f_solve_cramers(mat3f m, vec3f v) {
     const f32 factor0 = m.yy * m.zz - m.yz * m.zy;
     const f32 factor1 = m.yx * m.zz - m.yz * m.zx;

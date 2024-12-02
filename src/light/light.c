@@ -16,7 +16,7 @@ static void assert_intensity(f32 intensity) {
 }
 
 static void assert_direction(vec3f direction) {
-    assert(epsilon_equal(vec3f_mag2(direction), 1.0f, 1E-6f));
+    assert(epsilon_equal(vec3f_mag2(direction), 1.0f, PGLM_EPSILON));
 }
 
 static void assert_cutoff_angle(f32 cutoff_angle) {

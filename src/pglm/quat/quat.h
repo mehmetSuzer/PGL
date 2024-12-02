@@ -11,7 +11,7 @@ typedef struct {
 
 #define quat_identity ((quat){(vec3f){{0.0f, 0.0f, 0.0f}}, 1.0f})
 
-// Returns a unit quaternion equivalent to the rotation corresponding to the (x,y,z) euler angles
+// Returns a unit quaternion equivalent to the rotation corresponding to the (x,y,z) euler angles.
 inline quat quat_euler_angles(vec3f angles) {
     const vec3f half_angles = vec3f_scale(angles, 0.5f);
     const vec3f c = {{
@@ -34,8 +34,8 @@ inline quat quat_euler_angles(vec3f angles) {
     return (quat){v, w};
 }
 
-// v must be a unit vector
-// Returns a unit quaternion
+// REQUIREMENT: v must be a unit vector.
+// Returns a unit quaternion.
 inline quat quat_angle_axis(vec3f v, f32 radian) {
     const f32 half_radian = radian * 0.5f;
     const f32 c = cosf(half_radian);
@@ -96,11 +96,13 @@ inline f32 quat_norm(quat q) {
     return sqrtf(quat_norm2(q));
 }
 
+// REQUIREMENT: norm of q must be non-zero. 
 inline quat quat_normalize(quat q) {
     const f32 inverse_norm = 1.0f / quat_norm(q);
     return quat_scale(q, inverse_norm);
 }
 
+// REQUIREMENT: norm of q must be non-zero. 
 inline quat quat_inv(quat q) {
     const f32 inverse_norm2 = 1.0f / quat_norm2(q);
     return quat_scale(quat_conjugate(q), inverse_norm2);
@@ -134,7 +136,7 @@ inline quat vec3f_mul_quat(vec3f v, quat q) {
     return (quat){xyz, w};
 }
 
-// q must be unit quaternion
+// REQUIREMENT: q must be a unit quaternion.
 inline vec3f quat_rotate_vec3f(quat q, vec3f v) {
     const vec3f uv  = vec3f_cross(q.v, v);
     const vec3f uuv = vec3f_cross(q.v, uv);

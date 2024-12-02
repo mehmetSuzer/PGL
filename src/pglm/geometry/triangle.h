@@ -9,7 +9,7 @@ typedef struct {
     vec3f v0;
     vec3f v1;
     vec3f v2;
-} triangle_t;
+} triangle_t; // REQUIREMENT: Vertices mustn't lie on a straight line
 
 inline vec3f triangle_normal(triangle_t t) {
     const vec3f edge1 = vec3f_sub(t.v1, t.v0);
@@ -18,10 +18,10 @@ inline vec3f triangle_normal(triangle_t t) {
     return normal;
 }
 
-static inline bool triangle_intersects_ray(ray_t ray, triangle_t triangle, f32 near, f32 far, f32* t) {
+static inline bool triangle_intersects_ray(ray_t ray, triangle_t triangle, f32 near, f32 far, f32* distance_out) {
     const vec3f col0 = vec3f_sub(triangle.v0, triangle.v1);
     const vec3f col1 = vec3f_sub(triangle.v0, triangle.v2);
-    const vec3f col2 = ray.dir;
+    const vec3f col2 = ray.direction;
     
     const mat3f matrix = mat3f_from_cols(col0, col1, col2);
     const vec3f vector = vec3f_sub(triangle.v0, ray.source);
@@ -29,7 +29,7 @@ static inline bool triangle_intersects_ray(ray_t ray, triangle_t triangle, f32 n
 
     // Alpha > epsilon and Beta > epsilon and Alpha + Beta < 1.0 and near < t < far
     if (solution.x > PGLM_EPSILON && solution.y > PGLM_EPSILON && solution.x + solution.y < 1.0f && near < solution.z && solution.z < far) {
-        *t = solution.z;
+        *distance_out = solution.z;
         return true;
     }
 

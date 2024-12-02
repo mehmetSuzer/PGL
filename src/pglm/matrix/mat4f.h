@@ -17,7 +17,8 @@ typedef union {
         f32 zx, zy, zz, zw; // row2
         f32 wx, wy, wz, ww; // row3
     };
-    f32 n[4][4];
+    f32 raw[4][4];
+    vec4f rows[4];
 } mat4f;
 
 #define mat4f_zero ((mat4f){{       \
@@ -156,6 +157,7 @@ static inline f32 mat4f_det(mat4f m) {
 	       + m.xz * coef2 - m.xw * coef3;
 }
 
+// REQUIREMENT: m must be invertible. det(m) != 0.0f.
 static inline mat4f mat4f_inv(mat4f m) {
     const f32 factor0 = m.zz * m.ww - m.wz * m.zw;
     const f32 factor1 = m.zy * m.ww - m.wy * m.zw;
@@ -195,6 +197,7 @@ static inline mat4f mat4f_inv(mat4f m) {
     return mat4f_scale(adjugate, inverse_determinant);
 }
 
+// REQUIREMENT: m must be invertible. det(m) != 0.0f.
 static inline vec4f mat4f_solve_cramers(mat4f m, vec4f v) {
     const vec4f col0 = (vec4f){{m.xx, m.yx, m.zx, m.wx}};
     const vec4f col1 = (vec4f){{m.xy, m.yy, m.zy, m.wy}};

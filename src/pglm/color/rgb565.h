@@ -2,6 +2,7 @@
 #ifndef __RGB565_H__
 #define __RGB565_H__
 
+#include <assert.h>
 #include "../vector/vec3f.h"
 
 #define PGLM_RGB565_ALICEBLUE            ((u16)0xEFBFu)
@@ -152,10 +153,15 @@
 #define PGLM_RGB565_YELLOW               ((u16)0xFFE0u)
 #define PGLM_RGB565_YELLOWGREEN          ((u16)0x9E66u)
 
+// REQUIREMENT: color.r, color.g, and color.b must be in [0.0f, 1.0f].
 inline u16 color_vec3f_to_rgb565(vec3f color) {
-    const u8 red     = (color.x < 1.0f) ? (u8)(color.x * 0x1Fu) : 0x1Fu; 
-    const u8 green   = (color.y < 1.0f) ? (u8)(color.y * 0x3Fu) : 0x3Fu; 
-    const u8 blue    = (color.z < 1.0f) ? (u8)(color.z * 0x1Fu) : 0x1Fu; 
+    assert(0.0f <= color.r && color.r <= 1.0f &&
+           0.0f <= color.g && color.g <= 1.0f &&
+           0.0f <= color.b && color.b <= 1.0f);
+
+    const u8 red     = (u8)(color.r * 0x1Fu); 
+    const u8 green   = (u8)(color.g * 0x3Fu); 
+    const u8 blue    = (u8)(color.b * 0x1Fu); 
     const u16 rgb565 = (red << 11) | (green << 5) | blue;
     return rgb565;
 }

@@ -5,6 +5,7 @@
 #include "../core/pglmdef.h"
 
 typedef union {
+    i32 raw[4];
     struct {
         i32 x;
         i32 y;
@@ -17,7 +18,6 @@ typedef union {
         i32 b;
         i32 a;
     };
-    i32 n[4];
 } vec4i;
 
 #define vec4i_zero ((vec4i){{0, 0, 0, 0}})
@@ -58,6 +58,7 @@ inline vec4i vec4i_mul(vec4i v1, vec4i v2) {
     }};
 }
 
+// REQUIREMENT: v2.x, v2.y, v2.z, and v2.w must be non-zero.
 inline vec4i vec4i_div(vec4i v1, vec4i v2) {
     return (vec4i){{
         v1.x / v2.x, 

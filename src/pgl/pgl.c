@@ -250,124 +250,110 @@ static void pgl_filled_triangle(fragment_t f0, fragment_t f1, fragment_t f2, fil
     if (f1.position.y > f2.position.y) { swap(&f1, &f2); }
     if (f0.position.y > f1.position.y) { swap(&f0, &f1); }
 
-	i32 dx1 = f1.position.x  - f0.position.x;
-	i32 dy1 = f1.position.y  - f0.position.y;
-	f32 du1 = f1.tex_coord.u - f0.tex_coord.u;
-	f32 dv1 = f1.tex_coord.v - f0.tex_coord.v;
-    f32 dw1 = f1.depth_inv   - f0.depth_inv;
+    vec2i dp1 = vec2i_sub(f1.position,  f0.position);
+    vec2f dt1 = vec2f_sub(f1.tex_coord, f0.tex_coord);
+    f32   dw1 = f1.depth_inv - f0.depth_inv;
 
-	i32 dx2 = f2.position.x  - f0.position.x;
-	i32 dy2 = f2.position.y  - f0.position.y;
-	f32 du2 = f2.tex_coord.u - f0.tex_coord.u;
-	f32 dv2 = f2.tex_coord.v - f0.tex_coord.v;
-    f32 dw2 = f2.depth_inv   - f0.depth_inv;
+    f32   dx1_step = (dp1.y != 0) ? dp1.x / (f32)abs(dp1.y) : 0.0f;
+    vec2f dt1_step = (dp1.y != 0) ? vec2f_scale(dt1, 1.0f / abs(dp1.y)) : vec2f_zero;
+    f32   dw1_step = (dp1.y != 0) ? dw1 / (f32)abs(dp1.y) : 0.0f;
 
-	f32 dax_step = (dy1) ? dx1 / (f32)abs(dy1) : 0.0f;
-	f32 du1_step = (dy1) ? du1 / (f32)abs(dy1) : 0.0f;
-	f32 dv1_step = (dy1) ? dv1 / (f32)abs(dy1) : 0.0f;
-    f32 dw1_step = (dy1) ? dw1 / (f32)abs(dy1) : 0.0f;
+    vec2i dp2 = vec2i_sub(f2.position,  f0.position);
+    vec2f dt2 = vec2f_sub(f2.tex_coord, f0.tex_coord);
+    f32   dw2 = f2.depth_inv - f0.depth_inv;
 
-	f32 dbx_step = (dy2) ? dx2 / (f32)abs(dy2) : 0.0f;
-	f32 du2_step = (dy2) ? du2 / (f32)abs(dy2) : 0.0f;
-	f32 dv2_step = (dy2) ? dv2 / (f32)abs(dy2) : 0.0f;
-    f32 dw2_step = (dy2) ? dw2 / (f32)abs(dy2) : 0.0f;
+	f32   dx2_step = (dp2.y != 0) ? dp2.x / (f32)abs(dp2.y) : 0.0f;
+    vec2f dt2_step = (dp2.y != 0) ? vec2f_scale(dt2, 1.0f / abs(dp2.y)) : vec2f_zero;
+    f32   dw2_step = (dp2.y != 0) ? dw2 / (f32)abs(dp2.y) : 0.0f;
 
     u16 shaded_color;
     if (filled_render == FILLED_RENDER_SINGLE_COLOR || filled_render == FILLED_RENDER_COLORS) {
         shaded_color = pgl_shader(pgl.fill_color);
     }
 
-	if (dy1) {
+	if (dp1.y != 0) {
 		for (i32 y = f0.position.y; y <= f1.position.y; y++) {
-			i32 ax = f0.position.x + (f32)(y - f0.position.y) * dax_step;
-			i32 bx = f0.position.x + (f32)(y - f0.position.y) * dbx_step;
+            const f32 y0_diff = (f32)(y - f0.position.y);
 
-			f32 tex_su = f0.tex_coord.u + (f32)(y - f0.position.y) * du1_step;
-			f32 tex_sv = f0.tex_coord.v + (f32)(y - f0.position.y) * dv1_step;
-            f32 tex_sw = f0.depth_inv   + (f32)(y - f0.position.y) * dw1_step;
+			i32   start_x = f0.position.x + y0_diff * dx1_step;
+            vec2f start_t = vec2f_add(f0.tex_coord, vec2f_scale(dt1_step, y0_diff));
+            f32   start_w = f0.depth_inv + y0_diff * dw1_step;
 
-			f32 tex_eu = f0.tex_coord.u + (f32)(y - f0.position.y) * du2_step;
-			f32 tex_ev = f0.tex_coord.v + (f32)(y - f0.position.y) * dv2_step;
-            f32 tex_ew = f0.depth_inv   + (f32)(y - f0.position.y) * dw2_step;
+            i32   end_x = f0.position.x + y0_diff * dx2_step;
+            vec2f end_t = vec2f_add(f0.tex_coord, vec2f_scale(dt2_step, y0_diff));
+            f32   end_w = f0.depth_inv + y0_diff * dw2_step;
 
-			if (ax > bx) {
-				swap(&ax, &bx);
-				swap(&tex_su, &tex_eu);
-				swap(&tex_sv, &tex_ev);
-                swap(&tex_sw, &tex_ew);
+			if (start_x > end_x) {
+				swap(&start_x, &end_x);
+				swap(&start_t, &end_t);
+                swap(&start_w, &end_w);
 			}
 
-			f32 t_step = 1.0f / ((f32)(bx - ax));
-			f32 t = 0.0f;
+			const f32 alpha_step = 1.0f / ((f32)(end_x - start_x));
+			f32 alpha = 0.0f;
 
-			for (i32 x = ax; x < bx; x++) {
-				f32 tex_u = tex_su + t * (tex_eu - tex_su);
-				f32 tex_v = tex_sv + t * (tex_ev - tex_sv);
-                f32 tex_w_inv = 1.0f / (tex_sw + t * (tex_ew - tex_sw));
-                u8 depth = pgl.depth_coef * (tex_w_inv - pgl.near);
+			for (i32 x = start_x; x < end_x; x++) {
+                const f32 w_inv = 1.0f / interp(end_w, start_w, alpha);
+                const u8 depth = pgl.depth_coef * (w_inv - pgl.near);
 
 				if (passed_depth_test(x, y, depth)) {
                     if (filled_render == FILLED_RENDER_TEX_COORDS) {
-                        const u16 color = texture_sample_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
+                        const vec2f tex_coord = vec2f_scale(vec2f_interp(end_t, start_t, alpha), w_inv); 
+                        const u16 color = texture_sample_vec2f(tex_coord, pgl.tex_index);
                         shaded_color = pgl_shader(color);
                     }
                     pgl.color_buffer[y][x] = shaded_color;
                     update_depth_buffer(x, y, depth);
 				}
-				t += t_step;
+				alpha += alpha_step;
 			}
 		}
 	}
 
-	dx1 = f2.position.x  - f1.position.x;
-	dy1 = f2.position.y  - f1.position.y;
-	du1 = f2.tex_coord.u - f1.tex_coord.u;
-	dv1 = f2.tex_coord.v - f1.tex_coord.v;
-    dw1 = f2.depth_inv   - f1.depth_inv;
+    dp1 = vec2i_sub(f2.position,  f1.position);
+    dt1 = vec2f_sub(f2.tex_coord, f1.tex_coord);
+    dw1 = f2.depth_inv - f1.depth_inv;
 
-    dax_step = (dy1) ? dx1 / (f32)abs(dy1) : 0.0f;
-	du1_step = (dy1) ? du1 / (f32)abs(dy1) : 0.0f;
-	dv1_step = (dy1) ? dv1 / (f32)abs(dy1) : 0.0f;
-    dw1_step = (dy1) ? dw1 / (f32)abs(dy1) : 0.0f;
+    dx1_step = (dp1.y != 0) ? dp1.x / (f32)abs(dp1.y) : 0.0f;
+    dt1_step = (dp1.y != 0) ? vec2f_scale(dt1, 1.0f / abs(dp1.y)) : vec2f_zero;
+    dw1_step = (dp1.y != 0) ? dw1 / (f32)abs(dp1.y) : 0.0f;
 
-	if (dy1) {
+	if (dp1.y != 0) {
 		for (i32 y = f1.position.y; y <= f2.position.y; y++) {
-			i32 ax = f1.position.x + (f32)(y - f1.position.y) * dax_step;
-			i32 bx = f0.position.x + (f32)(y - f0.position.y) * dbx_step;
+            const f32 y0_diff = (f32)(y - f0.position.y);
+            const f32 y1_diff = (f32)(y - f1.position.y);
 
-			f32 tex_su = f1.tex_coord.u + (f32)(y - f1.position.y) * du1_step;
-			f32 tex_sv = f1.tex_coord.v + (f32)(y - f1.position.y) * dv1_step;
-            f32 tex_sw = f1.depth_inv   + (f32)(y - f1.position.y) * dw1_step;
+			i32   start_x = f1.position.x + y1_diff * dx1_step;
+            vec2f start_t = vec2f_add(f1.tex_coord, vec2f_scale(dt1_step, y1_diff));
+            f32   start_w = f1.depth_inv + y1_diff * dw1_step;
 
-			f32 tex_eu = f0.tex_coord.u + (f32)(y - f0.position.y) * du2_step;
-			f32 tex_ev = f0.tex_coord.v + (f32)(y - f0.position.y) * dv2_step;
-            f32 tex_ew = f0.depth_inv   + (f32)(y - f0.position.y) * dw2_step;
+            i32   end_x = f0.position.x + y0_diff * dx2_step;
+            vec2f end_t = vec2f_add(f0.tex_coord, vec2f_scale(dt2_step, y0_diff));
+            f32   end_w = f0.depth_inv + y0_diff * dw2_step;
 
-			if (ax > bx) {
-				swap(&ax, &bx);
-				swap(&tex_su, &tex_eu);
-				swap(&tex_sv, &tex_ev);
-                swap(&tex_sw, &tex_ew);
+			if (start_x > end_x) {
+				swap(&start_x, &end_x);
+				swap(&start_t, &end_t);
+                swap(&start_w, &end_w);
 			}
 
-			f32 t_step = 1.0f / ((f32)(bx - ax));
-			f32 t = 0.0f;
+			const f32 alpha_step = 1.0f / ((f32)(end_x - start_x));
+			f32 alpha = 0.0f;
 
-			for (i32 x = ax; x < bx; x++) {
-				f32 tex_u = tex_su + t * (tex_eu - tex_su);
-				f32 tex_v = tex_sv + t * (tex_ev - tex_sv);
-                f32 tex_w_inv = 1.0f / (tex_sw + t * (tex_ew - tex_sw));
-                u8 depth = pgl.depth_coef * (tex_w_inv - pgl.near);
+			for (i32 x = start_x; x < end_x; x++) {
+				const f32 w_inv = 1.0f / interp(end_w, start_w, alpha);
+                const u8 depth = pgl.depth_coef * (w_inv - pgl.near);
 
 				if (passed_depth_test(x, y, depth)) {
                     if (filled_render == FILLED_RENDER_TEX_COORDS) {
-                        const u16 color = texture_sample_vec2f((vec2f){tex_u * tex_w_inv, tex_v * tex_w_inv}, pgl.tex_index);
+                        const vec2f tex_coord = vec2f_scale(vec2f_interp(end_t, start_t, alpha), w_inv); 
+                        const u16 color = texture_sample_vec2f(tex_coord, pgl.tex_index);
                         shaded_color = pgl_shader(color);
                     }
                     pgl.color_buffer[y][x] = shaded_color;
                     update_depth_buffer(x, y, depth);
 				}
-				t += t_step;
+				alpha += alpha_step;
 			}
 		}	
 	}		
@@ -696,19 +682,16 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
         if (face_is_culled(face_normal_in_camera_space, (vec3f){c0.x, c0.y, c0.z})) { continue; }
 
         // Flat shading
-        const f32 shade = dl->intensity * (AMBIENT_COEF + DIFFUSE_COEF * greater(-vec3f_dot(light_direction, vec3f_normalize(face_normal_in_camera_space)), 0.0f));
+        const f32 cos_angle = -vec3f_dot(light_direction, vec3f_normalize(face_normal_in_camera_space));
+        const f32 shade = dl->intensity * (AMBIENT_COEF + DIFFUSE_COEF * greater(cos_angle, 0.0f));
         pgl.shade_multp = (u32)(shade * (1 << SHADE_2_POWER));
 
         // Clip space coordinates
-        pgl_queue_triangle_t triangle = { // New typedef can be defined to simplify
-            {.position = mat4f_mul_vec4f(pgl.projection, c0)},
-            {.position = mat4f_mul_vec4f(pgl.projection, c1)},
-            {.position = mat4f_mul_vec4f(pgl.projection, c2)},
+        pgl_queue_triangle_t triangle = {
+            {mat4f_mul_vec4f(pgl.projection, c0), (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? tex_coords[mesh->indices[i+1]] : vec2f_zero},
+            {mat4f_mul_vec4f(pgl.projection, c1), (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? tex_coords[mesh->indices[i+3]] : vec2f_zero},
+            {mat4f_mul_vec4f(pgl.projection, c2), (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? tex_coords[mesh->indices[i+5]] : vec2f_zero},
         };
-
-        triangle.v0.tex_coord = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? tex_coords[mesh->indices[i+1]] : vec2f_zero;
-        triangle.v1.tex_coord = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? tex_coords[mesh->indices[i+3]] : vec2f_zero;
-        triangle.v2.tex_coord = (mesh->filled_render == FILLED_RENDER_TEX_COORDS) ? tex_coords[mesh->indices[i+5]] : vec2f_zero;
 
         pgl_queue_triangle_t subtriangles[PGL_QUEUE_CAPACITY];
         i32 subtriangle_index = pgl_narrow_phase_clipping(&triangle, subtriangles); // tex coords should not be interpolated if 'mesh->filled_render' != FILLED_RENDER_TEX_COORDS

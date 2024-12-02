@@ -5,6 +5,7 @@
 #include "../core/epsilon.h"
 
 typedef union {
+    f32 raw[4];
     struct {
         f32 x;
         f32 y;
@@ -17,7 +18,6 @@ typedef union {
         f32 b;
         f32 a;
     };
-    f32 n[4];
 } vec4f;
 
 #define vec4f_zero ((vec4f){{0.0f, 0.0f, 0.0f, 0.0f}})
@@ -58,6 +58,7 @@ inline vec4f vec4f_mul(vec4f v1, vec4f v2) {
     }};
 }
 
+// REQUIREMENT: v2.x, v2.y, v2.z, and v2.w must be non-zero.
 inline vec4f vec4f_div(vec4f v1, vec4f v2) {
     return (vec4f){{
         v1.x / v2.x, 
@@ -89,6 +90,7 @@ inline f32 vec4f_mag(vec4f v) {
     return sqrtf(mag2);
 }
 
+// REQUIREMENT: v mustn't be a zero vector. 
 inline vec4f vec4f_normalize(vec4f v) {
     const f32 inverse_mag = 1.0f / vec4f_mag(v);
     return vec4f_scale(v, inverse_mag);

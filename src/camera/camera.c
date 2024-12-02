@@ -5,10 +5,10 @@
 #define CAMERA_ROTATION_SPEED   1.0f
 
 camera_t camera = {
-    .position        = { 0.0f,  0.0f,  0.0f},
-    .forward         = { 0.0f,  0.0f, -1.0f},
-    .up              = { 0.0f,  1.0f,  0.0f},
-    .right           = { 1.0f,  0.0f,  0.0f},
+    .position        = vec3f_zero,
+    .forward         = vec3f_forward,
+    .up              = vec3f_up,
+    .right           = vec3f_right,
     .forward_change  = CHANGE_NONE,
     .right_change    = CHANGE_NONE,
     .up_change       = CHANGE_NONE,
@@ -35,7 +35,7 @@ void camera_update(f32 dt) {
         return;
     }
 
-    vec3f direction = {0.0f, 0.0f, 0.0f};
+    vec3f direction = vec3f_zero;
     u32 active_axis_number = 0;
     
     if (camera.right_change != CHANGE_NONE) {

@@ -13,7 +13,8 @@ typedef union {
         f32 xx, xy; // row0
         f32 yx, yy; // row1
     };
-    f32 n[2][2];
+    f32 raw[2][2];
+    vec2f rows[2];
 } mat2f;
 
 #define mat2f_zero ((mat2f){{       \
@@ -100,6 +101,7 @@ inline f32 mat2f_det(mat2f m) {
     return m.xx * m.yy - m.xy * m.yx;
 }
 
+// REQUIREMENT: m must be invertible. det(m) != 0.0f.
 inline mat2f mat2f_inv(mat2f m) {
     const f32 inverse_determinant = 1.0f / mat2f_det(m);
 
@@ -109,6 +111,7 @@ inline mat2f mat2f_inv(mat2f m) {
     }};
 }
 
+// REQUIREMENT: m must be invertible. det(m) != 0.0f.
 inline vec2f mat2f_solve_cramers(mat2f m, vec2f v) {
     const f32 inverse_determinant = 1.0f / mat2f_det(m);
     const f32 detx = m.yy * v.x - m.xy * v.y;

@@ -23,6 +23,7 @@ inline vec4f homogeneous_vector(vec3f v) {
     }}; 
 }
 
+// REQUIREMENT: p.w must be non-zero.
 inline vec3f homogeneous_point_to_vec3f(vec4f p) {
     return (vec3f){{
         p.x / p.w, 
@@ -41,6 +42,7 @@ inline vec3f homogeneous_vector_to_vec3f(vec4f v) {
     }};
 }
 
+// REQUIREMENT: p.w must be non-zero.
 inline vec4f homogeneous_point_normalize(vec4f p) {
     return (vec4f){{
         p.x / p.w, 

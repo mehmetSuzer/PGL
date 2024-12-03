@@ -9,8 +9,9 @@
 #define PICO_OVERCLOCK 1
 
 #if PICO_OVERCLOCK
-    #define PICO_OVERCLOCKED_FREQUENCY_KHZ 300000u
-    #define SPI_BAUDRATE_HZ 75000000u
+    // The maximum clock frequency that I could achieve on my Raspberry Pi Pico
+    #define CLOCK_FREQUENCY_KHZ 300000u
+    #define SPI_BAUDRATE_HZ (CLOCK_FREQUENCY_KHZ * 250u)
 #else
     #define SPI_BAUDRATE_HZ 62500000u
 #endif
@@ -165,6 +166,24 @@ static void lcd_init() {
     lcd_command(0x29);          // Display On
 }
 
+static void lcd_set_window(uint8_t start_x, uint8_t end_x, uint8_t start_y, uint8_t end_y) {
+    lcd_command(0x2A);
+    lcd_write_8bit_data(0x00);
+    lcd_write_8bit_data(start_x);
+	lcd_write_8bit_data(0x00);
+    lcd_write_8bit_data(end_x - 1);
+
+    lcd_command(0x2B);
+    lcd_write_8bit_data(0x00);
+	lcd_write_8bit_data(start_y);
+	lcd_write_8bit_data(0x00);
+    lcd_write_8bit_data(end_y - 1);
+
+    lcd_command(0x2C);
+}
+
+// ----------------------------------------------------------------------------------------------------------- // 
+
 static void buttons_init() {
     gpio_set(DEVICE_KEY_A, GPIO_IN);
     gpio_pull_up(DEVICE_KEY_A);
@@ -187,15 +206,15 @@ static void buttons_init() {
     gpio_pull_up(DEVICE_KEY_CTRL);
 }
 
-static void device_overclock() {
+static void device_configure_clock() {
 #if PICO_OVERCLOCK
     vreg_set_voltage(VREG_VOLTAGE_MAX);
-    set_sys_clock_khz(PICO_OVERCLOCKED_FREQUENCY_KHZ, true);
+    set_sys_clock_khz(CLOCK_FREQUENCY_KHZ, true);
     setup_default_uart();
 
     // Wait and do it again to clear up some UART issues
     sleep_ms(100u);
-    set_sys_clock_khz(PICO_OVERCLOCKED_FREQUENCY_KHZ, true);
+    set_sys_clock_khz(CLOCK_FREQUENCY_KHZ, true);
     setup_default_uart();
 
     // Get the processor sys_clk frequency in Hz
@@ -203,30 +222,14 @@ static void device_overclock() {
 
     // clk_peri does not have a divider, so input and output frequencies will be the same
     clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, freq, freq);
-#endif 
+#endif
 }
 
 void device_init() {
     stdio_init_all();
-    device_overclock();
+    device_configure_clock();
     buttons_init();
     lcd_init();
-}
-
-static void device_set_window(uint8_t start_x, uint8_t end_x, uint8_t start_y, uint8_t end_y) {
-    lcd_command(0x2A);
-    lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(start_x);
-	lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(end_x - 1);
-
-    lcd_command(0x2B);
-    lcd_write_8bit_data(0x00);
-	lcd_write_8bit_data(start_y);
-	lcd_write_8bit_data(0x00);
-    lcd_write_8bit_data(end_y - 1);
-
-    lcd_command(0x2C);
 }
 
 void device_display(uint16_t* screen) {
@@ -235,7 +238,7 @@ void device_display(uint16_t* screen) {
         screen[i] = (color << 8) | ((color & 0xFF00u) >> 8);
     }
 
-    device_set_window(0, DEVICE_SCREEN_WIDTH, 0, DEVICE_SCREEN_HEIGHT);
+    lcd_set_window(0, DEVICE_SCREEN_WIDTH, 0, DEVICE_SCREEN_HEIGHT);
 
     gpio_put(LCD_DC_PIN, DEVICE_HIGH);
     gpio_put(LCD_CS_PIN, DEVICE_LOW);

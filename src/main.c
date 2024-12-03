@@ -3,7 +3,6 @@
 // filled target = 0.033333 s
 
 #include <stdio.h>
-#include <pico/multicore.h>
 #include "pgl.h"
 #include "camera.h"
 
@@ -128,10 +127,10 @@ int main() {
         last_time = current_time;
         camera_update(dt);
         
-        // const vec3f cube_rotation_axis = (vec3f){{0.8f, 0.6f, 0.0f}};
-        // transform_rotate_quat(&meshes[2].transform, quat_angle_axis(cube_rotation_axis, dt));
-        // const vec3f icositetragon_rotation_axis = vec3f_up;
-        // transform_rotate_quat(&meshes[3].transform, quat_angle_axis(icositetragon_rotation_axis, dt));
+        const vec3f cube_rotation_axis = (vec3f){{0.8f, 0.6f, 0.0f}};
+        transform_rotate_quat(&meshes[2].transform, quat_angle_axis(cube_rotation_axis, dt));
+        const vec3f icositetragon_rotation_axis = vec3f_up;
+        transform_rotate_quat(&meshes[3].transform, quat_angle_axis(icositetragon_rotation_axis, dt));
 
         pgl_clear(PGL_COLOR_BUFFER_BIT | PGL_DEPTH_BUFFER_BIT);
         for (u32 i = 0; i < count_of(meshes); i++) {

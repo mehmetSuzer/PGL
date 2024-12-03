@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -48,6 +48,8 @@ target_link_libraries(${PROJECT_NAME}
     pgl
     camera
     texture
+)
 
-    pico_multicore
+target_link_options(${PROJECT_NAME} PRIVATE
+    -flto
 )

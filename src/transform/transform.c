@@ -2,10 +2,10 @@
 #include "transform.h"
 
 static void transform_update_model(transform_t* transform) {
-    const mat4f t = translate3D_mat4f(transform->position);
-    const mat4f r = cast_quat_to_mat4f(transform->rotation);
-    const mat4f s = scale3D_mat4f(transform->scalar);
-    transform->model = mat4f_mul_mat4f(t, mat4f_mul_mat4f(r, s));
+    const mat4f translation = translate3D_mat4f(transform->position);
+    const mat4f rotation    = cast_quat_to_mat4f(transform->rotation);
+    const mat4f scalar      = scale3D_mat4f(transform->scalar);
+    transform->model = mat4f_mul_mat4f(translation, mat4f_mul_mat4f(rotation, scalar));
 }
 
 transform_t transform_init(vec3f position, quat rotation, vec3f scalar) {

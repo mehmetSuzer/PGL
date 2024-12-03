@@ -12,7 +12,7 @@ typedef enum {
 } filled_render_t;
 
 typedef enum {
-    WIRED_RENDER_NO     = 0, // Do not explicitly rasterize the sides of the triangle
+    WIRED_RENDER_NO     = 0, // No wireframe rendering
     WIRED_RENDER_YES    = 1, // A wireframe rendering is done with the color specified at 'mesh_t.wired_color'
 } wired_render_t;
 
@@ -63,11 +63,13 @@ extern const u16    square_pyramid_indices_single_color[18];
 extern const u16    square_pyramid_indices_colors[24];
 extern const u16    square_pyramid_indices_tex_coords[36];
 
+// 12-gon that can approximate to a cone
 extern const vec3f  dodecagon_pyramid_vertices[13];
 extern const u16    dodecagon_pyramid_indices_single_color[66];
 extern const u16    dodecagon_pyramid_indices_colors[88];
 extern const u16    dodecagon_pyramid_indices_tex_coords[132];
 
+// 24-gon that can approximate to a cone
 extern const vec3f  icositetragon_pyramid_vertices[25];
 extern const u16    icositetragon_pyramid_indices_single_color[138];
 extern const u16    icositetragon_pyramid_indices_colors[184];

@@ -199,7 +199,6 @@ const u16 square_pyramid_indices_tex_coords[36] = {
 
 // ------------------------------------------------------------------------------------------------------ //
 
-// 12-gon that can approximate to a cone
 const vec3f dodecagon_pyramid_vertices[13] = {
 	{ 1.000000f,  0.000000f,  0.000000f},
 	{ 0.866025f,  0.000000f,  0.500000f},
@@ -293,7 +292,6 @@ const u16 dodecagon_pyramid_indices_tex_coords[132] = {
 
 // ------------------------------------------------------------------------------------------------------ //
 
-// 24-gon that can approximate to a cone
 const vec3f icositetragon_pyramid_vertices[25] = {
 	{ 1.000000f, 0.000000f,  0.000000f},
 	{ 0.965926f, 0.000000f,  0.258819f},

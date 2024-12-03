@@ -22,7 +22,7 @@ vec2i tex_coord_vec2f_to_vec2i(vec2f tex_coord);
 u16 texture_sample_vec2i(vec2i tex_coord, u16 tex_index);
 
 // Returns the nearest color at the specified coordinates.
-// Bottom left corner of a texture is (0.0f, 0.0f), while the top left corner is (1.0f, 1.0f).
+// Bottom left corner of a texture is (0.0f, 0.0f), while the top right corner is (1.0f, 1.0f).
 u16 texture_sample_vec2f(vec2f tex_coord, u16 tex_index);
 
 #endif // __TEXTURE_H__

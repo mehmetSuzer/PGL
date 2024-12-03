@@ -26,9 +26,9 @@ typedef enum {
 } pgl_test_t;
 
 typedef enum {
-    PGL_COLOR_BUFFER_BIT   = 0b001, // Color   Buffer Clear Bit
-    PGL_DEPTH_BUFFER_BIT   = 0b010, // Depth   Buffer Clear Bit
-    PGL_STENCIL_BUFFER_BIT = 0b100, // Stencil Buffer Clear Bit
+    PGL_COLOR_BUFFER_BIT   = 0b001,
+    PGL_DEPTH_BUFFER_BIT   = 0b010,
+    PGL_STENCIL_BUFFER_BIT = 0b100,
 } pgl_buffer_bit_t;
 
 typedef enum {
@@ -69,6 +69,7 @@ typedef enum {
     PGL_MASKED   = 0b1,
 } pgl_mask_t;
 
+// REQUIREMENT: right, up, and forward must be perpendicular to each other.
 void pgl_view(vec3f position, vec3f right, vec3f up, vec3f forward);
 void pgl_projection(f32 near, f32 far, f32 fovw);
 void pgl_viewport(i32 x, i32 y, u32 width, u32 height);

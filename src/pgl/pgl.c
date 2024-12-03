@@ -2,8 +2,9 @@
 #include "pgl.h"
 #include "pgl_queue.h"
 
-#define AMBIENT_COEF 0.2f
-#define DIFFUSE_COEF 0.8f
+#define AMBIENT_COEF  0.2f
+#define DIFFUSE_COEF  0.8f
+#define SPECULAR_COEF 0.5f
 #define SHADE_2_POWER 8u
 
 #define PGL_DEPTH_NEAR 0x00u
@@ -143,7 +144,7 @@ static bool passed_depth_test(u32 x, u32 y, u8 depth) {
 }
 
 static void update_depth_buffer(u32 x, u32 y, u8 depth) {
-    if (pgl.depth_test_enabled && pgl.depth_test_mask) {
+    if (pgl.depth_test_enabled && pgl.depth_test_mask == PGL_MASKED) {
         pgl.depth_buffer[y][x] = depth;
     }
 }
@@ -237,10 +238,10 @@ static void pgl_wired_triangle(fragment_t f0, fragment_t f1, fragment_t f2) {
 }
 
 static u16 pgl_shader(u16 color) {
-    const u16 red   = (pgl.shade_multp * (color & (31 << 11))) >> SHADE_2_POWER;
-    const u16 green = (pgl.shade_multp * (color & (63 <<  5))) >> SHADE_2_POWER;
-    const u16 blue  = (pgl.shade_multp * (color &  31))        >> SHADE_2_POWER;
-    const u16 shaded_color = (red & (31 << 11)) | (green & (63 << 5)) | blue;
+    const u16 red   = (pgl.shade_multp * (color & (0x1F << 11))) >> SHADE_2_POWER;
+    const u16 green = (pgl.shade_multp * (color & (0x3F <<  5))) >> SHADE_2_POWER;
+    const u16 blue  = (pgl.shade_multp * (color &  0x1F))        >> SHADE_2_POWER;
+    const u16 shaded_color = (red & (0x1F << 11)) | (green & (0x3F << 5)) | blue;
     return shaded_color;
 }
 
@@ -389,8 +390,8 @@ void pgl_viewport(i32 x, i32 y, u32 width, u32 height) {
 // --------------------------------------------------- CLIPPING --------------------------------------------------- // 
 
 // Clips the triangle with respect to a plane in the clipping space.
-// intersection vertices are outputted as v10 and v20.
-static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, vec4f clip_plane_vector, pgl_vertex_t* restrict v10, pgl_vertex_t* restrict v20) {
+// intersection vertices are outputted as v_out10 and v_out20.
+static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, vec4f clip_plane_vector, pgl_vertex_t* restrict v_out10, pgl_vertex_t* restrict v_out20) {
     const f32 d0 = vec4f_dot(t->v0.position, clip_plane_vector);
     const f32 d1 = vec4f_dot(t->v1.position, clip_plane_vector);
     const f32 d2 = vec4f_dot(t->v2.position, clip_plane_vector);
@@ -398,10 +399,10 @@ static void pgl_triangle_clip_plane_intersection(const pgl_queue_triangle_t* t, 
     const f32 alpha10 = d0 / (d0 - d1);
     const f32 alpha20 = d0 / (d0 - d2);
 
-    v10->position  = vec4f_interp(t->v1.position,  t->v0.position,  alpha10);
-    v10->tex_coord = vec2f_interp(t->v1.tex_coord, t->v0.tex_coord, alpha10);
-    v20->position  = vec4f_interp(t->v2.position,  t->v0.position,  alpha20);
-    v20->tex_coord = vec2f_interp(t->v2.tex_coord, t->v0.tex_coord, alpha20);
+    v_out10->position  = vec4f_interp(t->v1.position,  t->v0.position,  alpha10);
+    v_out10->tex_coord = vec2f_interp(t->v1.tex_coord, t->v0.tex_coord, alpha10);
+    v_out20->position  = vec4f_interp(t->v2.position,  t->v0.position,  alpha20);
+    v_out20->tex_coord = vec2f_interp(t->v2.tex_coord, t->v0.tex_coord, alpha20);
 }
 
 // Returns true if the mesh may be visible.
@@ -435,7 +436,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     pgl_vertex_t v20;
     
     // Near Clip: Z + W > 0
-    while (!queue.is_empty) {
+    while (!triangle_queue_is_empty(&queue)) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
         const i32 inside0 = t->v0.position.z > -t->v0.position.w;
         const i32 inside1 = t->v1.position.z > -t->v1.position.w;
@@ -472,7 +473,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     }
 
     // Far Clip: Z - W < 0
-    while (!queue.is_empty) {
+    while (!triangle_queue_is_empty(&queue)) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
         const i32 inside0 = t->v0.position.z < t->v0.position.w;
         const i32 inside1 = t->v1.position.z < t->v1.position.w;
@@ -509,7 +510,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     }
 
     // Left Clip: X + W > 0
-    while (!queue.is_empty) {
+    while (!triangle_queue_is_empty(&queue)) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
         const i32 inside0 = t->v0.position.x > -t->v0.position.w;
         const i32 inside1 = t->v1.position.x > -t->v1.position.w;
@@ -546,7 +547,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     }
 
     // Right Clip: X - W < 0
-    while (!queue.is_empty) {
+    while (!triangle_queue_is_empty(&queue)) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
         const i32 inside0 = t->v0.position.x < t->v0.position.w;
         const i32 inside1 = t->v1.position.x < t->v1.position.w;
@@ -583,7 +584,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     }
 
     // Bottom Clip: Y + W > 0
-    while (!queue.is_empty) {
+    while (!triangle_queue_is_empty(&queue)) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
         const i32 inside0 = t->v0.position.y > -t->v0.position.w;
         const i32 inside1 = t->v1.position.y > -t->v1.position.w;
@@ -620,7 +621,7 @@ static i32 pgl_narrow_phase_clipping(pgl_queue_triangle_t* restrict triangle, pg
     }
 
     // Top Clip: Y - W < 0
-    while (!queue.is_empty) {
+    while (!triangle_queue_is_empty(&queue)) {
         pgl_queue_triangle_t* t = triangle_queue_pop(&queue);
         const i32 inside0 = t->v0.position.y < t->v0.position.w;
         const i32 inside1 = t->v1.position.y < t->v1.position.w;
@@ -721,5 +722,5 @@ void pgl_draw(const mesh_t* mesh, const directional_light_t* dl) {
 }
 
 void pgl_display() {
-    device_display((u16*)pgl.color_buffer); // a function with prototype "void device_display(u16* image)" must be defined
+    device_display((u16*)pgl.color_buffer); // a function with the prototype "void device_display(u16* image)" must be defined
 }

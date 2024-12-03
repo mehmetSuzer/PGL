@@ -3,7 +3,7 @@
 
 #define TEXTURE_SIZE 8u
 
-// Must be a power of 2
+// WARNING: Must be a power of 2
 #define TEXTURE_RESOLUTION  256u
 
 #define TEXTURE_SAMPLING_PERIOD ((1.0f / (f32)TEXTURE_SIZE) + 1E-6f)
@@ -123,7 +123,7 @@ const texture_t textures[64] = {
 };
 
 vec2i tex_coord_vec2f_to_vec2i(vec2f tex_coord) {
-    return (vec2i) {
+    return (vec2i){
         TEXTURE_RESOLUTION * tex_coord.u,
         TEXTURE_RESOLUTION * tex_coord.v,
     };
